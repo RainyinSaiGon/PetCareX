@@ -11,6 +11,9 @@ services:
       MSSQL_PID: "Express"
     volumes:
       - mssql_data:/var/opt/mssql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./database/entrypoint.sh:/docker-entrypoint-initdb.d/entrypoint.sh
+    command: /bin/bash -c "/docker-entrypoint-initdb.d/entrypoint.sh & /opt/mssql/bin/sqlservr"
 
 volumes:
   mssql_data:
