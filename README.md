@@ -2,7 +2,7 @@
 
 This is the repository for our CS12002_Database Advanced project
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 PetCareX/
@@ -12,7 +12,7 @@ PetCareX/
 └── README.md
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -39,14 +39,44 @@ cd ../frontend
 npm install
 ```
 
-3. Or use Docker:
+### Running the Application
+
+#### Option 1: Quick Start (Windows)
+
+Use the provided batch file to start all services at once:
 ```bash
-docker-compose up
+.\start.bat
+```
+
+This will:
+- Start the Docker database container
+- Launch the backend server in a new window
+- Launch the frontend application in a new window
+
+#### Option 2: Manual Start
+
+Start each service individually:
+
+**Database (Docker):**
+```bash
+docker-compose up -d
+```
+
+**Backend:**
+```bash
+cd backend
+npm run start:dev
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm start
 ```
 
 ---
 
-## 🌿 Git Workflow & Branching Strategy
+## Git Workflow & Branching Strategy
 
 ### Branch Naming Convention
 
@@ -197,7 +227,7 @@ Closes #<issue-number>
 
 ---
 
-## 🔄 Code Review Guidelines
+##  Code Review Guidelines
 
 ### For Authors
 - Keep PRs small and focused (ideally < 400 lines)
@@ -213,14 +243,17 @@ Closes #<issue-number>
 
 ---
 
-## 👥 Team Members
+## Team Members
 
-| Name | Role |
-|------|------|
-| TBD | TBD |
+|    Name    | Role |
+|------------|------|
+| Dinh Dai Vu| Backend & Frontend Developer |
+| Le Truong Bao Ngoc| Database Engineer |
+| Tran Thi Xuan Tai | Database Engineer |
+| Do Dang Nhat Tien | Backend Developer |
 
 ---
 
-## 📄 License
+## License
 
 This project is for educational purposes as part of CS12002_Database Advanced course.
