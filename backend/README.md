@@ -1,98 +1,262 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# PetCareX Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+NestJS-based backend API for PetCareX project.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## 🚀 Getting Started
 
-## Description
+### Prerequisites
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- Node.js (v18 or higher)
+- npm or yarn
+- Database (PostgreSQL/MySQL - as configured)
 
-## Project setup
+### Installation
 
 ```bash
-$ npm install
+# Navigate to backend directory
+cd backend
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run start:dev
 ```
 
-## Compile and run the project
+The API will be available at `http://localhost:3000`
+
+### Build
 
 ```bash
-# development
-$ npm run start
+# Build for production
+npm run build
 
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+# Start production server
+npm run start:prod
 ```
 
-## Run tests
+### Testing
 
 ```bash
-# unit tests
-$ npm run test
+# Unit tests
+npm run test
 
-# e2e tests
-$ npm run test:e2e
+# E2E tests
+npm run test:e2e
 
-# test coverage
-$ npm run test:cov
+# Test coverage
+npm run test:cov
 ```
 
-## Deployment
+---
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+## 🌿 Git Workflow
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### Creating a New Feature Branch
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+# 1. Ensure you're on main and up to date
+git checkout main
+git pull origin main
+
+# 2. Create feature branch
+git checkout -b feature/<issue-id>-<description>
+
+# Example:
+git checkout -b feature/102-pet-api-endpoints
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### Commit Messages
 
-## Resources
+Follow Conventional Commits:
 
-Check out a few resources that may come in handy when working with NestJS:
+```bash
+# Feature
+git commit -m "feat(pets): add CRUD endpoints for pets"
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+# Bug fix
+git commit -m "fix(auth): resolve JWT validation issue"
 
-## Support
+# Database
+git commit -m "feat(db): add pet entity migration"
+```
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### Push & Create Pull Request
 
-## Stay in touch
+```bash
+# Push your branch
+git push origin feature/<your-branch-name>
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Then create a PR on GitHub targeting the `main` branch.
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 📁 Project Structure
+
+```
+backend/
+├── src/
+│   ├── modules/              # Feature modules
+│   │   ├── pets/
+│   │   │   ├── dto/
+│   │   │   ├── entities/
+│   │   │   ├── pets.controller.ts
+│   │   │   ├── pets.service.ts
+│   │   │   └── pets.module.ts
+│   │   ├── users/
+│   │   └── auth/
+│   ├── common/               # Shared utilities
+│   │   ├── decorators/
+│   │   ├── filters/
+│   │   ├── guards/
+│   │   ├── interceptors/
+│   │   └── pipes/
+│   ├── config/               # Configuration files
+│   ├── database/             # Database config & migrations
+│   ├── app.module.ts
+│   └── main.ts
+├── test/                     # E2E tests
+└── package.json
+```
+
+---
+
+## 📝 File Naming Conventions
+
+### Module Files
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Module | `<name>.module.ts` | `pets.module.ts` |
+| Controller | `<name>.controller.ts` | `pets.controller.ts` |
+| Service | `<name>.service.ts` | `pets.service.ts` |
+| Spec | `<name>.spec.ts` | `pets.service.spec.ts` |
+
+### Data Transfer Objects (DTOs)
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Create DTO | `create-<name>.dto.ts` | `create-pet.dto.ts` |
+| Update DTO | `update-<name>.dto.ts` | `update-pet.dto.ts` |
+| Response DTO | `<name>-response.dto.ts` | `pet-response.dto.ts` |
+| Query DTO | `<name>-query.dto.ts` | `pet-query.dto.ts` |
+
+### Entities
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Entity | `<name>.entity.ts` | `pet.entity.ts` |
+| Repository | `<name>.repository.ts` | `pet.repository.ts` |
+
+### Common Files
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Guard | `<name>.guard.ts` | `jwt-auth.guard.ts` |
+| Decorator | `<name>.decorator.ts` | `current-user.decorator.ts` |
+| Filter | `<name>.filter.ts` | `http-exception.filter.ts` |
+| Interceptor | `<name>.interceptor.ts` | `logging.interceptor.ts` |
+| Pipe | `<name>.pipe.ts` | `validation.pipe.ts` |
+| Middleware | `<name>.middleware.ts` | `logger.middleware.ts` |
+
+### Folder Naming
+
+- Use **plural** for resource modules: `pets/`, `users/`, `appointments/`
+- Use **singular** for utility folders: `common/`, `config/`, `database/`
+- Use **kebab-case** for multi-word folders: `jwt-auth/`
+
+---
+
+## 🎨 Code Style Guidelines
+
+### TypeScript/NestJS
+
+- Use **PascalCase** for class names: `PetsController`, `PetEntity`
+- Use **camelCase** for methods and variables: `findAllPets()`, `petId`
+- Use **UPPER_SNAKE_CASE** for constants: `JWT_SECRET`
+- Suffix classes appropriately: `Service`, `Controller`, `Module`, `Guard`, etc.
+
+### Example Module Structure
+
+```typescript
+// pets.controller.ts
+@Controller('pets')
+export class PetsController {
+  constructor(private readonly petsService: PetsService) {}
+
+  @Get()
+  findAll(): Promise<Pet[]> {
+    return this.petsService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<Pet> {
+    return this.petsService.findOne(id);
+  }
+
+  @Post()
+  create(@Body() createPetDto: CreatePetDto): Promise<Pet> {
+    return this.petsService.create(createPetDto);
+  }
+}
+```
+
+```typescript
+// create-pet.dto.ts
+export class CreatePetDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsOptional()
+  breed?: string;
+
+  @IsNumber()
+  @IsPositive()
+  age: number;
+}
+```
+
+```typescript
+// pet.entity.ts
+@Entity('pets')
+export class Pet {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
+
+  @Column()
+  name: string;
+
+  @Column({ nullable: true })
+  breed: string;
+
+  @Column()
+  age: number;
+
+  @CreateDateColumn()
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  updatedAt: Date;
+}
+```
+
+---
+
+## 📚 API Documentation
+
+Once the server is running, Swagger documentation is available at:
+```
+http://localhost:3000/api
+```
+
+---
+
+## 🔗 Related Documentation
+
+- [Main Project README](../README.md)
+- [Frontend README](../frontend/README.md)
+- [NestJS Documentation](https://docs.nestjs.com/)
+
