@@ -2,7 +2,7 @@
 
 Angular-based frontend application for PetCareX project.
 
-## 🚀 Getting Started
+##  Getting Started
 
 ### Prerequisites
 
@@ -49,7 +49,7 @@ ng e2e
 
 ---
 
-## 🌿 Git Workflow
+##  Git Workflow
 
 ### Creating a New Feature Branch
 
@@ -91,7 +91,7 @@ Then create a PR on GitHub targeting the `main` branch.
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 frontend/
@@ -114,7 +114,7 @@ frontend/
 
 ---
 
-## 📝 File Naming Conventions
+##  File Naming Conventions
 
 ### Components
 
@@ -157,7 +157,7 @@ frontend/
 
 ---
 
-## 🎨 Code Style Guidelines
+##  Code Style Guidelines
 
 ### TypeScript/Angular
 
@@ -195,7 +195,7 @@ export class PetCardComponent implements OnInit {
 
 ---
 
-## 🔗 Related Documentation
+##  Related Documentation
 
 - [Main Project README](../README.md)
 - [Backend README](../backend/README.md)

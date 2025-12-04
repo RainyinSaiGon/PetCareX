@@ -2,7 +2,7 @@
 
 NestJS-based backend API for PetCareX project.
 
-## 🚀 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -50,7 +50,7 @@ npm run test:cov
 
 ---
 
-## 🌿 Git Workflow
+##  Git Workflow
 
 ### Creating a New Feature Branch
 
@@ -92,7 +92,7 @@ Then create a PR on GitHub targeting the `main` branch.
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 backend/
@@ -122,7 +122,7 @@ backend/
 
 ---
 
-## 📝 File Naming Conventions
+## File Naming Conventions
 
 ### Module Files
 
@@ -168,7 +168,7 @@ backend/
 
 ---
 
-## 🎨 Code Style Guidelines
+##  Code Style Guidelines
 
 ### TypeScript/NestJS
 
@@ -245,7 +245,7 @@ export class Pet {
 
 ---
 
-## 📚 API Documentation
+##  API Documentation
 
 Once the server is running, Swagger documentation is available at:
 ```
@@ -254,7 +254,7 @@ http://localhost:3000/api
 
 ---
 
-## 🔗 Related Documentation
+## Related Documentation
 
 - [Main Project README](../README.md)
 - [Frontend README](../frontend/README.md)
