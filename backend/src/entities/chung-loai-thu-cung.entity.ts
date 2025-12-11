@@ -1,18 +1,18 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { LoaiThuCung } from './loai-thu-cung.entity';
 
 @Entity('CHUNGLOAITHUCUNG')
 export class ChungLoaiThuCung {
-  @PrimaryColumn({ name: 'MaChungLoaiThuCung', type: 'char', length: 2 })
-  maChungLoaiThuCung: string;
+  @PrimaryColumn({ type: 'char', length: 2 })
+  MaChungLoaiThuCung: string;
 
-  @Column({ name: 'TenChungLoaiThuCung', type: 'nvarchar', length: 20, nullable: true })
-  tenChungLoaiThuCung: string;
+  @Column({ type: 'varchar', length: 20, nullable: true })
+  TenChungLoaiThuCung: string;
 
-  @Column({ name: 'MaLoaiThuCung', type: 'char', length: 2, nullable: true })
-  maLoaiThuCung: string;
+  @Column({ type: 'char', length: 2, nullable: true })
+  MaLoaiThuCung: string;
 
-  @ManyToOne(() => LoaiThuCung, loaiThuCung => loaiThuCung.chungLoais, { nullable: true })
+  @ManyToOne(() => LoaiThuCung, loai => loai.ChungLoaiThuCungs)
   @JoinColumn({ name: 'MaLoaiThuCung' })
-  loaiThuCung: LoaiThuCung;
+  LoaiThuCung: LoaiThuCung;
 }

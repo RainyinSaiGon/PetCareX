@@ -1,40 +1,48 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { NhanVien } from './nhan-vien.entity';
+import { NhanVien } from './nhanvien.entity';
 import { KhachHang } from './khach-hang.entity';
+import { ChiNhanh } from './chi-nhanh.entity';
+import { HoaDonSanPham } from './hoa-don-san-pham.entity';
+import { ThanhToanDichVuYTe } from './thanh-toan-dich-vu-y-te.entity';
 
 @Entity('HOADON')
 export class HoaDon {
-  @PrimaryGeneratedColumn({ name: 'MaHoaDon' })
-  maHoaDon: number;
+  @PrimaryGeneratedColumn()
+  MaHoaDon: number;
 
-  @Column({ name: 'NgayLap', type: 'datetime', nullable: true })
-  ngayLap: Date;
+  @Column({ type: 'timestamp', nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  NgayLap: Date;
 
-  @Column({ name: 'GiamGia', type: 'int', nullable: true })
-  giamGia: number;
+  @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true, default: 0 })
+  GiamGia: number;
 
-  @Column({ name: 'TongTien', type: 'decimal', precision: 15, scale: 2, nullable: true })
-  tongTien: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
+  TongTien: number;
 
-  @Column({ name: 'MaNhanVien', type: 'char', length: 5, nullable: true })
-  maNhanVien: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaNhanVien: string;
 
-  @Column({ name: 'MaKhachHang', nullable: true })
-  maKhachHang: number;
+  @Column({ type: 'int', nullable: true })
+  MaKhachHang: number;
 
-  // Relations
-  @ManyToOne(() => NhanVien, { nullable: true })
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaChiNhanh: string;
+
+  @ManyToOne(() => NhanVien, nhanVien => nhanVien.HoaDons)
   @JoinColumn({ name: 'MaNhanVien' })
-  nhanVien: NhanVien;
+  NhanVien: NhanVien;
 
-  @ManyToOne(() => KhachHang, { nullable: true })
+  @ManyToOne(() => KhachHang, khachHang => khachHang.HoaDons)
   @JoinColumn({ name: 'MaKhachHang' })
-  khachHang: KhachHang;
+  KhachHang: KhachHang;
 
-  // One-to-many relations
-  @OneToMany('CtSanPham', 'hoaDon')
-  ctSanPhams: any[];
+  @ManyToOne(() => ChiNhanh, chiNhanh => chiNhanh.HoaDons)
+  @JoinColumn({ name: 'MaChiNhanh' })
+  ChiNhanh: ChiNhanh;
 
-  @OneToMany('CtDichVuYTe', 'hoaDon')
-  ctDichVuYTes: any[];
+  @OneToMany(() => HoaDonSanPham, hdsp => hdsp.HoaDon)
+  SanPhams: HoaDonSanPham[];
+
+  @OneToMany(() => ThanhToanDichVuYTe, tt => tt.HoaDon)
+  DichVus: ThanhToanDichVuYTe[];
 }

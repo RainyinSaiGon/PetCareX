@@ -1,29 +1,41 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { ThuCung } from './thu-cung.entity';
 import { PhieuDangKyTiemPhong } from './phieu-dang-ky-tiem-phong.entity';
+import { GiayTiemPhong } from './giay-tiem-phong.entity';
+import { ChiTietKhamBenhChuanDoan } from './chi-tiet-kham-benh-chuan-doan.entity';
+import { ChiTietKhamBenhTrieuChung } from './chi-tiet-kham-benh-trieu-chung.entity';
 
 @Entity('GIAYKHAMBENHTONGQUAT')
 export class GiayKhamBenhTongQuat {
-  @PrimaryGeneratedColumn({ name: 'MaGiayKhamTongQuat' })
-  maGiayKhamTongQuat: number;
+  @PrimaryGeneratedColumn()
+  MaGiayKhamTongQuat: number;
 
-  @Column({ name: 'NhietDo', type: 'float', nullable: true })
-  nhietDo: number;
+  @Column({ type: 'float', nullable: true })
+  NhietDo: number;
 
-  @Column({ name: 'MoTa', type: 'nvarchar', length: 100, nullable: true })
-  moTa: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  MoTa: string;
 
-  @Column({ name: 'MaThuCung', nullable: true })
-  maThuCung: number;
+  @Column({ type: 'int', nullable: true })
+  MaThuCung: number;
 
-  @Column({ name: 'MaPhieuDangKyTiemPhong', nullable: true })
-  maPhieuDangKyTiemPhong: number;
+  @Column({ type: 'int', nullable: true })
+  MaPhieuDangKyTiemPhong: number;
 
-  @ManyToOne(() => ThuCung, { nullable: true })
+  @ManyToOne(() => ThuCung, thuCung => thuCung.GiayKhamTongQuats)
   @JoinColumn({ name: 'MaThuCung' })
-  thuCung: ThuCung;
+  ThuCung: ThuCung;
 
-  @ManyToOne(() => PhieuDangKyTiemPhong, { nullable: true })
+  @ManyToOne(() => PhieuDangKyTiemPhong, pdktp => pdktp.GiayKhamBenhs)
   @JoinColumn({ name: 'MaPhieuDangKyTiemPhong' })
-  phieuDangKy: PhieuDangKyTiemPhong;
+  PhieuDangKy: PhieuDangKyTiemPhong;
+
+  @OneToMany(() => GiayTiemPhong, giay => giay.GiayKhamTongQuat)
+  GiayTiemPhongs: GiayTiemPhong[];
+
+  @OneToMany(() => ChiTietKhamBenhChuanDoan, ctcd => ctcd.GiayKhamBenhTongQuat)
+  ChiTietChuanDoans: ChiTietKhamBenhChuanDoan[];
+
+  @OneToMany(() => ChiTietKhamBenhTrieuChung, ctct => ctct.GiayKhamBenhTongQuat)
+  ChiTietTrieuChungs: ChiTietKhamBenhTrieuChung[];
 }

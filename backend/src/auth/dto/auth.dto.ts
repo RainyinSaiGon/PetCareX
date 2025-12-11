@@ -1,81 +1,78 @@
-import { IsString, IsEmail, MinLength, IsOptional, IsEnum } from 'class-validator';
-import { Role } from '../roles';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
+import { UserRole } from '../../common/enums/user-role.enum';
 
 export class RegisterDto {
-  @IsString()
-  @MinLength(3)
-  username: string;
-
-  @IsEmail()
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsNotEmpty({ message: 'Email là bắt buộc' })
   email: string;
 
   @IsString()
-  @MinLength(6)
+  @IsNotEmpty({ message: 'Username là bắt buộc' })
+  @MinLength(3, { message: 'Username phải có ít nhất 3 ký tự' })
+  username: string;
+
+  @IsString()
+  @IsNotEmpty({ message: 'Mật khẩu là bắt buộc' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
   password: string;
 
   @IsOptional()
   @IsString()
-  fullName?: string;
+  full_name?: string;
 
   @IsOptional()
   @IsString()
-  phoneNumber?: string;
+  phone?: string;
 
   @IsOptional()
-  @IsEnum(Role)
-  role?: Role; // Only admin can set roles other than KHACH_HANG
+  @IsEnum(UserRole)
+  role?: UserRole;
 }
 
 export class LoginDto {
   @IsString()
+  @IsNotEmpty({ message: 'Username là bắt buộc' })
   username: string;
 
   @IsString()
+  @IsNotEmpty({ message: 'Mật khẩu là bắt buộc' })
   password: string;
 }
 
-export class CreateStaffAccountDto {
+export class RefreshTokenDto {
   @IsString()
-  @MinLength(3)
-  username: string;
+  @IsNotEmpty({ message: 'Refresh token là bắt buộc' })
+  refresh_token: string;
+}
 
-  @IsEmail()
+export class ForgotPasswordDto {
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsNotEmpty({ message: 'Email là bắt buộc' })
+  email: string;
+}
+
+export class ResetPasswordDto {
+  @IsEmail({}, { message: 'Email không hợp lệ' })
+  @IsNotEmpty({ message: 'Email là bắt buộc' })
   email: string;
 
   @IsString()
-  @MinLength(6)
-  password: string;
+  @IsNotEmpty({ message: 'Token là bắt buộc' })
+  token: string;
 
-  @IsOptional()
   @IsString()
-  fullName?: string;
-
-  @IsOptional()
-  @IsString()
-  phoneNumber?: string;
-
-  @IsEnum(Role)
-  role: Role;
-
-  @IsOptional()
-  @IsString()
-  maNhanVien?: string; // Link to NHANVIEN table
-}
-
-export class UpdateRoleDto {
-  @IsEnum(Role)
-  role: Role;
-
-  @IsOptional()
-  @IsString()
-  maNhanVien?: string;
+  @IsNotEmpty({ message: 'Mật khẩu mới là bắt buộc' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
+  newPassword: string;
 }
 
 export class ChangePasswordDto {
   @IsString()
+  @IsNotEmpty({ message: 'Mật khẩu hiện tại là bắt buộc' })
   currentPassword: string;
 
   @IsString()
-  @MinLength(6)
+  @IsNotEmpty({ message: 'Mật khẩu mới là bắt buộc' })
+  @MinLength(6, { message: 'Mật khẩu phải có ít nhất 6 ký tự' })
   newPassword: string;
 }

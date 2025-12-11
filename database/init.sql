@@ -1,16 +1,5 @@
--- PetCareX Database Initialization Script
--- This script will create the database and tables
-
--- Create database if it doesn't exist
-IF NOT EXISTS (SELECT * FROM sys.databases WHERE name = 'PetCareX')
-BEGIN
-    CREATE DATABASE PetCareX;
-END
-GO
-
--- Switch to the PetCareX database
-USE PetCareX;
-GO
+-- PostgreSQL Database Schema for PetCareX
+-- Converted from SQL Server to PostgreSQL
 
 /*******************************************************************************
  * PHẦN 1: TẠO BẢNG VÀ KHOÁ CHÍNH (PRIMARY KEY)
@@ -22,12 +11,12 @@ GO
 
 CREATE TABLE CHINHANH (
     MaChiNhanh CHAR(4) NOT NULL,
-    TenChiNhanh NVARCHAR(70),
-    DiaChi NVARCHAR(150),
+    TenChiNhanh VARCHAR(70),
+    DiaChi VARCHAR(150),
     SDT CHAR(10),
     MaQuanLy CHAR(5), -- FK liên kết đến NHANVIEN
-    ThoiGianMoCua TIME(0),
-    ThoiGianDongCua TIME(0),
+    ThoiGianMoCua TIME,
+    ThoiGianDongCua TIME,
     PRIMARY KEY (MaChiNhanh)
 );
 
@@ -39,26 +28,26 @@ CREATE TABLE KHO (
 
 CREATE TABLE KHOA (
     MaKhoa CHAR(2) NOT NULL,
-    TenKhoa NVARCHAR(50),
+    TenKhoa VARCHAR(50),
     TruongKhoa CHAR(5), -- FK liên kết đến NHANVIEN
     PRIMARY KEY (MaKhoa)
 );
 
 CREATE TABLE LOAINHANVIEN_LUONG (
-    LoaiNhanVien NVARCHAR(20) NOT NULL,
+    LoaiNhanVien VARCHAR(20) NOT NULL,
     Luong DECIMAL(9, 0),
     PRIMARY KEY (LoaiNhanVien)
 );
 
 CREATE TABLE NHANVIEN (
     MaNhanVien CHAR(5) NOT NULL,
-    HoTen NVARCHAR(50),
+    HoTen VARCHAR(50),
     NgayVaoLam DATE,
     NgayNghiLam DATE,
     NgaySinh DATE,
     SDT CHAR(10),
     MaChiNhanh CHAR(4), -- FK
-    LoaiNhanVien NVARCHAR(20), -- FK
+    LoaiNhanVien VARCHAR(20), -- FK
     MaKhoa CHAR(2), -- FK
     PRIMARY KEY (MaNhanVien)
 );
@@ -67,7 +56,7 @@ CREATE TABLE LICHLAMVIECBACSI (
     MaBacSi CHAR(5) NOT NULL, -- FK
     MaChiNhanh CHAR(4) NOT NULL, -- FK
     Ngay DATE NOT NULL,
-    TrangThai NVARCHAR(5),
+    TrangThai VARCHAR(5),
     PRIMARY KEY (MaBacSi, MaChiNhanh, Ngay)
 );
 
@@ -76,46 +65,46 @@ CREATE TABLE LICHLAMVIECBACSI (
 --=============================================================================
 
 CREATE TABLE KHACHHANG (
-    MaKhachHang INT IDENTITY(1,1) NOT NULL,
-    HoTen NVARCHAR(50),
+    MaKhachHang SERIAL NOT NULL,
+    HoTen VARCHAR(50),
     SoDienThoai CHAR(10),
     PRIMARY KEY (MaKhachHang)
 );
 
 CREATE TABLE HANGTHANHVIEN (
-    TenHang NVARCHAR(10) NOT NULL,
+    TenHang VARCHAR(10) NOT NULL,
     GiamGia DECIMAL(3,2),
     PRIMARY KEY (TenHang)
 );
 
 CREATE TABLE KHACHHANGTHANHVIEN (
-    MaKhachHang INT NOT NULL, -- Lưu ý: Đề bài yêu cầu IDENTITY riêng, có thể không khớp với KHACHHANG
+    MaKhachHang INT NOT NULL,
     Email VARCHAR(50),
-    GioiTinh NVARCHAR(3),
+    GioiTinh VARCHAR(3),
     NgaySinh DATE,
     CCCD CHAR(12),
     TongChiTieu DECIMAL(12,2),
-    TenHang NVARCHAR(10), -- FK
-    DiaChi NVARCHAR(150),
+    TenHang VARCHAR(10), -- FK
+    DiaChi VARCHAR(150),
     PRIMARY KEY (MaKhachHang)
 );
 
 CREATE TABLE LOAITHUCUNG (
     MaLoaiThuCung CHAR(2) NOT NULL,
-    TenLoaiThuCung NVARCHAR(10),
+    TenLoaiThuCung VARCHAR(10),
     PRIMARY KEY (MaLoaiThuCung)
 );
 
 CREATE TABLE CHUNGLOAITHUCUNG (
     MaChungLoaiThuCung CHAR(2) NOT NULL,
-    TenChungLoaiThuCung NVARCHAR(20),
+    TenChungLoaiThuCung VARCHAR(20),
     MaLoaiThuCung CHAR(2), -- FK
     PRIMARY KEY (MaChungLoaiThuCung)
 );
 
 CREATE TABLE THUCUNG (
-    MaThuCung INT IDENTITY(1, 1) NOT NULL,
-    TenThuCung NVARCHAR(20),
+    MaThuCung SERIAL NOT NULL,
+    TenThuCung VARCHAR(20),
     NgaySinhThuCung DATE,
     MaKhachHang INT, -- FK
     MaChungLoai CHAR(2), -- FK
@@ -123,13 +112,13 @@ CREATE TABLE THUCUNG (
 );
 
 CREATE TABLE LICHHEN (
-    MaLichHen INT IDENTITY(1,1) NOT NULL, -- Đã sửa lỗi chính tả INDENTITY
+    MaLichHen SERIAL NOT NULL,
     MaKhachHang INT, -- FK
     MaThuCung INT, -- FK
     MaBacSi CHAR(5), -- FK
     NgayHen DATE,
-    GioHen TIME(0),
-    TrangThai NVARCHAR(16),
+    GioHen TIME,
+    TrangThai VARCHAR(16),
     PRIMARY KEY (MaLichHen)
 );
 
@@ -139,9 +128,9 @@ CREATE TABLE LICHHEN (
 
 CREATE TABLE SANPHAM (
     MaSanPham CHAR(5) NOT NULL,
-    TenSanPham NVARCHAR(50),
+    TenSanPham VARCHAR(50),
     GiaTienSanPham INT,
-    LoaiSanPham NVARCHAR(50),
+    LoaiSanPham VARCHAR(50),
     PRIMARY KEY (MaSanPham)
 );
 
@@ -166,7 +155,7 @@ CREATE TABLE THUCAN (
 
 CREATE TABLE THANHPHANTHUCAN (
     MaSanPham CHAR(5) NOT NULL, -- FK
-    ThanhPhan NVARCHAR(20) NOT NULL,
+    ThanhPhan VARCHAR(20) NOT NULL,
     KhoiLuong FLOAT,
     PRIMARY KEY (MaSanPham, ThanhPhan)
 );
@@ -185,8 +174,8 @@ CREATE TABLE CHITIETTONKHO (
 
 CREATE TABLE VACCINE (
     MaVaccine CHAR(5) NOT NULL,
-    TenVaccine NVARCHAR(20),
-    LoaiVaccine NVARCHAR(50),
+    TenVaccine VARCHAR(20),
+    LoaiVaccine VARCHAR(50),
     GiaVaccine INT,
     PRIMARY KEY (MaVaccine)
 );
@@ -203,8 +192,8 @@ CREATE TABLE KHO_VACCINE (
 
 CREATE TABLE DICHVUYTE (
     MaDichVu CHAR(5) NOT NULL,
-    TenDichVu NVARCHAR(50),
-    LoaiDichVu NVARCHAR(10),
+    TenDichVu VARCHAR(50),
+    LoaiDichVu VARCHAR(10),
     PRIMARY KEY (MaDichVu)
 );
 
@@ -216,7 +205,7 @@ CREATE TABLE CUNGCAPDICHVU (
 
 CREATE TABLE GOITIEMPHONG (
     MaGoi CHAR(4) NOT NULL,
-    TenGoi NVARCHAR(50),
+    TenGoi VARCHAR(50),
     GiaGoi INT,
     PRIMARY KEY (MaGoi)
 );
@@ -229,10 +218,10 @@ CREATE TABLE CHITIETGOITIEMPHONG (
 );
 
 CREATE TABLE PHIEUDANGKYTIEMPHONG (
-    MaDangKy INT IDENTITY(1, 1) NOT NULL,
+    MaDangKy SERIAL NOT NULL,
     MaKhachHang INT, -- FK
     MaThuCung INT, -- FK
-    NgayDangKy DATETIME,
+    NgayDangKy TIMESTAMP,
     MaDichVu CHAR(5), -- FK
     PRIMARY KEY (MaDangKy)
 );
@@ -255,60 +244,60 @@ CREATE TABLE PHIEUDANGKYLE (
 --=============================================================================
 
 CREATE TABLE GIAYKHAMBENHTONGQUAT (
-    MaGiayKhamTongQuat INT IDENTITY(1,1) NOT NULL,
+    MaGiayKhamTongQuat SERIAL NOT NULL,
     NhietDo FLOAT,
-    MoTa NVARCHAR(100),
+    MoTa VARCHAR(100),
     MaThuCung INT, -- FK
-    MaPhieuDangKyTiemPhong INT, -- FK. Đã sửa từ CHAR(20) sang INT để khớp bảng cha
+    MaPhieuDangKyTiemPhong INT, -- FK
     PRIMARY KEY (MaGiayKhamTongQuat)
 );
 
 CREATE TABLE GIAYKHAMBENHCHUYENKHOA (
-    MaGiayKhamChuyenKhoa INT IDENTITY(1,1) NOT NULL, -- Sửa VARCHAR thành CHAR cho thống nhất
-    NgayKham DATETIME,
-    NgayTaiKham DATETIME,
+    MaGiayKhamChuyenKhoa SERIAL NOT NULL,
+    NgayKham TIMESTAMP,
+    NgayTaiKham TIMESTAMP,
     MaBacSi CHAR(5), -- FK
     MaThuCung INT, -- FK
-    MaDichVu CHAR(5), -- FK. Sửa CHAR(20) thành CHAR(5) khớp DICHVUYTE
+    MaDichVu CHAR(5), -- FK
     PRIMARY KEY (MaGiayKhamChuyenKhoa)
 );
 
 CREATE TABLE CHITIETKHAMBENH_TRIEUCHUNG (
-    MaGiayKhamChuyenKhoa INT NOT NULL, -- FK. Sửa VARCHAR thành CHAR
-    TrieuChung NVARCHAR(200) NOT NULL,
+    MaGiayKhamChuyenKhoa INT NOT NULL, -- FK
+    TrieuChung VARCHAR(200) NOT NULL,
     PRIMARY KEY (MaGiayKhamChuyenKhoa, TrieuChung)
 );
 
 CREATE TABLE CHITIETKHAMBENH_CHUANDOAN (
-    MaGiayKhamChuyenKhoa INT NOT NULL, -- FK. Sửa VARCHAR thành CHAR
-    ChuanDoan NVARCHAR(200) NOT NULL,
+    MaGiayKhamChuyenKhoa INT NOT NULL, -- FK
+    ChuanDoan VARCHAR(200) NOT NULL,
     PRIMARY KEY (MaGiayKhamChuyenKhoa, ChuanDoan)
 );
 
 CREATE TABLE TOATHUOC (
-    MaToaThuoc INT IDENTITY(1,1) NOT NULL, -- Sửa VARCHAR thành CHAR
+    MaToaThuoc SERIAL NOT NULL,
     MaThuCung INT, -- FK
     MaBacSi CHAR(5), -- FK
-    NgayKham DATETIME,
+    NgayKham TIMESTAMP,
     TongTien DECIMAL(18,0),
     PRIMARY KEY (MaToaThuoc)
 );
 
 CREATE TABLE CHITIETTOATHUOC (
-    MaToaThuoc INT NOT NULL, -- FK. Sửa VARCHAR thành CHAR
-    MaThuoc CHAR(5) NOT NULL, -- FK. Sửa VARCHAR(20) thành CHAR(5) để khớp SANPHAM/THUOC
+    MaToaThuoc INT NOT NULL, -- FK
+    MaThuoc CHAR(5) NOT NULL, -- FK
     SoLuong INT,
-    GhiChu NVARCHAR(100),
+    GhiChu VARCHAR(100),
     PRIMARY KEY (MaToaThuoc, MaThuoc)
 );
 
 CREATE TABLE GIAYTIEMPHONG (
-    MaGiayTiem INT IDENTITY(1,1) NOT NULL, -- Sửa VARCHAR thành CHAR
+    MaGiayTiem SERIAL NOT NULL,
     MaVaccine CHAR(5), -- FK
     MaBacSi CHAR(5), -- FK
     LieuLuong INT,
-    NgayTiem DATETIME,
-    MaGiayKhamTongQuat INT, -- FK. Sửa VARCHAR(20) thành CHAR(6) khớp GIAYKHAMBENHTONGQUAT
+    NgayTiem TIMESTAMP,
+    MaGiayKhamTongQuat INT, -- FK
     PRIMARY KEY (MaGiayTiem)
 );
 
@@ -317,8 +306,8 @@ CREATE TABLE GIAYTIEMPHONG (
 --=============================================================================
 
 CREATE TABLE HOADON (
-    MaHoaDon INT IDENTITY(1,1) NOT NULL,
-    NgayLap DATETIME,
+    MaHoaDon SERIAL NOT NULL,
+    NgayLap TIMESTAMP,
     GiamGia DECIMAL(3,2),
     TongTien DECIMAL(12,2),
     MaNhanVien CHAR(5), -- FK
@@ -340,8 +329,8 @@ CREATE TABLE THANHTOANDICHVUYTE (
 );
 
 CREATE TABLE DANHGIAYTE (
-    MaDanhGia INT IDENTITY(1,1) NOT NULL,
-    BinhLuan NVARCHAR(200),
+    MaDanhGia SERIAL NOT NULL,
+    BinhLuan VARCHAR(200),
     MucDoHaiLong INT,
     ThaiDoNhanVien INT,
     DiemChatLuongDichVu INT,
@@ -350,14 +339,13 @@ CREATE TABLE DANHGIAYTE (
 );
 
 CREATE TABLE DANHGIAMUAHANG (
-    MaDanhGia INT IDENTITY(1,1) NOT NULL,
-    BinhLuan NVARCHAR(200),
-    MaHoaDon INT, -- FK. Đã sửa lỗi chính tả INT00
+    MaDanhGia SERIAL NOT NULL,
+    BinhLuan VARCHAR(200),
+    MaHoaDon INT, -- FK
     MucDoHaiLong INT,
     ThaiDoNhanVien INT,
     PRIMARY KEY (MaDanhGia)
 );
-GO
 
 /*******************************************************************************
  * PHẦN 2: TẠO KHOÁ NGOẠI (FOREIGN KEY) SỬ DỤNG ALTER TABLE
@@ -418,7 +406,6 @@ ALTER TABLE CHITIETKHAMBENH_CHUANDOAN ADD CONSTRAINT FK_CKCD_GKBCK FOREIGN KEY (
 ALTER TABLE TOATHUOC ADD CONSTRAINT FK_TOATHUOC_THUCUNG FOREIGN KEY (MaThuCung) REFERENCES THUCUNG(MaThuCung);
 ALTER TABLE TOATHUOC ADD CONSTRAINT FK_TOATHUOC_BACSI FOREIGN KEY (MaBacSi) REFERENCES NHANVIEN(MaNhanVien);
 ALTER TABLE CHITIETTOATHUOC ADD CONSTRAINT FK_CTTOA_TOA FOREIGN KEY (MaToaThuoc) REFERENCES TOATHUOC(MaToaThuoc);
--- Giả sử MaThuoc trong chi tiết toa thuốc tham chiếu đến bảng THUOC (sản phẩm là thuốc)
 ALTER TABLE CHITIETTOATHUOC ADD CONSTRAINT FK_CTTOA_THUOC FOREIGN KEY (MaThuoc) REFERENCES THUOC(MaSanPham);
 ALTER TABLE GIAYTIEMPHONG ADD CONSTRAINT FK_GTP_VACCINE FOREIGN KEY (MaVaccine) REFERENCES VACCINE(MaVaccine);
 ALTER TABLE GIAYTIEMPHONG ADD CONSTRAINT FK_GTP_BACSI FOREIGN KEY (MaBacSi) REFERENCES NHANVIEN(MaNhanVien);
@@ -433,4 +420,3 @@ ALTER TABLE THANHTOANDICHVUYTE ADD CONSTRAINT FK_TTDV_HOADON FOREIGN KEY (MaHoaD
 ALTER TABLE THANHTOANDICHVUYTE ADD CONSTRAINT FK_TTDV_DICHVU FOREIGN KEY (MaDichVu) REFERENCES DICHVUYTE(MaDichVu);
 ALTER TABLE DANHGIAYTE ADD CONSTRAINT FK_DGYTE_HOADON FOREIGN KEY (MaHoaDon) REFERENCES HOADON(MaHoaDon);
 ALTER TABLE DANHGIAMUAHANG ADD CONSTRAINT FK_DGMH_HOADON FOREIGN KEY (MaHoaDon) REFERENCES HOADON(MaHoaDon);
-GO

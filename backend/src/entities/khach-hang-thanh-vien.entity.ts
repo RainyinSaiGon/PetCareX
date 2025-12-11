@@ -1,38 +1,44 @@
-import { Entity, PrimaryColumn, Column, OneToOne, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { KhachHang } from './khach-hang.entity';
 import { HangThanhVien } from './hang-thanh-vien.entity';
 
 @Entity('KHACHHANGTHANHVIEN')
 export class KhachHangThanhVien {
-  @PrimaryColumn({ name: 'MaKhachHang' })
-  maKhachHang: number;
+  @PrimaryColumn({ type: 'int' })
+  MaKhachHang: number;
 
-  @Column({ name: 'Email', type: 'varchar', length: 50, nullable: true })
-  email: string;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  Email: string;
 
-  @Column({ name: 'GioiTinh', type: 'nvarchar', length: 3, nullable: true })
-  gioiTinh: string;
+  @Column({ type: 'varchar', length: 3, nullable: true })
+  GioiTinh: string;
 
-  @Column({ name: 'NgaySinh', type: 'date', nullable: true })
-  ngaySinh: Date;
+  @Column({ type: 'date', nullable: true })
+  NgaySinh: Date;
 
-  @Column({ name: 'CCCD', type: 'char', length: 12, nullable: true })
-  cccd: string;
+  @Column({ type: 'char', length: 12, nullable: true })
+  CCCD: string;
 
-  @Column({ name: 'TongChiTieu', type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
-  tongChiTieu: number;
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
+  TongChiTieu: number;
 
-  @Column({ name: 'TenHang', type: 'nvarchar', length: 10, nullable: true })
-  tenHang: string;
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  TenHang: string;
 
-  @Column({ name: 'DiaChi', type: 'nvarchar', length: 150, nullable: true })
-  diaChi: string;
+  @Column({ type: 'varchar', length: 150, nullable: true })
+  DiaChi: string;
 
-  @OneToOne(() => KhachHang, khachHang => khachHang.thanhVien)
+  @Column({ type: 'date', nullable: true })
+  NgayNangHang: Date;
+
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  HangCu: string;
+
+  @ManyToOne(() => KhachHang, khachHang => khachHang.ThanhVien)
   @JoinColumn({ name: 'MaKhachHang' })
-  khachHang: KhachHang;
+  KhachHang: KhachHang;
 
-  @ManyToOne(() => HangThanhVien, { nullable: true })
+  @ManyToOne(() => HangThanhVien, hang => hang.KhachHangThanhViens)
   @JoinColumn({ name: 'TenHang' })
-  hangThanhVien: HangThanhVien;
+  Hang: HangThanhVien;
 }

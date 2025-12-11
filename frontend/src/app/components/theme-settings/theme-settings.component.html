@@ -1,0 +1,18 @@
+<div class="theme-settings">
+  <button class="settings-btn" (click)="toggleOpen()" [attr.aria-expanded]="open" aria-controls="theme-panel">
+    <i class="fa-solid fa-sliders"></i>
+  </button>
+
+  <div id="theme-panel" class="panel" *ngIf="open">
+    <h4>Theme</h4>
+    <div class="swatches">
+      <button *ngFor="let c of colors" class="swatch" [style.background]="c" (click)="pick(c)" [attr.aria-label]="'Pick ' + c"></button>
+    </div>
+
+    <div class="motion">
+      <label>
+        <input type="checkbox" [checked]="theme.getReducedMotion()" (change)="toggleMotion()" /> Reduce motion
+      </label>
+    </div>
+  </div>
+</div>

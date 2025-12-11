@@ -1,20 +1,20 @@
-import { Entity, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ChiNhanh } from './chi-nhanh.entity';
 import { DichVuYTe } from './dich-vu-y-te.entity';
 
 @Entity('CUNGCAPDICHVU')
 export class CungCapDichVu {
-  @PrimaryColumn({ name: 'MaChiNhanh', type: 'char', length: 4 })
-  maChiNhanh: string;
+  @PrimaryColumn({ type: 'char', length: 4 })
+  MaChiNhanh: string;
 
-  @PrimaryColumn({ name: 'MaDichVu', type: 'char', length: 5 })
-  maDichVu: string;
+  @PrimaryColumn({ type: 'char', length: 5 })
+  MaDichVu: string;
 
-  @ManyToOne(() => ChiNhanh)
+  @ManyToOne(() => ChiNhanh, chiNhanh => chiNhanh.CungCapDichVus)
   @JoinColumn({ name: 'MaChiNhanh' })
-  chiNhanh: ChiNhanh;
+  ChiNhanh: ChiNhanh;
 
-  @ManyToOne(() => DichVuYTe)
+  @ManyToOne(() => DichVuYTe, dichVu => dichVu.CungCaps)
   @JoinColumn({ name: 'MaDichVu' })
-  dichVu: DichVuYTe;
+  DichVu: DichVuYTe;
 }

@@ -1,0 +1,95 @@
+<div class="container">
+  <div class="breadcrumb">
+    <span class="link" (click)="backToCustomers()">Khách Hàng</span>
+    <span class="separator">/</span>
+    <span>{{ customerName || 'Thú Cưng' }}</span>
+  </div>
+
+  <div class="header">
+    <h1>Quản Lý Thú Cưng - {{ customerName }}</h1>
+    <button class="btn btn-primary" (click)="createPet()">
+      <span class="icon">+</span> Thêm Thú Cưng
+    </button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="!loading && pets.length === 0" class="empty-state">
+    <p>Chưa có thú cưng nào. Hãy thêm thú cưng đầu tiên!</p>
+  </div>
+
+  <table *ngIf="!loading && pets.length > 0" class="pet-table">
+    <thead>
+      <tr>
+        <th>Mã TC</th>
+        <th>Tên Thú Cưng</th>
+        <th>Chủng Loại</th>
+        <th>Ngày Sinh</th>
+        <th>Giới Tính</th>
+        <th>Cân Nặng</th>
+        <th>Màu Sắc</th>
+        <th>Thao Tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let pet of pets">
+        <td>{{ pet.MaThuCung }}</td>
+        <td>{{ pet.TenThuCung }}</td>
+        <td>{{ pet.ChungLoai?.TenChungLoai || 'N/A' }}</td>
+        <td>{{ pet.NgaySinh | date: 'dd/MM/yyyy' }}</td>
+        <td>{{ pet.GioiTinh || 'N/A' }}</td>
+        <td>{{ pet.CanNang ? pet.CanNang + ' kg' : 'N/A' }}</td>
+        <td>{{ pet.MauSac || 'N/A' }}</td>
+        <td class="actions">
+          <button class="btn-icon btn-view" (click)="viewPet(pet.MaThuCung)" title="Xem chi tiết">
+            👁️
+          </button>
+          <button class="btn-icon btn-edit" (click)="editPet(pet.MaThuCung)" title="Chỉnh sửa">
+            ✏️
+          </button>
+          <button class="btn-icon btn-delete" (click)="deletePet(pet)" title="Xóa">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && totalPages > 1" class="pagination">
+    <button 
+      class="btn-page" 
+      (click)="onPageChange(currentPage - 1)"
+      [disabled]="currentPage === 1"
+    >
+      &laquo; Trước
+    </button>
+
+    <button 
+      *ngFor="let page of getPaginationPages()"
+      class="btn-page"
+      [class.active]="page === currentPage"
+      (click)="onPageChange(page)"
+    >
+      {{ page }}
+    </button>
+
+    <button 
+      class="btn-page" 
+      (click)="onPageChange(currentPage + 1)"
+      [disabled]="currentPage === totalPages"
+    >
+      Sau &raquo;
+    </button>
+
+    <span class="page-info">
+      Trang {{ currentPage }} / {{ totalPages }} (Tổng: {{ totalItems }} thú cưng)
+    </span>
+  </div>
+</div>

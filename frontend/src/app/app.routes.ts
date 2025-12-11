@@ -1,58 +1,34 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { LayoutComponent } from './components/layout/layout.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { KhachHangListComponent } from './components/khach-hang/khach-hang-list.component';
-import { ThuCungListComponent } from './components/thu-cung/thu-cung-list.component';
-import { LichHenListComponent } from './components/lich-hen/lich-hen-list.component';
-import { HoaDonListComponent } from './components/hoa-don/hoa-don-list.component';
-import { NhanVienListComponent } from './components/nhan-vien/nhan-vien-list.component';
-import { ChiNhanhListComponent } from './components/chi-nhanh/chi-nhanh-list.component';
-import { YTeListComponent } from './components/y-te/y-te-list.component';
-import { SanPhamListComponent } from './components/san-pham/san-pham-list.component';
-import { BaoCaoComponent } from './components/bao-cao/bao-cao.component';
-import { UnauthorizedComponent } from './components/unauthorized/unauthorized.component';
-import { authGuard, managerGuard, doctorGuard, staffGuard, roleGuard } from './guards/auth.guard';
-import { Role } from './models/auth.model';
+import { CustomerListComponent } from './components/customer-list/customer-list.component';
+import { CustomerFormComponent } from './components/customer-form/customer-form.component';
+import { PetListComponent } from './components/pet-list/pet-list.component';
+import { PetFormComponent } from './components/pet-form/pet-form.component';
+import { LoginComponent } from './components/auth/login.component';
+import { RegisterComponent } from './components/auth/register.component';
+import { ProfileComponent } from './components/auth/profile.component';
+import { ForgotComponent } from './components/auth/forgot.component';
+import { StaffListComponent } from './components/staff-list/staff-list.component';
+import { StaffFormComponent } from './components/staff-form/staff-form.component';
+import { StaffSalaryComponent } from './components/staff-salary/staff-salary.component';
+import { AnalyticsDashboardComponent } from './components/analytics-dashboard/analytics-dashboard.component';
+import { AuthGuard } from './services/auth.guard';
 
 export const routes: Routes = [
-  // Public routes
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'unauthorized', component: UnauthorizedComponent },
-  
-  // Protected routes with layout
-  {
-    path: '',
-    component: LayoutComponent,
-    canActivate: [authGuard],
-    children: [
-      // Dashboard - all authenticated users
-      { path: 'dashboard', component: DashboardComponent },
-      
-      // Manager routes
-      { path: 'nhan-vien', component: NhanVienListComponent, canActivate: [managerGuard] },
-      { path: 'chi-nhanh', component: ChiNhanhListComponent, canActivate: [managerGuard] },
-      { path: 'bao-cao', component: BaoCaoComponent, canActivate: [managerGuard] },
-      
-      // Staff routes (managers + staff)
-      { path: 'khach-hang', component: KhachHangListComponent, canActivate: [staffGuard] },
-      { path: 'san-pham', component: SanPhamListComponent, canActivate: [staffGuard] },
-      { path: 'hoa-don', component: HoaDonListComponent, canActivate: [staffGuard] },
-      
-      // Doctor routes
-      { path: 'y-te', component: YTeListComponent, canActivate: [doctorGuard] },
-      
-      // All authenticated users
-      { path: 'thu-cung', component: ThuCungListComponent },
-      { path: 'lich-hen', component: LichHenListComponent },
-      
-      // Default redirect
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
-    ],
-  },
-  
-  // Fallback
-  { path: '**', redirectTo: '/login' },
+  { path: '', redirectTo: '/customers', pathMatch: 'full' },
+  { path: 'customers', component: CustomerListComponent, canActivate: [AuthGuard] },
+  { path: 'customers/new', component: CustomerFormComponent, canActivate: [AuthGuard] },
+  { path: 'customers/:id/edit', component: CustomerFormComponent, canActivate: [AuthGuard] },
+  { path: 'customers/:id/pets', component: PetListComponent, canActivate: [AuthGuard] },
+  { path: 'customers/:id/pets/new', component: PetFormComponent, canActivate: [AuthGuard] },
+  { path: 'customers/:id/pets/:petId/edit', component: PetFormComponent, canActivate: [AuthGuard] },
+  { path: 'admin/staff', component: StaffListComponent, canActivate: [AuthGuard] },
+  { path: 'admin/staff/new', component: StaffFormComponent, canActivate: [AuthGuard] },
+  { path: 'admin/staff/salary', component: StaffSalaryComponent, canActivate: [AuthGuard] },
+  { path: 'admin/staff/:id/edit', component: StaffFormComponent, canActivate: [AuthGuard] },
+  { path: 'admin/analytics', component: AnalyticsDashboardComponent, canActivate: [AuthGuard] },
+  { path: 'auth/login', component: LoginComponent },
+  { path: 'auth/register', component: RegisterComponent },
+  { path: 'auth/forgot', component: ForgotComponent },
+  { path: 'auth/profile', component: ProfileComponent, canActivate: [AuthGuard] },
+  { path: 'auth', redirectTo: '/auth/login', pathMatch: 'full' }
 ];

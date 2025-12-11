@@ -1,0 +1,330 @@
+<div class="analytics-container">
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1>Báo Cáo & Phân Tích</h1>
+      <p class="subtitle">Tổng quan hệ thống và phân tích chi tiết</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="loadAllData()">
+        Làm mới
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-container" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Error -->
+  <div class="alert alert-error" *ngIf="error">
+    {{error}}
+  </div>
+
+  <!-- Dashboard Content -->
+  <div class="dashboard-content" *ngIf="!loading && dashboard">
+    
+    <!-- KPI Cards -->
+    <div class="kpi-section">
+      <h2>Chỉ Số Chính</h2>
+      <div class="kpi-grid">
+        <!-- Revenue Card -->
+        <div class="kpi-card revenue-card">
+          <div class="kpi-details">
+            <h3>Doanh Thu</h3>
+            <div class="kpi-values">
+              <div class="kpi-value-item">
+                <span class="label">Hôm nay:</span>
+                <span class="value">{{formatCurrency(dashboard.revenue.today)}}</span>
+              </div>
+              <div class="kpi-value-item">
+                <span class="label">Tuần này:</span>
+                <span class="value">{{formatCurrency(dashboard.revenue.thisWeek)}}</span>
+              </div>
+              <div class="kpi-value-item highlight">
+                <span class="label">Tháng này:</span>
+                <span class="value">{{formatCurrency(dashboard.revenue.thisMonth)}}</span>
+              </div>
+              <div class="kpi-value-item">
+                <span class="label">Năm nay:</span>
+                <span class="value">{{formatCurrency(dashboard.revenue.thisYear)}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Customers Card -->
+        <div class="kpi-card customers-card">
+          <div class="kpi-details">
+            <h3>Khách Hàng</h3>
+            <div class="kpi-values">
+              <div class="kpi-value-item highlight">
+                <span class="label">Tổng số:</span>
+                <span class="value">{{formatNumber(dashboard.customers.total)}}</span>
+              </div>
+              <div class="kpi-value-item">
+                <span class="label">Khách mới:</span>
+                <span class="value">{{formatNumber(dashboard.customers.new)}}</span>
+              </div>
+              <div class="kpi-value-item">
+                <span class="label">Thành viên:</span>
+                <span class="value">{{formatNumber(dashboard.customers.members)}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appointments Card -->
+        <div class="kpi-card appointments-card">
+          <div class="kpi-details">
+            <h3>Lịch Hẹn</h3>
+            <div class="kpi-values">
+              <div class="kpi-value-item">
+                <span class="label">Hôm nay:</span>
+                <span class="value">{{formatNumber(dashboard.appointments.today)}}</span>
+              </div>
+              <div class="kpi-value-item">
+                <span class="label">Tuần này:</span>
+                <span class="value">{{formatNumber(dashboard.appointments.thisWeek)}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Employees Card -->
+        <div class="kpi-card employees-card">
+          <div class="kpi-details">
+            <h3>Nhân Viên</h3>
+            <div class="kpi-values">
+              <div class="kpi-value-item highlight">
+                <span class="label">Tổng số:</span>
+                <span class="value">{{formatNumber(dashboard.employees.total)}}</span>
+              </div>
+              <div class="kpi-value-item">
+                <span class="label">Đang làm:</span>
+                <span class="value">{{formatNumber(dashboard.employees.active)}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Revenue Report Section -->
+    <div class="report-section" *ngIf="revenueReport">
+      <div class="section-header">
+        <h2>Báo Cáo Doanh Thu</h2>
+        <div class="section-controls">
+          <select [(ngModel)]="selectedPeriod" (change)="onPeriodChange()" class="form-control">
+            <option value="week">7 ngày qua</option>
+            <option value="month">Tháng này</option>
+            <option value="year">Năm nay</option>
+          </select>
+          <select [(ngModel)]="selectedTimeFrame" (change)="onTimeFrameChange()" class="form-control">
+            <option [value]="RevenueTimeFrame.DAILY">Theo ngày</option>
+            <option [value]="RevenueTimeFrame.WEEKLY">Theo tuần</option>
+            <option [value]="RevenueTimeFrame.MONTHLY">Theo tháng</option>
+            <option [value]="RevenueTimeFrame.YEARLY">Theo năm</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="revenue-summary">
+        <div class="summary-card">
+          <h4>Tổng Doanh Thu</h4>
+          <div class="summary-value">{{formatCurrency(revenueReport.totalRevenue)}}</div>
+          <div class="comparison" *ngIf="revenueReport.comparison">
+            <span [class]="getChangeClass(revenueReport.comparison.changePercentage)">
+              {{formatPercentage(revenueReport.comparison.changePercentage)}}
+            </span>
+            <span class="comparison-label">so với kỳ trước</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <h4>Doanh Thu Sản Phẩm</h4>
+          <div class="summary-value">{{formatCurrency(revenueReport.productRevenue)}}</div>
+        </div>
+        <div class="summary-card">
+          <h4>Doanh Thu Dịch Vụ</h4>
+          <div class="summary-value">{{formatCurrency(revenueReport.serviceRevenue)}}</div>
+        </div>
+      </div>
+
+      <!-- Revenue Chart -->
+      <div class="chart-container">
+        <h4>Biểu Đồ Doanh Thu</h4>
+        <div class="bar-chart">
+          <div class="chart-bars">
+            <div 
+              *ngFor="let value of revenueChartData; let i = index" 
+              class="bar-wrapper">
+              <div 
+                class="bar" 
+                [style.height.%]="getChartHeight(value, getMaxRevenue())"
+                [title]="formatCurrency(value)">
+                <span class="bar-value">{{formatCurrency(value)}}</span>
+              </div>
+              <span class="bar-label">{{revenueChartLabels[i]}}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue by Branch -->
+      <div class="branch-revenue" *ngIf="revenueReport.revenueByBranch && revenueReport.revenueByBranch.length > 0">
+        <h4>Doanh Thu Theo Chi Nhánh</h4>
+        <div class="branch-list">
+          <div *ngFor="let branch of revenueReport.revenueByBranch" class="branch-item">
+            <span class="branch-name">{{branch.tenChiNhanh}}</span>
+            <span class="branch-revenue">{{formatCurrency(branch.revenue)}}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top Services Section -->
+    <div class="report-section" *ngIf="topServices.length > 0">
+      <h2>🏆 Top Dịch Vụ (3 tháng qua)</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên Dịch Vụ</th>
+              <th>Số Lần Sử Dụng</th>
+              <th>Tổng Doanh Thu</th>
+              <th>Giá Trung Bình</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let service of topServices; let i = index">
+              <td>{{i + 1}}</td>
+              <td><strong>{{service.tenDichVu}}</strong></td>
+              <td>{{formatNumber(service.soLanSuDung)}}</td>
+              <td>{{formatCurrency(service.tongDoanhThu)}}</td>
+              <td>{{formatCurrency(service.trungBinhGia)}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Products Section -->
+    <div class="report-section" *ngIf="dashboard.topProducts.length > 0">
+      <h2>🛍️ Top Sản Phẩm (30 ngày qua)</h2>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên Sản Phẩm</th>
+              <th>Số Lượng Bán</th>
+              <th>Doanh Thu</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let product of dashboard.topProducts; let i = index">
+              <td>{{i + 1}}</td>
+              <td><strong>{{product.tenSanPham}}</strong></td>
+              <td>{{formatNumber(product.soLuongBan)}}</td>
+              <td>{{formatCurrency(product.doanhThu)}}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Member Tier Statistics -->
+    <div class="report-section" *ngIf="memberTiers">
+      <h2>Thống Kê Hạng Thành Viên</h2>
+      
+      <div class="tier-summary">
+        <div class="tier-total">
+          <h4>Tổng Thành Viên</h4>
+          <div class="tier-total-value">{{formatNumber(memberTiers.totalMembers)}}</div>
+        </div>
+      </div>
+
+      <!-- Tier Distribution -->
+      <div class="tier-distribution">
+        <h4>Phân Bố Theo Hạng</h4>
+        <div class="tier-grid">
+          <div 
+            *ngFor="let tier of memberTiers.tierDistribution; let i = index" 
+            class="tier-card"
+            [style.border-left-color]="getTierColor(i)">
+            <h5>{{tier.tenHang}}</h5>
+            <div class="tier-stats">
+              <div class="tier-stat">
+                <span class="tier-label">Số lượng:</span>
+                <span class="tier-value">{{formatNumber(tier.soLuongThanhVien)}}</span>
+              </div>
+              <div class="tier-stat">
+                <span class="tier-label">Tỷ lệ:</span>
+                <span class="tier-value">{{tier.tyLe.toFixed(1)}}%</span>
+              </div>
+              <div class="tier-stat">
+                <span class="tier-label">Chi tiêu TB:</span>
+                <span class="tier-value">{{formatCurrency(tier.trungBinhChiTieu)}}</span>
+              </div>
+              <div class="tier-stat">
+                <span class="tier-label">Tổng doanh thu:</span>
+                <span class="tier-value">{{formatCurrency(tier.tongChiTieu)}}</span>
+              </div>
+            </div>
+            <div class="tier-progress">
+              <div 
+                class="tier-progress-bar" 
+                [style.width.%]="tier.tyLe"
+                [style.background-color]="getTierColor(i)">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Upgrades -->
+      <div class="recent-upgrades" *ngIf="memberTiers.recentUpgrades.length > 0">
+        <h4>Nâng Hạng Gần Đây (30 ngày)</h4>
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Khách Hàng</th>
+                <th>Hạng Cũ</th>
+                <th>Hạng Mới</th>
+                <th>Ngày Nâng Hạng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let upgrade of memberTiers.recentUpgrades">
+                <td><strong>{{upgrade.tenKhachHang}}</strong></td>
+                <td>{{upgrade.hangCu}}</td>
+                <td class="tier-upgrade">{{upgrade.hangMoi}} ⬆️</td>
+                <td>{{upgrade.ngayNangHang | date: 'dd/MM/yyyy'}}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employee Distribution -->
+    <div class="report-section" *ngIf="dashboard.employees.byType.length > 0">
+      <h2>👨‍💼 Phân Bố Nhân Viên Theo Loại</h2>
+      <div class="employee-distribution">
+        <div *ngFor="let type of dashboard.employees.byType; let i = index" class="employee-type-card">
+          <div class="type-icon">{{i + 1}}</div>
+          <div class="type-info">
+            <h4>{{type.loaiNhanVien}}</h4>
+            <div class="type-count">{{formatNumber(type.soLuong)}} nhân viên</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

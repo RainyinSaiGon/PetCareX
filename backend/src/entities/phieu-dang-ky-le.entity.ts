@@ -1,21 +1,32 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { PhieuDangKyTiemPhong } from './phieu-dang-ky-tiem-phong.entity';
 import { Vaccine } from './vaccine.entity';
 
 @Entity('PHIEUDANGKYLE')
 export class PhieuDangKyLe {
-  @PrimaryColumn({ name: 'MaDangKy', type: 'int' })
-  maDangKy: number;
+  @PrimaryGeneratedColumn({ name: 'MADANGKYLE' })
+  MaDangKyLe: number;
 
-  @Column({ name: 'MaVaccine', type: 'char', length: 5, nullable: true })
-  maVaccine: string;
+  @Column({ name: 'MADANGKYTIEMPHONG' })
+  MaDangKyTiemPhong: number;
 
-  // Relations
-  @ManyToOne(() => PhieuDangKyTiemPhong, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'MaDangKy' })
-  phieuDangKy: PhieuDangKyTiemPhong;
+  @ManyToOne(() => PhieuDangKyTiemPhong, pdktp => pdktp.PhieuDangKyLes)
+  @JoinColumn({ name: 'MADANGKYTIEMPHONG' })
+  PhieuDangKy: PhieuDangKyTiemPhong;
 
-  @ManyToOne(() => Vaccine, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'MaVaccine' })
-  vaccine: Vaccine;
+  @Column({ name: 'MAVACCINE' })
+  MaVaccine: number;
+
+  @ManyToOne(() => Vaccine, vaccine => vaccine.PhieuDangKyLes)
+  @JoinColumn({ name: 'MAVACCINE' })
+  Vaccine: Vaccine;
+
+  @Column({ name: 'SOLUONG', type: 'int' })
+  SoLuong: number;
+
+  @Column({ name: 'DONGIA', type: 'decimal', precision: 15, scale: 2 })
+  DonGia: number;
+
+  @Column({ name: 'THANHTIEN', type: 'decimal', precision: 15, scale: 2 })
+  ThanhTien: number;
 }

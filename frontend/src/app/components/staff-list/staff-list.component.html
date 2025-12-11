@@ -1,0 +1,196 @@
+<div class="staff-list-container">
+  <div class="header">
+    <h2>Quản Lý Nhân Viên</h2>
+    <div class="header-actions">
+      <button class="btn btn-primary" routerLink="/admin/staff/new">
+        <span class="icon">+</span> Thêm Nhân Viên
+      </button>
+      <button class="btn btn-secondary" routerLink="/admin/staff/salary">
+         Quản Lý Lương & Thống Kê
+      </button>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-row">
+      <div class="filter-item search-box">
+        <label>Tìm kiếm</label>
+        <input 
+          type="text" 
+          [(ngModel)]="filter.search" 
+          (keyup.enter)="onSearch()"
+          placeholder="Tên, SĐT, Mã NV..."
+          class="form-control">
+        <button class="btn-search" (click)="onSearch()"></button>
+      </div>
+
+      <div class="filter-item">
+        <label>Chi nhánh</label>
+        <select [(ngModel)]="filter.maChiNhanh" (change)="onFilterChange()" class="form-control">
+          <option value="">Tất cả</option>
+          <option *ngFor="let branch of branches" [value]="branch.maChiNhanh">
+            {{branch.tenChiNhanh}}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label>Loại nhân viên</label>
+        <select [(ngModel)]="filter.loaiNhanVien" (change)="onFilterChange()" class="form-control">
+          <option value="">Tất cả</option>
+          <option *ngFor="let type of employeeTypes" [value]="type.loaiNhanVien">
+            {{type.loaiNhanVien}}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <button class="btn btn-outline" (click)="clearFilters()">Xóa bộ lọc</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Actions -->
+  <div class="bulk-actions" *ngIf="showBulkActions">
+    <div class="bulk-info">
+      <strong>{{selectedEmployees.size}}</strong> nhân viên đã chọn
+    </div>
+    <div class="bulk-controls">
+      <select [(ngModel)]="bulkBranch" class="form-control">
+        <option value="">Chọn chi nhánh...</option>
+        <option *ngFor="let branch of branches" [value]="branch.maChiNhanh">
+          {{branch.tenChiNhanh}}
+        </option>
+      </select>
+      <button class="btn btn-primary" (click)="bulkAssignBranch()">Chuyển chi nhánh</button>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="error">
+    {{error}}
+  </div>
+
+  <!-- Loading -->
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Employee Table -->
+  <div class="table-container" *ngIf="!loading">
+    <table class="employee-table">
+      <thead>
+        <tr>
+          <th class="col-id">Mã NV</th>
+          <th class="col-name sortable" (click)="onSortChange('hoTen')">
+            Họ tên {{getSortIcon('hoTen')}}
+          </th>
+          <th class="col-phone">Số điện thoại</th>
+          <th class="col-type sortable" (click)="onSortChange('loaiNhanVien')">
+            Loại NV {{getSortIcon('loaiNhanVien')}}
+          </th>
+          <th class="col-branch">Chi nhánh</th>
+          <th class="col-department">Khoa</th>
+          <th class="col-salary">Lương</th>
+          <th class="col-date sortable" (click)="onSortChange('ngayVaoLam')">
+            Ngày vào làm {{getSortIcon('ngayVaoLam')}}
+          </th>
+          <th class="col-actions">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let employee of employees" [class.selected]="isSelected(employee.MaNhanVien)">
+          <td>{{employee.MaNhanVien}}</td>
+          <td class="employee-name">
+            <strong>{{employee.HoTen}}</strong>
+          </td>
+          <td>{{employee.SDT}}</td>
+          <td>
+            <span class="badge badge-type">{{employee.tenLoaiNhanVien || employee.LoaiNhanVien}}</span>
+          </td>
+          <td>{{employee.tenChiNhanh}}</td>
+          <td>{{employee.tenKhoa || '-'}}</td>
+          <td class="salary-cell">
+            <strong>{{formatCurrency(employee.luongHienTai || 0)}}</strong>
+          </td>
+          <td>{{formatDate(employee.NgayVaoLam)}}</td>
+          <td class="actions-cell">
+            <button class="btn-icon" (click)="viewEmployee(employee.MaNhanVien)" title="Xem chi tiết">
+              👁️
+            </button>
+            <button class="btn-icon" (click)="editEmployee(employee.MaNhanVien)" title="Chỉnh sửa">
+              ✏️
+            </button>
+            <button class="btn-icon btn-danger" (click)="deleteEmployee(employee)" title="Xóa">
+              🗑️
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="employees.length === 0">
+          <td colspan="9" class="empty-state">
+            Không tìm thấy nhân viên nào
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-container" *ngIf="!loading && employees.length > 0">
+    <div class="pagination-info">
+      Hiển thị {{(filter.page! - 1) * filter.limit! + 1}} - 
+      {{Math.min(filter.page! * filter.limit!, totalEmployees)}} 
+      trong tổng số {{totalEmployees}} nhân viên
+    </div>
+
+    <div class="pagination-controls">
+      <div class="page-size-selector">
+        <label>Số dòng:</label>
+        <select [(ngModel)]="filter.limit" (change)="onPageSizeChange()" class="form-control">
+          <option [value]="10">10</option>
+          <option [value]="20">20</option>
+          <option [value]="50">50</option>
+          <option [value]="100">100</option>
+        </select>
+      </div>
+
+      <div class="page-buttons">
+        <button 
+          class="btn-page" 
+          (click)="onPageChange(1)" 
+          [disabled]="filter.page === 1">
+          ⏮️
+        </button>
+        <button 
+          class="btn-page" 
+          (click)="onPageChange(filter.page! - 1)" 
+          [disabled]="filter.page === 1">
+          ◀️
+        </button>
+
+        <button 
+          *ngFor="let page of getPageNumbers()" 
+          class="btn-page" 
+          [class.active]="page === filter.page"
+          (click)="onPageChange(page)">
+          {{page}}
+        </button>
+
+        <button 
+          class="btn-page" 
+          (click)="onPageChange(filter.page! + 1)" 
+          [disabled]="filter.page === totalPages">
+          ▶️
+        </button>
+        <button 
+          class="btn-page" 
+          (click)="onPageChange(totalPages)" 
+          [disabled]="filter.page === totalPages">
+          ⏭️
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,22 @@
+<div class="auth-bg">
+  <div class="auth-card">
+    <h2>Quên m?t kh?u</h2>
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+      <label>
+        Email
+        <input type="email" formControlName="email" placeholder="you@example.com" />
+      </label>
+
+      <div class="actions">
+        <button class="btn primary" type="submit" [disabled]="loading">
+          <span *ngIf="loading" class="spinner"></span>
+          {{ loading ? "Ðang g?i..." : "G?i yêu c?u" }}
+        </button>
+        <a routerLink="/auth/login" class="btn ghost">Quay l?i</a>
+      </div>
+
+      <div class="message" *ngIf="message">{{ message }}</div>
+      <div class="error" *ngIf="error">{{ error }}</div>
+    </form>
+  </div>
+</div>

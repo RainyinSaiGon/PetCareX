@@ -1,0 +1,138 @@
+<div class="container">
+  <div class="breadcrumb">
+    <span class="link" (click)="router.navigate(['/customers'])">Khách Hàng</span>
+    <span class="separator">/</span>
+    <span class="link" (click)="router.navigate(['/customers', customerId, 'pets'])">
+      {{ customerName || 'Thú Cưng' }}
+    </span>
+    <span class="separator">/</span>
+    <span>{{ isEditMode ? 'Chỉnh Sửa' : 'Thêm Mới' }}</span>
+  </div>
+
+  <div class="header">
+    <h1>{{ isEditMode ? 'Chỉnh Sửa Thú Cưng' : 'Thêm Thú Cưng Mới' }}</h1>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    {{ success }}
+  </div>
+
+  <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form">
+    <div class="form-row">
+      <div class="form-group">
+        <label for="TenThuCung" class="required">Tên Thú Cưng</label>
+        <input
+          type="text"
+          id="TenThuCung"
+          formControlName="TenThuCung"
+          [class.invalid]="isFieldInvalid('TenThuCung')"
+          placeholder="Nhập tên thú cưng"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('TenThuCung')">
+          {{ getErrorMessage('TenThuCung') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="MaChungLoai" class="required">Chủng Loại</label>
+        <select
+          id="MaChungLoai"
+          formControlName="MaChungLoai"
+          [class.invalid]="isFieldInvalid('MaChungLoai')"
+        >
+          <option value="">-- Chọn chủng loại --</option>
+          <option *ngFor="let sp of species" [value]="sp.MaChungLoai">
+            {{ sp.TenChungLoai }}
+          </option>
+        </select>
+        <span class="error-message" *ngIf="isFieldInvalid('MaChungLoai')">
+          {{ getErrorMessage('MaChungLoai') }}
+        </span>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="NgaySinh">Ngày Sinh</label>
+        <input
+          type="date"
+          id="NgaySinh"
+          formControlName="NgaySinh"
+          [class.invalid]="isFieldInvalid('NgaySinh')"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('NgaySinh')">
+          {{ getErrorMessage('NgaySinh') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="GioiTinh">Giới Tính</label>
+        <select id="GioiTinh" formControlName="GioiTinh">
+          <option value="">-- Chọn giới tính --</option>
+          <option value="Đực">Đực</option>
+          <option value="Cái">Cái</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="CanNang">Cân Nặng (kg)</label>
+        <input
+          type="number"
+          id="CanNang"
+          formControlName="CanNang"
+          [class.invalid]="isFieldInvalid('CanNang')"
+          placeholder="Nhập cân nặng"
+          step="0.1"
+          min="0"
+          max="200"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('CanNang')">
+          {{ getErrorMessage('CanNang') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label for="MauSac">Màu Sắc</label>
+        <input
+          type="text"
+          id="MauSac"
+          formControlName="MauSac"
+          [class.invalid]="isFieldInvalid('MauSac')"
+          placeholder="Nhập màu sắc"
+        />
+        <span class="error-message" *ngIf="isFieldInvalid('MauSac')">
+          {{ getErrorMessage('MauSac') }}
+        </span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="DacDiem">Đặc Điểm</label>
+      <textarea
+        id="DacDiem"
+        formControlName="DacDiem"
+        rows="4"
+        [class.invalid]="isFieldInvalid('DacDiem')"
+        placeholder="Nhập đặc điểm đặc biệt của thú cưng (không bắt buộc)"
+      ></textarea>
+      <span class="error-message" *ngIf="isFieldInvalid('DacDiem')">
+        {{ getErrorMessage('DacDiem') }}
+      </span>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+        Hủy
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="loading">
+        {{ loading ? 'Đang xử lý...' : (isEditMode ? 'Cập Nhật' : 'Thêm Mới') }}
+      </button>
+    </div>
+  </form>
+</div>

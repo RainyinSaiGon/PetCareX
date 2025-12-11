@@ -1,21 +1,33 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, OneToOne } from 'typeorm';
-import { ThuCung } from './thu-cung.entity';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
 import { KhachHangThanhVien } from './khach-hang-thanh-vien.entity';
+import { ThuCung } from './thu-cung.entity';
+import { LichHen } from './lich-hen.entity';
+import { HoaDon } from './hoa-don.entity';
+import { PhieuDangKyTiemPhong } from './phieu-dang-ky-tiem-phong.entity';
 
 @Entity('KHACHHANG')
 export class KhachHang {
-  @PrimaryGeneratedColumn({ name: 'MaKhachHang' })
-  maKhachHang: number;
+  @PrimaryGeneratedColumn()
+  MaKhachHang: number;
 
-  @Column({ name: 'HoTen', type: 'nvarchar', length: 50, nullable: true })
-  hoTen: string;
+  @Column({ type: 'varchar', length: 50, nullable: true })
+  HoTen: string;
 
-  @Column({ name: 'SoDienThoai', type: 'char', length: 10, nullable: true })
-  soDienThoai: string;
+  @Column({ type: 'char', length: 10, nullable: true, unique: true })
+  SoDienThoai: string;
 
-  @OneToMany(() => ThuCung, thuCung => thuCung.khachHang)
-  thuCungs: ThuCung[];
+  @OneToMany(() => KhachHangThanhVien, khtv => khtv.KhachHang)
+  ThanhVien: KhachHangThanhVien[];
 
-  @OneToOne(() => KhachHangThanhVien, thanhVien => thanhVien.khachHang)
-  thanhVien: KhachHangThanhVien;
+  @OneToMany(() => ThuCung, thuCung => thuCung.KhachHang)
+  ThuCungs: ThuCung[];
+
+  @OneToMany(() => LichHen, lichHen => lichHen.KhachHang)
+  LichHens: LichHen[];
+
+  @OneToMany(() => HoaDon, hoaDon => hoaDon.KhachHang)
+  HoaDons: HoaDon[];
+
+  @OneToMany(() => PhieuDangKyTiemPhong, pdktp => pdktp.KhachHang)
+  PhieuDangKys: PhieuDangKyTiemPhong[];
 }

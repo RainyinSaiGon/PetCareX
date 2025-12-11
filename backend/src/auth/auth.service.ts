@@ -1,11 +1,22 @@
-import { Injectable, UnauthorizedException, ForbiddenException, BadRequestException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable, UnauthorizedException, ConflictException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { JwtService } from '@nestjs/jwt';
+import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
+import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
-import { RegisterDto, LoginDto, CreateStaffAccountDto, UpdateRoleDto, ChangePasswordDto } from './dto/auth.dto';
-import { Role, RoleDisplayNames } from './roles';
+import { UserRole, UserStatus } from '../common/enums/user-role.enum';
+import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto } from './dto/auth.dto';
+
+interface JwtPayload {
+  sub: number;
+  username: string;
+  email: string;
+  role: UserRole;
+  ma_nhan_vien?: number;
+  ma_khach_hang?: number;
+}
 
 @Injectable()
 export class AuthService {
@@ -13,227 +24,283 @@ export class AuthService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async register(registerDto: RegisterDto) {
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await this.userRepository.findOne({
       where: [
+        { email: registerDto.email },
         { username: registerDto.username },
-        { email: registerDto.email }
-      ]
+      ],
     });
 
     if (existingUser) {
-      throw new UnauthorizedException('Username or email already exists');
+      throw new ConflictException('Email hoặc username đã tồn tại');
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
 
-    // Create new user - always KHACH_HANG for public registration
+    // Create user
     const user = this.userRepository.create({
-      username: registerDto.username,
-      email: registerDto.email,
+      ...registerDto,
       password: hashedPassword,
-      fullName: registerDto.fullName,
-      phoneNumber: registerDto.phoneNumber,
-      role: Role.KHACH_HANG, // Always customer for public registration
-      isActive: true,
+      role: registerDto.role || UserRole.CUSTOMER,
+      status: UserStatus.ACTIVE,
     });
 
     await this.userRepository.save(user);
 
-    // Generate token
-    const payload = { sub: user.id, username: user.username, role: user.role };
-    const access_token = this.jwtService.sign(payload);
+    // Generate tokens
+    const tokens = await this.generateTokens(user);
+
+    // Save refresh token
+    user.refresh_token = await bcrypt.hash(tokens.refresh_token, 10);
+    await this.userRepository.save(user);
 
     return {
-      access_token,
+      ...tokens,
       user: this.sanitizeUser(user),
     };
   }
 
   async login(loginDto: LoginDto) {
-    // Find user by username
+    // Find user with relations
     const user = await this.userRepository.findOne({
-      where: { username: loginDto.username }
+      where: { username: loginDto.username },
+      relations: ['nhan_vien', 'khach_hang'],
     });
 
     if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    if (!user.isActive) {
-      throw new ForbiddenException('Account is deactivated. Please contact administrator.');
+      throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
     }
 
     // Check password
     const isPasswordValid = await bcrypt.compare(loginDto.password, user.password);
-    
+
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Invalid credentials');
+      throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
     }
 
-    // Generate token with role
-    const payload = { sub: user.id, username: user.username, role: user.role };
-    const access_token = this.jwtService.sign(payload);
+    if (!user.is_active || user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Tài khoản đã bị vô hiệu hóa');
+    }
+
+    // Update last login
+    user.last_login = new Date();
+    await this.userRepository.save(user);
+
+    // Generate tokens
+    const tokens = await this.generateTokens(user);
+
+    // Save refresh token
+    user.refresh_token = await bcrypt.hash(tokens.refresh_token, 10);
+    await this.userRepository.save(user);
 
     return {
-      access_token,
+      ...tokens,
       user: this.sanitizeUser(user),
     };
   }
 
-  // Admin/Manager: Create staff account
-  async createStaffAccount(createDto: CreateStaffAccountDto, creatorRole: Role) {
-    // Only admin can create admin accounts
-    if (createDto.role === Role.ADMIN && creatorRole !== Role.ADMIN) {
-      throw new ForbiddenException('Only admin can create admin accounts');
-    }
+  async refreshToken(refreshTokenDto: RefreshTokenDto) {
+    try {
+      const payload = this.jwtService.verify(refreshTokenDto.refresh_token, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+      });
 
-    // Managers can only create staff-level accounts
-    if (creatorRole === Role.QUAN_LY && 
-        (createDto.role === Role.ADMIN || createDto.role === Role.QUAN_LY)) {
-      throw new ForbiddenException('Managers can only create staff-level accounts');
-    }
+      const user = await this.userRepository.findOne({
+        where: { id: payload.sub },
+      });
 
-    // Check if user already exists
-    const existingUser = await this.userRepository.findOne({
-      where: [
-        { username: createDto.username },
-        { email: createDto.email }
-      ]
+      if (!user || !user.refresh_token) {
+        throw new UnauthorizedException('Token không hợp lệ');
+      }
+
+      const isRefreshTokenValid = await bcrypt.compare(
+        refreshTokenDto.refresh_token,
+        user.refresh_token,
+      );
+
+      if (!isRefreshTokenValid) {
+        throw new UnauthorizedException('Token không hợp lệ');
+      }
+
+      // Generate new tokens
+      const tokens = await this.generateTokens(user);
+
+      // Update refresh token
+      user.refresh_token = await bcrypt.hash(tokens.refresh_token, 10);
+      await this.userRepository.save(user);
+
+      return tokens;
+    } catch (error) {
+      throw new UnauthorizedException('Token đã hết hạn hoặc không hợp lệ');
+    }
+  }
+
+  async logout(userId: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (user) {
+      user.refresh_token = null;
+      await this.userRepository.save(user);
+    }
+    return { message: 'Đăng xuất thành công' };
+  }
+
+  async forgotPassword(forgotPasswordDto: ForgotPasswordDto) {
+    const user = await this.userRepository.findOne({
+      where: { email: forgotPasswordDto.email },
     });
 
-    if (existingUser) {
-      throw new BadRequestException('Username or email already exists');
+    if (!user) {
+      // Don't reveal if email exists
+      return { message: 'Nếu email tồn tại, link đặt lại mật khẩu đã được gửi' };
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(createDto.password, 10);
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = await bcrypt.hash(resetToken, 10);
 
-    // Create staff user
-    const user = this.userRepository.create({
-      username: createDto.username,
-      email: createDto.email,
-      password: hashedPassword,
-      fullName: createDto.fullName,
-      phoneNumber: createDto.phoneNumber,
-      role: createDto.role,
-      maNhanVien: createDto.maNhanVien,
-      isActive: true,
+    user.reset_token = hashedToken;
+    user.reset_token_expires = new Date(Date.now() + 3600000); // 1 hour
+    await this.userRepository.save(user);
+
+    // TODO: Send email with reset token
+    // In production, send email here
+    // For now, return token (ONLY FOR DEVELOPMENT)
+    return {
+      message: 'Link đặt lại mật khẩu đã được gửi đến email',
+      resetToken: resetToken, // Remove this in production
+    };
+  }
+
+  async resetPassword(resetPasswordDto: ResetPasswordDto) {
+    const user = await this.userRepository.findOne({
+      where: { email: resetPasswordDto.email },
     });
 
+    if (!user || !user.reset_token || !user.reset_token_expires) {
+      throw new BadRequestException('Token không hợp lệ hoặc đã hết hạn');
+    }
+
+    if (new Date() > user.reset_token_expires) {
+      throw new BadRequestException('Token đã hết hạn');
+    }
+
+    const isTokenValid = await bcrypt.compare(
+      resetPasswordDto.token,
+      user.reset_token,
+    );
+
+    if (!isTokenValid) {
+      throw new BadRequestException('Token không hợp lệ');
+    }
+
+    // Update password
+    user.password = await bcrypt.hash(resetPasswordDto.newPassword, 10);
+    user.reset_token = null;
+    user.reset_token_expires = null;
+    user.refresh_token = null; // Invalidate all sessions
     await this.userRepository.save(user);
 
-    return {
-      message: `Staff account created successfully with role: ${RoleDisplayNames[createDto.role]}`,
-      user: this.sanitizeUser(user),
-    };
+    return { message: 'Mật khẩu đã được đặt lại thành công' };
   }
 
-  // Admin: Update user role
-  async updateUserRole(userId: number, updateDto: UpdateRoleDto, updaterRole: Role) {
+  async changePassword(userId: number, changePasswordDto: ChangePasswordDto) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new BadRequestException('User not found');
+      throw new NotFoundException('Người dùng không tồn tại');
     }
 
-    // Only admin can assign admin role
-    if (updateDto.role === Role.ADMIN && updaterRole !== Role.ADMIN) {
-      throw new ForbiddenException('Only admin can assign admin role');
-    }
+    const isPasswordValid = await bcrypt.compare(
+      changePasswordDto.currentPassword,
+      user.password,
+    );
 
-    // Cannot demote self if admin
-    if (user.role === Role.ADMIN && updateDto.role !== Role.ADMIN) {
-      throw new ForbiddenException('Cannot demote admin account');
-    }
-
-    user.role = updateDto.role;
-    if (updateDto.maNhanVien) {
-      user.maNhanVien = updateDto.maNhanVien;
-    }
-
-    await this.userRepository.save(user);
-
-    return {
-      message: `User role updated to: ${RoleDisplayNames[updateDto.role]}`,
-      user: this.sanitizeUser(user),
-    };
-  }
-
-  // Admin: Activate/Deactivate user
-  async toggleUserStatus(userId: number, isActive: boolean) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    if (user.role === Role.ADMIN) {
-      throw new ForbiddenException('Cannot deactivate admin account');
-    }
-
-    user.isActive = isActive;
-    await this.userRepository.save(user);
-
-    return {
-      message: isActive ? 'User activated' : 'User deactivated',
-      user: this.sanitizeUser(user),
-    };
-  }
-
-  // Change password
-  async changePassword(userId: number, changeDto: ChangePasswordDto) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
-
-    if (!user) {
-      throw new BadRequestException('User not found');
-    }
-
-    // Verify current password
-    const isPasswordValid = await bcrypt.compare(changeDto.currentPassword, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException('Current password is incorrect');
+      throw new BadRequestException('Mật khẩu hiện tại không đúng');
     }
 
-    // Hash and save new password
-    user.password = await bcrypt.hash(changeDto.newPassword, 10);
+    user.password = await bcrypt.hash(changePasswordDto.newPassword, 10);
+    user.refresh_token = null; // Invalidate all sessions
     await this.userRepository.save(user);
 
-    return { message: 'Password changed successfully' };
+    return { message: 'Đổi mật khẩu thành công' };
   }
 
-  // Get all users (admin/manager)
-  async getAllUsers(role?: Role) {
-    const query = this.userRepository.createQueryBuilder('user');
-    
-    if (role) {
-      query.where('user.role = :role', { role });
-    }
+  async getProfile(userId: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: userId },
+      relations: ['nhan_vien', 'khach_hang'],
+    });
 
-    const users = await query.orderBy('user.createdAt', 'DESC').getMany();
-    return users.map(user => this.sanitizeUser(user));
-  }
-
-  async validateUser(userId: number) {
-    const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
-      throw new UnauthorizedException('User not found');
+      throw new UnauthorizedException('Người dùng không tồn tại');
     }
-    if (!user.isActive) {
-      throw new ForbiddenException('Account is deactivated');
-    }
+
     return this.sanitizeUser(user);
   }
 
-  private sanitizeUser(user: User) {
-    const { password, ...result } = user;
-    return {
-      ...result,
-      roleDisplayName: RoleDisplayNames[user.role] || user.role,
+  async linkToEmployee(userId: number, maNhanVien: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
+    }
+
+    user.ma_nhan_vien = maNhanVien;
+    await this.userRepository.save(user);
+
+    return { message: 'Liên kết nhân viên thành công' };
+  }
+
+  async linkToCustomer(userId: number, maKhachHang: number) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    
+    if (!user) {
+      throw new NotFoundException('Người dùng không tồn tại');
+    }
+
+    user.ma_khach_hang = maKhachHang;
+    user.role = UserRole.CUSTOMER;
+    await this.userRepository.save(user);
+
+    return { message: 'Liên kết khách hàng thành công' };
+  }
+
+  private async generateTokens(user: User) {
+    const payload: JwtPayload = {
+      sub: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role,
+      ma_nhan_vien: user.ma_nhan_vien,
+      ma_khach_hang: user.ma_khach_hang,
     };
+
+    const [access_token, refresh_token] = await Promise.all([
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_SECRET'),
+        expiresIn: this.configService.get('JWT_EXPIRATION', '1h'),
+      }),
+      this.jwtService.signAsync(payload, {
+        secret: this.configService.get('JWT_REFRESH_SECRET'),
+        expiresIn: this.configService.get('JWT_REFRESH_EXPIRATION', '7d'),
+      }),
+    ]);
+
+    return {
+      access_token,
+      refresh_token,
+    };
+  }
+
+  private sanitizeUser(user: User) {
+    const { password, refresh_token, reset_token, ...result } = user;
+    return result;
   }
 }

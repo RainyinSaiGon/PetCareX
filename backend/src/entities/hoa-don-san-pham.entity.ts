@@ -1,23 +1,29 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { HoaDon } from './hoa-don.entity';
 import { SanPham } from './san-pham.entity';
 
 @Entity('HOADON_SANPHAM')
 export class HoaDonSanPham {
-  @PrimaryColumn({ name: 'MaHoaDon' })
-  maHoaDon: number;
+  @PrimaryColumn({ type: 'int' })
+  MaHoaDon: number;
 
-  @PrimaryColumn({ name: 'MaSanPham', type: 'char', length: 5 })
-  maSanPham: string;
+  @PrimaryColumn({ type: 'char', length: 5 })
+  MaSanPham: string;
 
-  @Column({ name: 'SoLuong', type: 'int', nullable: true })
-  soLuong: number;
+  @Column({ type: 'int', nullable: true })
+  SoLuong: number;
 
-  @ManyToOne(() => HoaDon)
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  DonGia: number;
+
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true })
+  ThanhTien: number;
+
+  @ManyToOne(() => HoaDon, hoaDon => hoaDon.SanPhams)
   @JoinColumn({ name: 'MaHoaDon' })
-  hoaDon: HoaDon;
+  HoaDon: HoaDon;
 
-  @ManyToOne(() => SanPham)
+  @ManyToOne(() => SanPham, sanpham => sanpham.HoaDonSanPhams)
   @JoinColumn({ name: 'MaSanPham' })
-  sanPham: SanPham;
+  SanPham: SanPham;
 }

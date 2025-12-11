@@ -1,0 +1,40 @@
+﻿<div class="auth-bg">
+  <div class="auth-card">
+  <h2>Đăng nhập</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label>
+      Tài khoản
+      <input type="password" formControlName="username" placeholder="" autocomplete="username" autofocus />
+    </label>
+    <div class="field-error" *ngIf="form.get('username')?.invalid && form.get('username')?.touched">
+      Vui lòng nhập tên đăng nhập
+    </div>
+
+    <label>
+      Mật khẩu
+      <input type="password" formControlName="password" placeholder="" autocomplete="current-password" />
+    </label>
+    <div class="field-error" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+      Mật khẩu không được để trống
+    </div>
+
+    <label class="checkbox">
+      <input type="checkbox" formControlName="remember" /> Ghi nhớ đăng nhập 
+    </label>
+
+    <div class="actions">
+      <button class="btn primary" type="submit" [disabled]="loading">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? "Đang xử lý..." : "Đăng nhập" }}
+      </button>
+        <a routerLink="/auth/register" class="btn primary" style="text-align:center;">Tạo tài khoản</a>
+    </div>
+
+    <div class="aux">
+      <a routerLink="/auth/forgot">Quên mật khẩu?</a>
+    </div>
+    
+    <div class="error" *ngIf="error">{{ error }}</div>
+  </form>
+  </div>
+</div>

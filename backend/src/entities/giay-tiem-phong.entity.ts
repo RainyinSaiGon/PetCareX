@@ -1,37 +1,37 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Vaccine } from './vaccine.entity';
-import { NhanVien } from './nhan-vien.entity';
+import { NhanVien } from './nhanvien.entity';
 import { GiayKhamBenhTongQuat } from './giay-kham-benh-tong-quat.entity';
 
 @Entity('GIAYTIEMPHONG')
 export class GiayTiemPhong {
-  @PrimaryGeneratedColumn({ name: 'MaGiayTiem' })
-  maGiayTiem: number;
+  @PrimaryGeneratedColumn()
+  MaGiayTiem: number;
 
-  @Column({ name: 'MaVaccine', type: 'char', length: 5, nullable: true })
-  maVaccine: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaVaccine: string;
 
-  @Column({ name: 'MaBacSi', type: 'char', length: 5, nullable: true })
-  maBacSi: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaBacSi: string;
 
-  @Column({ name: 'LieuLuong', type: 'int', nullable: true })
-  lieuLuong: number;
+  @Column({ type: 'int', nullable: true })
+  LieuLuong: number;
 
-  @Column({ name: 'NgayTiem', type: 'datetime', nullable: true })
-  ngayTiem: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  NgayTiem: Date;
 
-  @Column({ name: 'MaGiayKhamTongQuat', nullable: true })
-  maGiayKhamTongQuat: number;
+  @Column({ type: 'int', nullable: true })
+  MaGiayKhamTongQuat: number;
 
-  @ManyToOne(() => Vaccine, { nullable: true })
+  @ManyToOne(() => Vaccine, vaccine => vaccine.GiayTiemPhongs)
   @JoinColumn({ name: 'MaVaccine' })
-  vaccine: Vaccine;
+  Vaccine: Vaccine;
 
-  @ManyToOne(() => NhanVien, { nullable: true })
+  @ManyToOne(() => NhanVien, nhanvien => nhanvien.GiayTiemPhongs)
   @JoinColumn({ name: 'MaBacSi' })
-  bacSi: NhanVien;
+  BacSi: NhanVien;
 
-  @ManyToOne(() => GiayKhamBenhTongQuat, { nullable: true })
+  @ManyToOne(() => GiayKhamBenhTongQuat, giay => giay.GiayTiemPhongs)
   @JoinColumn({ name: 'MaGiayKhamTongQuat' })
-  giayKhamTongQuat: GiayKhamBenhTongQuat;
+  GiayKhamTongQuat: GiayKhamBenhTongQuat;
 }

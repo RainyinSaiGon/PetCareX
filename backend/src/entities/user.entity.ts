@@ -1,38 +1,79 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
-import { Role } from '../auth/roles';
+import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { UserRole, UserStatus } from '../common/enums/user-role.enum';
+import { NhanVien } from './nhanvien.entity';
+import { KhachHang } from './khach-hang.entity';
 
-@Entity('KHACHHANG')
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn({ name: 'MaKhachHang' })
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ name: 'TenKhachHang', type: 'nvarchar', length: 100, unique: true })
-  username: string;
-
-  @Column({ name: 'Email', type: 'nvarchar', length: 255, unique: true })
+  @Column({ unique: true })
   email: string;
 
-  @Column({ name: 'MatKhau', type: 'nvarchar', length: 255 })
+  @Column({ unique: true })
+  username: string;
+
+  @Column()
   password: string;
 
-  @Column({ name: 'HoTen', type: 'nvarchar', length: 200, nullable: true })
-  fullName: string;
+  @Column({ nullable: true })
+  full_name: string;
 
-  @Column({ name: 'SDT', type: 'char', length: 10, nullable: true })
-  phoneNumber: string;
+  @Column({ nullable: true })
+  phone: string;
 
-  @Column({ name: 'VaiTro', type: 'nvarchar', length: 20, default: Role.KHACH_HANG })
-  role: Role;
+  @Column({
+    type: 'enum',
+    enum: UserRole,
+    default: UserRole.CUSTOMER,
+  })
+  role: UserRole;
 
-  @Column({ name: 'MaNhanVien', type: 'char', length: 5, nullable: true })
-  maNhanVien: string; // Link to NHANVIEN table for staff roles
+  @Column({
+    type: 'enum',
+    enum: UserStatus,
+    default: UserStatus.ACTIVE,
+  })
+  status: UserStatus;
 
-  @Column({ name: 'TrangThai', type: 'bit', default: true })
-  isActive: boolean;
+  // Link to Employee (for staff roles)
+  @Column({ nullable: true })
+  ma_nhan_vien: number;
 
-  @CreateDateColumn({ name: 'NgayTao', type: 'datetime2', default: () => 'GETDATE()' })
-  createdAt: Date;
+  @ManyToOne(() => NhanVien, { nullable: true })
+  @JoinColumn({ name: 'ma_nhan_vien' })
+  nhan_vien: NhanVien;
 
-  @UpdateDateColumn({ name: 'NgayCapNhat', type: 'datetime2', default: () => 'GETDATE()' })
-  updatedAt: Date;
+  // Link to Customer (for customer role)
+  @Column({ nullable: true })
+  ma_khach_hang: number;
+
+  @ManyToOne(() => KhachHang, { nullable: true })
+  @JoinColumn({ name: 'ma_khach_hang' })
+  khach_hang: KhachHang;
+
+  // Refresh token for JWT
+  @Column({ nullable: true, type: 'text' })
+  refresh_token: string | null;
+
+  // Password reset
+  @Column({ nullable: true, type: 'text' })
+  reset_token: string | null;
+
+  @Column({ nullable: true, type: 'timestamp' })
+  reset_token_expires: Date | null;
+
+  // Last login tracking
+  @Column({ nullable: true, type: 'timestamp' })
+  last_login: Date;
+
+  @Column({ default: true })
+  is_active: boolean;
+
+  @CreateDateColumn()
+  created_at: Date;
+
+  @UpdateDateColumn()
+  updated_at: Date;
 }

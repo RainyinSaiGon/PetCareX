@@ -1,24 +1,32 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { HoaDon } from './hoa-don.entity';
+import { SanPham } from './san-pham.entity';
 
 @Entity('DANHGIAMUAHANG')
 export class DanhGiaMuaHang {
-  @PrimaryGeneratedColumn({ name: 'MaDanhGia' })
-  maDanhGia: number;
+  @PrimaryGeneratedColumn({ name: 'MADANHGIAMUAHANG' })
+  MaDanhGiaMuaHang: number;
 
-  @Column({ name: 'BinhLuan', type: 'nvarchar', length: 200, nullable: true })
-  binhLuan: string;
+  @Column({ name: 'MAHOADON' })
+  MaHoaDon: number;
 
-  @Column({ name: 'MaHoaDon', nullable: true })
-  maHoaDon: number;
+  @ManyToOne(() => HoaDon)
+  @JoinColumn({ name: 'MAHOADON' })
+  HoaDon: HoaDon;
 
-  @Column({ name: 'MucDoHaiLong', type: 'int', nullable: true })
-  mucDoHaiLong: number;
+  @Column({ name: 'MASANPHAM' })
+  MaSanPham: number;
 
-  @Column({ name: 'ThaiDoNhanVien', type: 'int', nullable: true })
-  thaiDoNhanVien: number;
+  @ManyToOne(() => SanPham, sanpham => sanpham.DanhGias)
+  @JoinColumn({ name: 'MASANPHAM' })
+  SanPham: SanPham;
 
-  @ManyToOne(() => HoaDon, { nullable: true })
-  @JoinColumn({ name: 'MaHoaDon' })
-  hoaDon: HoaDon;
+  @Column({ name: 'SOSAO', type: 'int' })
+  SoSao: number;
+
+  @Column({ name: 'NHANXET', type: 'text', nullable: true })
+  NhanXet: string;
+
+  @Column({ name: 'NGAYDANHGIA', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  NgayDanhGia: Date;
 }

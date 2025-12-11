@@ -1,0 +1,4 @@
+<button class="theme-toggle" (click)="toggle()" aria-label="Toggle theme">
+  <i *ngIf="theme.get() === 'light'" class="fa-solid fa-moon"></i>
+  <i *ngIf="theme.get() === 'dark'" class="fa-solid fa-sun"></i>
+</button>

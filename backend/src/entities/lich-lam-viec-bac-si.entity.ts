@@ -1,26 +1,26 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { NhanVien } from './nhan-vien.entity';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { NhanVien } from './nhanvien.entity';
 import { ChiNhanh } from './chi-nhanh.entity';
 
 @Entity('LICHLAMVIECBACSI')
 export class LichLamViecBacSi {
-  @PrimaryColumn({ name: 'MaBacSi', type: 'char', length: 5 })
-  maBacSi: string;
+  @PrimaryColumn({ type: 'char', length: 5 })
+  MaBacSi: string;
 
-  @PrimaryColumn({ name: 'MaChiNhanh', type: 'char', length: 4 })
-  maChiNhanh: string;
+  @PrimaryColumn({ type: 'char', length: 4 })
+  MaChiNhanh: string;
 
-  @PrimaryColumn({ name: 'Ngay', type: 'date' })
-  ngay: Date;
+  @PrimaryColumn({ type: 'date' })
+  Ngay: Date;
 
-  @Column({ name: 'TrangThai', type: 'nvarchar', length: 5, nullable: true })
-  trangThai: string;
+  @Column({ type: 'varchar', length: 5, nullable: true })
+  TrangThai: string;
 
-  @ManyToOne(() => NhanVien)
+  @ManyToOne(() => NhanVien, nhanVien => nhanVien.LichLamViecs)
   @JoinColumn({ name: 'MaBacSi' })
-  bacSi: NhanVien;
+  BacSi: NhanVien;
 
-  @ManyToOne(() => ChiNhanh)
+  @ManyToOne(() => ChiNhanh, chiNhanh => chiNhanh.LichLamViecs)
   @JoinColumn({ name: 'MaChiNhanh' })
-  chiNhanh: ChiNhanh;
+  ChiNhanh: ChiNhanh;
 }

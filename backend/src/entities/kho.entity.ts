@@ -1,15 +1,19 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { NhanVien } from './nhan-vien.entity';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { NhanVien } from './nhanvien.entity';
+import { ChiTietTonKho } from './chi-tiet-ton-kho.entity';
+import { KhoVaccine } from './kho-vaccine.entity';
 
 @Entity('KHO')
 export class Kho {
-  @PrimaryColumn({ name: 'MaKho', type: 'char', length: 4 })
-  maKho: string;
+  @PrimaryColumn({ type: 'char', length: 4 })
+  MaKho: string;
 
-  @Column({ name: 'NhanVienPhuTrach', type: 'char', length: 5, nullable: true })
-  nhanVienPhuTrach: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  NhanVienPhuTrach: string;
 
-  @ManyToOne(() => NhanVien, { nullable: true })
-  @JoinColumn({ name: 'NhanVienPhuTrach' })
-  nhanVien: NhanVien;
+  @OneToMany(() => ChiTietTonKho, chitiet => chitiet.Kho)
+  ChiTietTonKhos: ChiTietTonKho[];
+
+  @OneToMany(() => KhoVaccine, kv => kv.Kho)
+  KhoVaccines: KhoVaccine[];
 }

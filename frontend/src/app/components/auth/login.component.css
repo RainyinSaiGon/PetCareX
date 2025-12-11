@@ -1,0 +1,24 @@
+.host { display: block; }
+label { display: block; margin-bottom: 0.5rem; color: #e2e8f0; }
+input[type='email'], input[type='password'] {
+	display: block;
+	width: 100%;
+	padding: 0.75rem 0.8rem;
+	border: 1px solid rgba(255,255,255,0.25);
+	border-radius: 10px;
+	background: rgba(15, 23, 42, 0.35);
+	color: #f1f5f9;
+	margin-top: 0.35rem;
+}
+.checkbox { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0; color: #cbd5e1; }
+.actions { display: flex; gap: 0.75rem; align-items: center; margin-top: 1.25rem; }
+.actions .btn { flex: 1; min-width: 140px; }
+.field-error { color: #ef4444; font-size: 0.9rem; margin: 0.35rem 0; }
+.error { color: #ef4444; margin-top: 0.9rem; }
+.aux { margin-top: 1rem; text-align: center; font-size: 0.95rem; }
+.aux a { color: #93c5fd; text-decoration: none; }
+.aux a:hover { text-decoration: underline; }
+
+.aux { margin-top: 1rem; text-align: center; font-size: 0.9rem; }
+.aux a { color: var(--primary); text-decoration: none; }
+.aux a:hover { text-decoration: underline; }

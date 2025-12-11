@@ -1,0 +1,9 @@
+<div class="auth-card">
+  <h2>Hồ sơ</h2>
+  <div *ngIf="loading">Đang tải...</div>
+  <div *ngIf="error" class="error">{{ error }}</div>
+  <div *ngIf="profile">
+    <p><strong>Tên:</strong> {{ profile.name || profile.fullName || profile.username }}</p>
+    <p><strong>Email:</strong> {{ profile.email }}</p>
+  </div>
+</div>

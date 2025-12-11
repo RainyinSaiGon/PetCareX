@@ -1,259 +1,300 @@
-# PetCareX
+# PetCareX - Pet Care Management System
 
-This is the repository for our CS12002_Database Advanced project
+A modern full-stack application for managing pet care services, built with NestJS, Angular, and PostgreSQL (Supabase).
 
-## Project Structure
+## 🚀 Features
+
+- **Authentication System**: Secure login/register with JWT
+- **Role-Based Access Control**: Admin, Manager, Staff, and Customer roles
+- **Pet Management**: Track pets and their medical history
+- **Appointment Booking**: Schedule and manage appointments
+- **Dashboard**: Analytics and insights
+- **Supabase PostgreSQL**: Cloud-hosted database
+
+## 📋 Prerequisites
+
+Before you begin, ensure you have:
+
+- Node.js (v18+ recommended)
+- npm or yarn
+- A Supabase account (free tier available)
+
+## 🏗️ Project Structure
 
 ```
 PetCareX/
-├── backend/          # NestJS backend API
-├── frontend/         # Angular frontend application
-├── docker-compose.yml
+├── backend/          # NestJS API server
+│   ├── src/
+│   │   ├── auth/     # Authentication module
+│   │   ├── entities/ # Database entities
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   └── .env          # Environment variables
+├── frontend/         # Angular application
+│   ├── src/
+│   │   ├── app/      # Components and services
+│   │   └── environments/
+│   └── angular.json
 └── README.md
 ```
 
-## Getting Started
+## 🔧 Setup Instructions
 
-### Prerequisites
+### 1. Clone the Repository
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Docker (optional)
-
-### Installation
-
-1. Clone the repository:
 ```bash
-git clone <repository-url>
+git clone https://github.com/RainyinSaiGon/PetCareX.git
 cd PetCareX
 ```
 
-2. Install dependencies for both frontend and backend:
+### 2. Install Dependencies
+
+**Option A: Automatic Installation (Recommended)**
+
+Dependencies will be automatically installed when you run `start.bat`.
+
+**Option B: Manual Installation**
+
+Run the installation script:
+```bash
+install.bat
+```
+
+Or install manually:
 ```bash
 # Backend
 cd backend
 npm install
 
 # Frontend
-cd ../frontend
+cd frontend
 npm install
 ```
 
-### Running the Application
+### 3. Setup Supabase Database
 
-#### Option 1: Quick Start (Windows)
+1. Go to [Supabase Dashboard](https://app.supabase.com)
+2. Click "New Project"
+3. Fill in:
+   - **Project Name**: PetCareX
+   - **Database Password**: (save this securely!)
+   - **Region**: Choose closest to you
+4. Wait for project creation (~2 minutes)
+5. Go to **Settings** → **Database**
+6. Copy the connection info:
+   - **Host**: `db.xxxxxxxxxxxxx.supabase.co`
+   - **Port**: `5432`
+   - **Database**: `postgres`
+   - **User**: `postgres`
+   - **Password**: (your database password)
 
-Use the provided batch file to start all services at once:
-```bash
-.\start.bat
-```
+### 4. Configure Backend
 
-This will:
-- Start the Docker database container
-- Launch the backend server in a new window
-- Launch the frontend application in a new window
-
-#### Option 2: Manual Start
-
-Start each service individually:
-
-**Database (Docker):**
-```bash
-docker-compose up -d
-```
-
-**Backend:**
 ```bash
 cd backend
-npm run start:dev
+cp .env.example .env
 ```
 
-**Frontend:**
+Edit `.env` with your Supabase credentials:
+
+```env
+DATABASE_HOST=db.xxxxxxxxxxxxx.supabase.co
+DATABASE_PORT=5432
+DATABASE_USERNAME=postgres
+DATABASE_PASSWORD=your-database-password-here
+DATABASE_NAME=postgres
+DATABASE_SSL=true
+
+JWT_SECRET=generate-a-random-secret-here
+```
+
+### 5. Start the Application
+
+**Easy Start (Recommended)**
+
+Just double-click `start.bat` or run:
 ```bash
+start.bat
+```
+
+This will automatically:
+- Check for missing dependencies
+- Install them if needed
+- Start both backend and frontend servers
+
+**Manual Start**
+
+If you prefer to start services separately:
+
+**Manual Start**
+
+If you prefer to start services separately:
+
+```bash
+# Terminal 1 - Backend
+cd backend
+npm run start:dev
+
+# Terminal 2 - Frontend
 cd frontend
 npm start
 ```
 
----
+### 6. Access the Application
 
-## Git Workflow & Branching Strategy
+## 🧪 Testing the Application
 
-### Branch Naming Convention
-
-We follow a structured branch naming convention:
-
-| Branch Type | Pattern | Example |
-|-------------|---------|---------|
-| Feature | `feature/<issue-id>-<short-description>` | `feature/123-user-authentication` |
-| Bug Fix | `bugfix/<issue-id>-<short-description>` | `bugfix/456-login-error` |
-| Hotfix | `hotfix/<issue-id>-<short-description>` | `hotfix/789-critical-security-fix` |
-| Release | `release/<version>` | `release/1.0.0` |
-| Documentation | `docs/<short-description>` | `docs/api-documentation` |
-
-### Creating a New Branch for a Feature
+### Register a New User
 
 ```bash
-# 1. Make sure you're on the main branch and it's up to date
-git checkout main
-git pull origin main
-
-# 2. Create and switch to a new feature branch
-git checkout -b feature/<issue-id>-<short-description>
-
-# Example:
-git checkout -b feature/101-pet-profile-page
+curl -X POST http://localhost:3000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "user@example.com",
+    "username": "testuser",
+    "password": "password123",
+    "full_name": "Test User"
+  }'
 ```
 
-### Making Commits
+### Login
 
-Follow the **Conventional Commits** specification:
-
-```
-<type>(<scope>): <subject>
-
-[optional body]
-[optional footer]
-```
-
-**Types:**
-- `feat`: A new feature
-- `fix`: A bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes (formatting, semicolons, etc.)
-- `refactor`: Code refactoring
-- `test`: Adding or updating tests
-- `chore`: Maintenance tasks
-
-**Examples:**
 ```bash
-git commit -m "feat(auth): add user login functionality"
-git commit -m "fix(pets): resolve pet image upload issue"
-git commit -m "docs(readme): update installation instructions"
+curl -X POST http://localhost:3000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "testuser",
+    "password": "password123"
+  }'
 ```
 
-### Creating a Pull Request (PR)
+### Get Profile (requires token)
 
-1. **Push your branch to remote:**
 ```bash
-git push origin feature/<your-branch-name>
+curl -X GET http://localhost:3000/api/auth/profile \
+  -H "Authorization: Bearer YOUR_TOKEN_HERE"
 ```
 
-2. **Create a Pull Request on GitHub/GitLab:**
-   - Go to the repository on GitHub/GitLab
-   - Click "New Pull Request" or "Create Merge Request"
-   - Select your branch as the source and `main` as the target
-   - Fill in the PR template
+## 📦 API Endpoints
 
-3. **PR Title Format:**
+### Authentication
+
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - Login user
+- `GET /api/auth/profile` - Get current user profile (protected)
+
+## 🔒 Security Features
+
+- Password hashing with bcrypt
+- JWT token authentication
+- CORS enabled for frontend
+- Input validation with class-validator
+- Role-based access control
+- SSL encrypted database connection
+
+## 🌐 Environment Variables
+
+### Backend (.env)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| DATABASE_HOST | Supabase database host | db.xxxxx.supabase.co |
+| DATABASE_PORT | PostgreSQL port | 5432 |
+| DATABASE_USERNAME | Database user | postgres |
+| DATABASE_PASSWORD | Database password | your-password |
+| DATABASE_NAME | Database name | postgres |
+| DATABASE_SSL | Enable SSL | true |
+| JWT_SECRET | JWT signing secret | random-string |
+| JWT_EXPIRES_IN | Token expiration | 7d |
+| PORT | Backend port | 3000 |
+| NODE_ENV | Environment | development |
+| CORS_ORIGIN | Frontend URL | http://localhost:4200 |
+
+## 🚀 Deployment
+
+### Backend Deployment (Heroku)
+
+```bash
+cd backend
+heroku create petcarex-api
+heroku config:set DATABASE_HOST=db.xxxxx.supabase.co
+heroku config:set DATABASE_PASSWORD=your-password
+# Set other env variables
+git push heroku main
 ```
-[TYPE] Short description (#issue-number)
 
-Example:
-[FEATURE] Add pet profile page (#101)
-[BUGFIX] Fix login validation error (#202)
+### Frontend Deployment (Vercel)
+
+```bash
+cd frontend
+vercel
+# Follow prompts
 ```
 
-4. **PR Description Template:**
-```markdown
-## Description
-Brief description of the changes
+## 📱 Multi-Device Access
 
-## Type of Change
-- [ ] New feature
-- [ ] Bug fix
-- [ ] Documentation update
-- [ ] Refactoring
-- [ ] Other (please describe)
+Since the database is hosted on Supabase (cloud), you can access the application from any device:
 
-## Related Issue
-Closes #<issue-number>
+1. **Same Network**: Use `http://localhost:4200`
+2. **Different Network**: Deploy backend and frontend, then use deployed URLs
+3. **Mobile**: Access via deployed URL or use local IP address
 
-## Checklist
-- [ ] My code follows the project's coding standards
-- [ ] I have tested my changes locally
-- [ ] I have updated documentation if needed
-- [ ] All tests pass
-```
+## 🐛 Troubleshooting
 
-5. **Request Reviews:**
-   - Assign at least 1-2 reviewers
-   - Address all review comments before merging
+### Backend won't start
 
----
+- Check if `.env` file exists and has correct values
+- Verify Supabase credentials
+- Ensure port 3000 is not in use
+- Check database connection: `npm run start:dev` should show connection logs
 
-## File Naming Conventions
+### Frontend won't connect
 
-### General Rules
+- Verify backend is running on port 3000
+- Check CORS settings in `main.ts`
+- Update `environment.ts` with correct API URL
 
-- Use **lowercase** letters
-- Use **hyphens** (`-`) to separate words (kebab-case)
-- Be descriptive but concise
-- Include file type suffix where applicable
+### Database connection fails
 
-### Frontend (Angular)
+- Verify Supabase project is active (not paused)
+- Check firewall/network settings
+- Ensure SSL is enabled: `DATABASE_SSL=true`
+- Test connection using psql or pgAdmin
 
-| File Type | Pattern | Example |
-|-----------|---------|---------|
-| Component | `<name>.component.ts` | `pet-profile.component.ts` |
-| Component HTML | `<name>.component.html` | `pet-profile.component.html` |
-| Component CSS | `<name>.component.css` | `pet-profile.component.css` |
-| Service | `<name>.service.ts` | `pet.service.ts` |
-| Module | `<name>.module.ts` | `pet.module.ts` |
-| Interface/Model | `<name>.model.ts` | `pet.model.ts` |
-| Guard | `<name>.guard.ts` | `auth.guard.ts` |
-| Pipe | `<name>.pipe.ts` | `date-format.pipe.ts` |
-| Directive | `<name>.directive.ts` | `highlight.directive.ts` |
-| Spec (Test) | `<name>.spec.ts` | `pet.service.spec.ts` |
+### Can't login from another device
 
-### Backend (NestJS)
+- Deploy backend to a cloud service (Heroku, Railway, etc.)
+- Update frontend environment with deployed backend URL
+- Ensure CORS allows requests from frontend domain
 
-| File Type | Pattern | Example |
-|-----------|---------|---------|
-| Controller | `<name>.controller.ts` | `pets.controller.ts` |
-| Service | `<name>.service.ts` | `pets.service.ts` |
-| Module | `<name>.module.ts` | `pets.module.ts` |
-| Entity | `<name>.entity.ts` | `pet.entity.ts` |
-| DTO | `<name>.dto.ts` | `create-pet.dto.ts` |
-| Interface | `<name>.interface.ts` | `pet.interface.ts` |
-| Guard | `<name>.guard.ts` | `jwt-auth.guard.ts` |
-| Middleware | `<name>.middleware.ts` | `logger.middleware.ts` |
-| Decorator | `<name>.decorator.ts` | `roles.decorator.ts` |
-| Spec (Test) | `<name>.spec.ts` | `pets.service.spec.ts` |
+## 📚 Tech Stack
 
-### Folder Structure Naming
+- **Backend**: NestJS, TypeORM, PostgreSQL, JWT, bcrypt
+- **Frontend**: Angular 19, TypeScript, RxJS
+- **Database**: PostgreSQL (Supabase)
+- **Authentication**: JWT tokens
+- **Validation**: class-validator
 
-- Use **plural** names for resource folders (e.g., `pets/`, `users/`)
-- Use **singular** names for utility/shared folders (e.g., `common/`, `shared/`)
+## 🤝 Contributing
 
----
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Open a Pull Request
 
-##  Code Review Guidelines
+## 📄 License
 
-### For Authors
-- Keep PRs small and focused (ideally < 400 lines)
-- Write clear commit messages
-- Self-review before requesting reviews
-- Respond to feedback promptly
+This project is licensed under the MIT License.
 
-### For Reviewers
-- Review within 24 hours if possible
-- Be constructive and respectful
-- Approve only when confident in the changes
-- Use suggestions for minor fixes
+## 🆘 Support
 
----
+For issues or questions:
+- Open an issue on GitHub
+- Check Supabase documentation
+- Review NestJS documentation
 
-## Team Members
+## 📞 Contact
 
-|    Name    | Role |
-|------------|------|
-| Dinh Dai Vu| Backend & Frontend Developer |
-| Le Truong Bao Ngoc| Database Engineer |
-| Tran Thi Xuan Tai | Database Engineer |
-| Do Dang Nhat Tien | Backend Developer |
-
----
-
-## License
-
-This project is for educational purposes as part of CS12002_Database Advanced course.
+- GitHub: [@RainyinSaiGon](https://github.com/RainyinSaiGon)
+- Project: [PetCareX](https://github.com/RainyinSaiGon/PetCareX)

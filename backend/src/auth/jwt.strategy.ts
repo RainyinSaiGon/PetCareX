@@ -1,33 +1,36 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { AuthService } from './auth.service';
+import { ConfigService } from '@nestjs/config';
+import { UserRole } from '../common/enums/user-role.enum';
 
-export interface JwtPayload {
+interface JwtPayload {
   sub: number;
   username: string;
-  role: string;
+  email: string;
+  role: UserRole;
+  ma_nhan_vien?: number;
+  ma_khach_hang?: number;
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(private authService: AuthService) {
+  constructor(private configService: ConfigService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+      secretOrKey: configService.get('JWT_SECRET') || 'fallback-secret',
     });
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.authService.validateUser(payload.sub);
-    if (!user) {
-      throw new UnauthorizedException();
-    }
-    // Return user with role from token (validated against DB)
     return {
-      ...user,
-      role: user.role, // Ensure role is from DB, not just token
+      id: payload.sub,
+      username: payload.username,
+      email: payload.email,
+      role: payload.role,
+      ma_nhan_vien: payload.ma_nhan_vien,
+      ma_khach_hang: payload.ma_khach_hang,
     };
   }
 }

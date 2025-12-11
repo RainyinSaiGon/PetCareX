@@ -1,23 +1,35 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { Kho } from './kho.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Vaccine } from './vaccine.entity';
+import { Kho } from './kho.entity';
 
-@Entity('KHO_VACCINE')
+@Entity('KHOVACCINE')
 export class KhoVaccine {
-  @PrimaryColumn({ name: 'MaKho', type: 'char', length: 4 })
-  maKho: string;
+  @PrimaryGeneratedColumn({ name: 'MAKHOVACCINE' })
+  MaKhoVaccine: number;
 
-  @PrimaryColumn({ name: 'MaVaccine', type: 'char', length: 5 })
-  maVaccine: string;
+  @Column({ name: 'MAVACCINE' })
+  MaVaccine: number;
 
-  @Column({ name: 'SoLuong', type: 'int', nullable: true, default: 0 })
-  soLuong: number;
+  @ManyToOne(() => Vaccine, vaccine => vaccine.KhoVaccines)
+  @JoinColumn({ name: 'MAVACCINE' })
+  Vaccine: Vaccine;
 
-  @ManyToOne(() => Kho)
-  @JoinColumn({ name: 'MaKho' })
-  kho: Kho;
+  @Column({ name: 'MAKHO' })
+  MaKho: number;
 
-  @ManyToOne(() => Vaccine)
-  @JoinColumn({ name: 'MaVaccine' })
-  vaccine: Vaccine;
+  @ManyToOne(() => Kho, kho => kho.KhoVaccines)
+  @JoinColumn({ name: 'MAKHO' })
+  Kho: Kho;
+
+  @Column({ name: 'SOLUONG', type: 'int' })
+  SoLuong: number;
+
+  @Column({ name: 'HANSUDUNG', type: 'date' })
+  HanSuDung: Date;
+
+  @Column({ name: 'NGAYNHAP', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  NgayNhap: Date;
+
+  @Column({ name: 'GHICHU', type: 'text', nullable: true })
+  GhiChu: string;
 }

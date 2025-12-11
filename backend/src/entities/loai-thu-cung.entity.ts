@@ -1,14 +1,14 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
 import { ChungLoaiThuCung } from './chung-loai-thu-cung.entity';
 
 @Entity('LOAITHUCUNG')
 export class LoaiThuCung {
-  @PrimaryColumn({ name: 'MaLoaiThuCung', type: 'char', length: 2 })
-  maLoaiThuCung: string;
+  @PrimaryColumn({ type: 'char', length: 2 })
+  MaLoaiThuCung: string;
 
-  @Column({ name: 'TenLoaiThuCung', type: 'nvarchar', length: 10, nullable: true })
-  tenLoaiThuCung: string;
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  TenLoaiThuCung: string;
 
-  @OneToMany(() => ChungLoaiThuCung, chungLoai => chungLoai.loaiThuCung)
-  chungLoais: ChungLoaiThuCung[];
+  @OneToMany(() => ChungLoaiThuCung, cltc => cltc.LoaiThuCung)
+  ChungLoaiThuCungs: ChungLoaiThuCung[];
 }

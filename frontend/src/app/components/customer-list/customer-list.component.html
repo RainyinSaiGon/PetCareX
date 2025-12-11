@@ -1,0 +1,98 @@
+<div class="container">
+  <div class="header">
+    <h1>Quản Lý Khách Hàng</h1>
+    <button class="btn btn-primary" (click)="createCustomer()">
+      <span class="icon">+</span> Thêm Khách Hàng
+    </button>
+  </div>
+
+  <div class="search-bar">
+    <input 
+      type="text" 
+      [(ngModel)]="searchKeyword" 
+      (keyup.enter)="onSearch()"
+      placeholder="Tìm kiếm theo tên, số điện thoại..."
+      class="search-input"
+    />
+    <button class="btn btn-secondary" (click)="onSearch()">Tìm Kiếm</button>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    {{ error }}
+  </div>
+
+  <div *ngIf="loading" class="loading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <div *ngIf="!loading && customers.length === 0" class="empty-state">
+    <p>Không tìm thấy khách hàng nào.</p>
+  </div>
+
+  <table *ngIf="!loading && customers.length > 0" class="customer-table">
+    <thead>
+      <tr>
+        <th>Mã KH</th>
+        <th>Họ Tên</th>
+        <th>Số Điện Thoại</th>
+        <th>Email</th>
+        <th>Địa Chỉ</th>
+        <th>Ngày Tạo</th>
+        <th>Thao Tác</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let customer of customers">
+        <td>{{ customer.MaKhachHang }}</td>
+        <td>{{ customer.HoTen }}</td>
+        <td>{{ customer.SoDienThoai }}</td>
+        <td>{{ customer.Email || 'N/A' }}</td>
+        <td>{{ customer.DiaChi || 'N/A' }}</td>
+        <td>{{ customer.NgayTao | date: 'dd/MM/yyyy' }}</td>
+        <td class="actions">
+          <button class="btn-icon btn-view" (click)="viewCustomer(customer.MaKhachHang)" title="Xem chi tiết">
+            👁️
+          </button>
+          <button class="btn-icon btn-edit" (click)="editCustomer(customer.MaKhachHang)" title="Chỉnh sửa">
+            ✏️
+          </button>
+          <button class="btn-icon btn-delete" (click)="deleteCustomer(customer)" title="Xóa">
+            🗑️
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="!loading && totalPages > 1" class="pagination">
+    <button 
+      class="btn-page" 
+      (click)="onPageChange(currentPage - 1)"
+      [disabled]="currentPage === 1"
+    >
+      &laquo; Trước
+    </button>
+
+    <button 
+      *ngFor="let page of getPaginationPages()"
+      class="btn-page"
+      [class.active]="page === currentPage"
+      (click)="onPageChange(page)"
+    >
+      {{ page }}
+    </button>
+
+    <button 
+      class="btn-page" 
+      (click)="onPageChange(currentPage + 1)"
+      [disabled]="currentPage === totalPages"
+    >
+      Sau &raquo;
+    </button>
+
+    <span class="page-info">
+      Trang {{ currentPage }} / {{ totalPages }} (Tổng: {{ totalItems }} khách hàng)
+    </span>
+  </div>
+</div>

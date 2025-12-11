@@ -1,21 +1,26 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { ToaThuoc } from './toa-thuoc.entity';
+import { Thuoc } from './thuoc.entity';
 
 @Entity('CHITIETTOATHUOC')
 export class ChiTietToaThuoc {
-  @PrimaryColumn({ name: 'MaToaThuoc' })
-  maToaThuoc: number;
+  @PrimaryColumn({ type: 'int' })
+  MaToaThuoc: number;
 
-  @PrimaryColumn({ name: 'MaThuoc', type: 'char', length: 5 })
-  maThuoc: string;
+  @PrimaryColumn({ type: 'char', length: 5 })
+  MaThuoc: string;
 
-  @Column({ name: 'SoLuong', type: 'int', nullable: true })
-  soLuong: number;
+  @Column({ type: 'int', nullable: true })
+  SoLuong: number;
 
-  @Column({ name: 'GhiChu', type: 'nvarchar', length: 100, nullable: true })
-  ghiChu: string;
+  @Column({ type: 'varchar', length: 100, nullable: true })
+  GhiChu: string;
 
-  @ManyToOne(() => ToaThuoc)
+  @ManyToOne(() => ToaThuoc, toaThuoc => toaThuoc.ChiTiets)
   @JoinColumn({ name: 'MaToaThuoc' })
-  toaThuoc: ToaThuoc;
+  ToaThuoc: ToaThuoc;
+
+  @ManyToOne(() => Thuoc, thuoc => thuoc.ChiTiets)
+  @JoinColumn({ name: 'MaThuoc' })
+  Thuoc: Thuoc;
 }

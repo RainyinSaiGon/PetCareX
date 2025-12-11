@@ -1,0 +1,44 @@
+<nav class="nav" role="navigation" aria-label="Main navigation">
+  <div class="nav-container">
+    <a class="brand" routerLink="/">
+      <i class="fa-solid fa-paw"></i>
+      <span class="brand-text">PetCareX</span>
+    </a>
+
+    <button class="nav-toggle" (click)="toggle()" [attr.aria-expanded]="isOpen" aria-controls="main-menu" aria-label="Toggle navigation">
+      <i class="fa-solid" [ngClass]="isOpen ? 'fa-xmark' : 'fa-bars'"></i>
+    </button>
+
+    <div id="main-menu" class="nav-menu" [class.open]="isOpen">
+      <!-- If we're on an auth page, show a minimal nav with just Login -->
+      <ng-container *ngIf="isAuthRoute; else fullMenu">
+        <ul class="nav-list">
+          <li><a routerLink="/auth/login" (click)="close()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a></li>
+        </ul>
+      </ng-container>
+
+      <ng-template #fullMenu>
+        <ul class="nav-list">
+          <li><a routerLink="/customers" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-users"></i> Khách Hàng</a></li>
+          <li><a routerLink="/customers/1/pets" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-dog"></i> Thú Cưng</a></li>
+          <li><a routerLink="/admin/staff" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-user-tie"></i> Nhân Viên</a></li>
+          <li><a routerLink="/admin/analytics" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-chart-line"></i> Báo Cáo</a></li>
+          <li><a routerLink="/appointments" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-calendar-check"></i> Lịch</a></li>
+        </ul>
+
+        <ul class="nav-list nav-right">
+          <li *ngIf="!isAuthenticated"><a routerLink="/auth/login" (click)="close()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a></li>
+          <li *ngIf="!isAuthenticated"><a routerLink="/auth/register" (click)="close()"><i class="fa-solid fa-user-plus"></i> Đăng ký</a></li>
+
+          <li *ngIf="isAuthenticated" class="dropdown">
+            <a class="dropdown-toggle"><i class="fa-solid fa-user"></i> Tài khoản</a>
+            <ul class="dropdown-menu">
+              <li><a routerLink="/auth/profile" (click)="close()">Hồ sơ</a></li>
+              <li><a (click)="logout()">Đăng xuất</a></li>
+            </ul>
+          </li>
+        </ul>
+      </ng-template>
+    </div>
+  </div>
+</nav>

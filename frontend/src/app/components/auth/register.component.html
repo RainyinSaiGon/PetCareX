@@ -1,0 +1,58 @@
+﻿<div class="auth-bg">
+  <div class="auth-card">
+  <h2>Tạo tài khoản</h2>
+  <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <label>
+      Họ & tên
+      <input type="text" formControlName="name" placeholder="Nguyễn Văn A" />
+    </label>
+    <div class="field-error" *ngIf="form.get('name')?.invalid && form.get('name')?.touched">
+      Vui lòng nhập họ tên
+    </div>
+
+    <label>
+      Email
+      <input type="email" formControlName="email" placeholder="you@example.com" autocomplete="email" />
+    </label>
+    <div class="field-error" *ngIf="form.get('email')?.invalid && form.get('email')?.touched">
+      <span *ngIf="form.get('email')?.errors?.['required']">Vui lòng nhập email</span>
+      <span *ngIf="form.get('email')?.errors?.['email']">Email không hợp lệ</span>
+    </div>
+
+    <label>
+      Tên đăng nhập
+      <input type="text" formControlName="username" placeholder="username" autocomplete="username" />
+    </label>
+    <div class="field-error" *ngIf="form.get('username')?.invalid && form.get('username')?.touched">
+      Vui lòng nhập tên đăng nhập
+    </div>
+
+    <label>
+      Mật khẩu
+      <input type="password" formControlName="password" placeholder="Ít nhất 6 ký tự" />
+    </label>
+    <div class="field-error" *ngIf="form.get('password')?.invalid && form.get('password')?.touched">
+      <span *ngIf="form.get('password')?.errors?.['required']">Vui lòng nhập mật khẩu</span>
+      <span *ngIf="form.get('password')?.errors?.['minlength']">Mật khẩu phải có ít nhất 6 ký tự</span>
+    </div>
+
+    <label>
+      Xác nhận mật khẩu
+      <input type="password" formControlName="confirm" placeholder="Nhập lại mật khẩu" />
+    </label>
+    <div class="field-error" *ngIf="form.get('confirm')?.invalid && form.get('confirm')?.touched">
+      Vui lòng xác nhận mật khẩu
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" type="submit" [disabled]="loading">
+        <span *ngIf="loading" class="spinner"></span>
+        {{ loading ? "Đang xử lý..." : "Đăng ký" }}
+      </button>
+      <a routerLink="/auth/login" class="btn primary" style="text-align:center;">Đã có tài khoản</a>
+    </div>
+
+    <div class="error" *ngIf="error">{{ error }}</div>
+  </form>
+  </div>
+</div>

@@ -1,10 +1,14 @@
-import { Entity, PrimaryColumn, Column } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany } from 'typeorm';
+import { NhanVien } from './nhanvien.entity';
 
 @Entity('LOAINHANVIEN_LUONG')
 export class LoaiNhanVienLuong {
-  @PrimaryColumn({ name: 'LoaiNhanVien', type: 'nvarchar', length: 20 })
-  loaiNhanVien: string;
+  @PrimaryColumn({ type: 'varchar', length: 20 })
+  LoaiNhanVien: string;
 
-  @Column({ name: 'Luong', type: 'decimal', precision: 9, scale: 0, nullable: true })
-  luong: number;
+  @Column({ type: 'decimal', precision: 9, scale: 0, nullable: true })
+  Luong: number;
+
+  @OneToMany(() => NhanVien, nhanvien => nhanvien.LoaiNV)
+  NhanViens: NhanVien[];
 }

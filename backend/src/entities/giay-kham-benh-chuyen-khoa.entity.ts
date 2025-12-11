@@ -1,37 +1,45 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
-import { NhanVien } from './nhan-vien.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
 import { ThuCung } from './thu-cung.entity';
+import { NhanVien } from './nhanvien.entity';
 import { DichVuYTe } from './dich-vu-y-te.entity';
+import { ChiTietKhamBenhChuanDoan } from './chi-tiet-kham-benh-chuan-doan.entity';
+import { ChiTietKhamBenhTrieuChung } from './chi-tiet-kham-benh-trieu-chung.entity';
 
 @Entity('GIAYKHAMBENHCHUYENKHOA')
 export class GiayKhamBenhChuyenKhoa {
-  @PrimaryGeneratedColumn({ name: 'MaGiayKhamChuyenKhoa' })
-  maGiayKhamChuyenKhoa: number;
+  @PrimaryGeneratedColumn()
+  MaGiayKhamChuyenKhoa: number;
 
-  @Column({ name: 'NgayKham', type: 'datetime', nullable: true })
-  ngayKham: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  NgayKham: Date;
 
-  @Column({ name: 'NgayTaiKham', type: 'datetime', nullable: true })
-  ngayTaiKham: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  NgayTaiKham: Date;
 
-  @Column({ name: 'MaBacSi', type: 'char', length: 5, nullable: true })
-  maBacSi: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaBacSi: string;
 
-  @Column({ name: 'MaThuCung', nullable: true })
-  maThuCung: number;
+  @Column({ type: 'int', nullable: true })
+  MaThuCung: number;
 
-  @Column({ name: 'MaDichVu', type: 'char', length: 5, nullable: true })
-  maDichVu: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaDichVu: string;
 
-  @ManyToOne(() => NhanVien, { nullable: true })
+  @ManyToOne(() => NhanVien, nhanvien => nhanvien.GiayKhamBenhChuyenKhoas)
   @JoinColumn({ name: 'MaBacSi' })
-  bacSi: NhanVien;
+  BacSi: NhanVien;
 
-  @ManyToOne(() => ThuCung, { nullable: true })
+  @ManyToOne(() => ThuCung, thuCung => thuCung.GiayKhamChuyenKhoas)
   @JoinColumn({ name: 'MaThuCung' })
-  thuCung: ThuCung;
+  ThuCung: ThuCung;
 
-  @ManyToOne(() => DichVuYTe, { nullable: true })
+  @ManyToOne(() => DichVuYTe, dichvu => dichvu.GiayKhamBenhs)
   @JoinColumn({ name: 'MaDichVu' })
-  dichVu: DichVuYTe;
+  DichVu: DichVuYTe;
+
+  @OneToMany(() => ChiTietKhamBenhChuanDoan, ctcd => ctcd.GiayKhamBenhChuyenKhoa)
+  ChiTietChuanDoans: ChiTietKhamBenhChuanDoan[];
+
+  @OneToMany(() => ChiTietKhamBenhTrieuChung, ctct => ctct.GiayKhamBenhChuyenKhoa)
+  ChiTietTrieuChungs: ChiTietKhamBenhTrieuChung[];
 }

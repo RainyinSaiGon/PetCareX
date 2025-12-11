@@ -1,82 +1,92 @@
-import { Controller, Post, Body, ValidationPipe, Get, UseGuards, Request, Param, Put, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Body, UseGuards, Request, Param, ParseIntPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, CreateStaffAccountDto, UpdateRoleDto, ChangePasswordDto } from './dto/auth.dto';
-import { JwtAuthGuard } from './jwt-auth.guard';
-import { RolesGuard, Roles, Role, AdminOnly, ManagerOnly } from './roles';
+import { 
+  RegisterDto, 
+  LoginDto, 
+  RefreshTokenDto, 
+  ForgotPasswordDto, 
+  ResetPasswordDto, 
+  ChangePasswordDto 
+} from './dto/auth.dto';
+import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../common/guards/roles.guard';
+import { Roles } from '../common/decorators/roles.decorator';
+import { Public } from '../common/decorators/public.decorator';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { UserRole } from '../common/enums/user-role.enum';
 
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 
-  // Public: Register as customer
+  @Public()
   @Post('register')
-  async register(@Body(ValidationPipe) registerDto: RegisterDto) {
+  async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
 
-  // Public: Login
+  @Public()
   @Post('login')
-  async login(@Body(ValidationPipe) loginDto: LoginDto) {
+  async login(@Body() loginDto: LoginDto) {
     return this.authService.login(loginDto);
   }
 
-  // Protected: Get current user profile
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.QUAN_LY, Role.BAC_SI, Role.NHAN_VIEN, Role.KHACH_HANG)
-  @Get('profile')
-  async getProfile(@Request() req) {
-    return req.user;
+  @Public()
+  @Post('refresh')
+  async refreshToken(@Body() refreshTokenDto: RefreshTokenDto) {
+    return this.authService.refreshToken(refreshTokenDto);
   }
 
-  // Protected: Change own password
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.QUAN_LY, Role.BAC_SI, Role.NHAN_VIEN, Role.KHACH_HANG)
-  @Put('change-password')
-  async changePassword(@Request() req, @Body(ValidationPipe) changeDto: ChangePasswordDto) {
-    return this.authService.changePassword(req.user.id, changeDto);
+  @UseGuards(JwtAuthGuard)
+  @Post('logout')
+  async logout(@CurrentUser('id') userId: number) {
+    return this.authService.logout(userId);
   }
 
-  // Admin/Manager: Create staff account
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @ManagerOnly()
-  @Post('staff')
-  async createStaffAccount(@Request() req, @Body(ValidationPipe) createDto: CreateStaffAccountDto) {
-    return this.authService.createStaffAccount(createDto, req.user.role);
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
   }
 
-  // Admin: Update user role
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @AdminOnly()
-  @Put('users/:id/role')
-  async updateUserRole(
-    @Param('id', ParseIntPipe) userId: number,
-    @Body(ValidationPipe) updateDto: UpdateRoleDto,
-    @Request() req
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('change-password')
+  async changePassword(
+    @CurrentUser('id') userId: number,
+    @Body() changePasswordDto: ChangePasswordDto,
   ) {
-    return this.authService.updateUserRole(userId, updateDto, req.user.role);
+    return this.authService.changePassword(userId, changePasswordDto);
   }
 
-  // Admin: Activate user
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @AdminOnly()
-  @Put('users/:id/activate')
-  async activateUser(@Param('id', ParseIntPipe) userId: number) {
-    return this.authService.toggleUserStatus(userId, true);
+  @UseGuards(JwtAuthGuard)
+  @Get('profile')
+  async getProfile(@CurrentUser('id') userId: number) {
+    return this.authService.getProfile(userId);
   }
 
-  // Admin: Deactivate user
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @AdminOnly()
-  @Put('users/:id/deactivate')
-  async deactivateUser(@Param('id', ParseIntPipe) userId: number) {
-    return this.authService.toggleUserStatus(userId, false);
+  @Roles(UserRole.ADMIN)
+  @Post('link-employee/:userId/:employeeId')
+  async linkToEmployee(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('employeeId', ParseIntPipe) employeeId: number,
+  ) {
+    return this.authService.linkToEmployee(userId, employeeId);
   }
 
-  // Admin/Manager: Get all users
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @ManagerOnly()
-  @Get('users')
-  async getAllUsers(@Query('role') role?: Role) {
-    return this.authService.getAllUsers(role);
+  @Roles(UserRole.ADMIN, UserRole.RECEPTIONIST)
+  @Post('link-customer/:userId/:customerId')
+  async linkToCustomer(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('customerId', ParseIntPipe) customerId: number,
+  ) {
+    return this.authService.linkToCustomer(userId, customerId);
   }
 }

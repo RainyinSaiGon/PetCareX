@@ -1,21 +1,32 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { PhieuDangKyTiemPhong } from './phieu-dang-ky-tiem-phong.entity';
 import { GoiTiemPhong } from './goi-tiem-phong.entity';
 
 @Entity('PHIEUDANGKYGOI')
 export class PhieuDangKyGoi {
-  @PrimaryColumn({ name: 'MaDangKy', type: 'int' })
-  maDangKy: number;
+  @PrimaryGeneratedColumn({ name: 'MADANGKYGOI' })
+  MaDangKyGoi: number;
 
-  @Column({ name: 'MaGoiVaccine', type: 'char', length: 3, nullable: true })
-  maGoiVaccine: string;
+  @Column({ name: 'MADANGKYTIEMPHONG' })
+  MaDangKyTiemPhong: number;
 
-  // Relations
-  @ManyToOne(() => PhieuDangKyTiemPhong, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'MaDangKy' })
-  phieuDangKy: PhieuDangKyTiemPhong;
+  @ManyToOne(() => PhieuDangKyTiemPhong, pdktp => pdktp.PhieuDangKyGois)
+  @JoinColumn({ name: 'MADANGKYTIEMPHONG' })
+  PhieuDangKy: PhieuDangKyTiemPhong;
 
-  @ManyToOne(() => GoiTiemPhong, { onDelete: 'SET NULL' })
-  @JoinColumn({ name: 'MaGoiVaccine' })
-  goiVaccine: GoiTiemPhong;
+  @Column({ name: 'MAGOITIEMPHONG' })
+  MaGoiTiemPhong: number;
+
+  @ManyToOne(() => GoiTiemPhong)
+  @JoinColumn({ name: 'MAGOITIEMPHONG' })
+  GoiTiemPhong: GoiTiemPhong;
+
+  @Column({ name: 'NGAYBATDAU', type: 'date' })
+  NgayBatDau: Date;
+
+  @Column({ name: 'NGAYHOANTHANH', type: 'date', nullable: true })
+  NgayHoanThanh: Date;
+
+  @Column({ name: 'TRANGTHAI', type: 'varchar', length: 50 })
+  TrangThai: string;
 }

@@ -1,30 +1,33 @@
-import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
-import { NhanVien } from './nhan-vien.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, OneToMany } from 'typeorm';
+import { ThuCung } from './thu-cung.entity';
+import { NhanVien } from './nhanvien.entity';
+import { ChiTietToaThuoc } from './chi-tiet-toa-thuoc.entity';
 
 @Entity('TOATHUOC')
 export class ToaThuoc {
-  @PrimaryColumn({ name: 'SoToaThuoc', type: 'char', length: 6 })
-  soToaThuoc: string;
+  @PrimaryGeneratedColumn()
+  MaToaThuoc: number;
 
-  @Column({ name: 'MaThuCung', type: 'char', length: 5, nullable: true })
-  maThuCung: string;
+  @Column({ type: 'int', nullable: true })
+  MaThuCung: number;
 
-  @Column({ name: 'MaBacSi', type: 'char', length: 5, nullable: true })
-  maBacSi: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaBacSi: string;
 
-  @Column({ name: 'NgayKeDon', type: 'datetime', nullable: true })
-  ngayKeDon: Date;
+  @Column({ type: 'timestamp', nullable: true })
+  NgayKham: Date;
 
-  @Column({ name: 'GhiChu', type: 'nvarchar', length: 500, nullable: true })
-  ghiChu: string;
+  @Column({ type: 'decimal', precision: 18, scale: 0, nullable: true })
+  TongTien: number;
 
-  // Relations
-  // Note: MaThuCung is char(5) in TOATHUOC but int in THUCUNG - relation not possible with direct FK
-  
-  @ManyToOne(() => NhanVien, { nullable: true })
+  @ManyToOne(() => ThuCung, thuCung => thuCung.ToaThuocs)
+  @JoinColumn({ name: 'MaThuCung' })
+  ThuCung: ThuCung;
+
+  @ManyToOne(() => NhanVien, nhanvien => nhanvien.ToaThuocs)
   @JoinColumn({ name: 'MaBacSi' })
-  bacSi: NhanVien;
+  BacSi: NhanVien;
 
-  @OneToMany('CtToaThuoc', 'toaThuoc')
-  chiTietToaThuocs: any[];
+  @OneToMany(() => ChiTietToaThuoc, chitiet => chitiet.ToaThuoc)
+  ChiTiets: ChiTietToaThuoc[];
 }

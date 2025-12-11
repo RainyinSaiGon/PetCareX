@@ -1,63 +1,40 @@
-import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { KhachHang } from './khach-hang.entity';
 import { ThuCung } from './thu-cung.entity';
-import { NhanVien } from './nhan-vien.entity';
-import { ChiNhanh } from './chi-nhanh.entity';
-import { DichVuYTe } from './dich-vu-y-te.entity';
+import { NhanVien } from './nhanvien.entity';
 
 @Entity('LICHHEN')
 export class LichHen {
-  @PrimaryColumn({ name: 'MaLichHen', type: 'varchar', length: 6 })
-  maLichHen: string;
+  @PrimaryGeneratedColumn()
+  MaLichHen: number;
 
-  @Column({ name: 'MaKhachHang', type: 'int', nullable: true })
-  maKhachHang: number;
+  @Column({ type: 'int', nullable: true })
+  MaKhachHang: number;
 
-  @Column({ name: 'MaThuCung', type: 'int', nullable: true })
-  maThuCung: number;
+  @Column({ type: 'int', nullable: true })
+  MaThuCung: number;
 
-  @Column({ name: 'MaBacSi', type: 'char', length: 5, nullable: true })
-  maBacSi: string;
+  @Column({ type: 'char', length: 5, nullable: true })
+  MaBacSi: string;
 
-  @Column({ name: 'MaChiNhanh', type: 'char', length: 4, nullable: true })
-  maChiNhanh: string;
+  @Column({ type: 'date', nullable: true })
+  NgayHen: Date;
 
-  @Column({ name: 'MaDichVuYTe', type: 'char', length: 5, nullable: true })
-  maDichVuYTe: string;
+  @Column({ type: 'time', nullable: true })
+  GioHen: string;
 
-  @Column({ name: 'NgayDat', type: 'datetime', nullable: true })
-  ngayDat: Date;
+  @Column({ type: 'varchar', length: 16, nullable: true, default: 'Chờ xác nhận' })
+  TrangThai: string; // Chờ xác nhận, Đã xác nhận, Đã hoàn thành, Đã hủy
 
-  @Column({ name: 'NgayHen', type: 'date', nullable: true })
-  ngayHen: Date;
-
-  @Column({ name: 'GioHen', type: 'varchar', length: 5, nullable: true })
-  gioHen: string;
-
-  @Column({ name: 'TrangThai', type: 'nvarchar', length: 20, nullable: true })
-  trangThai: string;
-
-  @Column({ name: 'GhiChu', type: 'nvarchar', length: 500, nullable: true })
-  ghiChu: string;
-
-  // Relations
-  @ManyToOne(() => KhachHang, { nullable: true })
+  @ManyToOne(() => KhachHang, khachHang => khachHang.LichHens)
   @JoinColumn({ name: 'MaKhachHang' })
-  khachHang: KhachHang;
+  KhachHang: KhachHang;
 
-  @ManyToOne(() => ThuCung, { nullable: true })
+  @ManyToOne(() => ThuCung, thuCung => thuCung.LichHens)
   @JoinColumn({ name: 'MaThuCung' })
-  thuCung: ThuCung;
+  ThuCung: ThuCung;
 
-  @ManyToOne(() => NhanVien, { nullable: true })
+  @ManyToOne(() => NhanVien, nhanvien => nhanvien.LichHens)
   @JoinColumn({ name: 'MaBacSi' })
-  bacSi: NhanVien;
-
-  @ManyToOne(() => ChiNhanh, { nullable: true })
-  @JoinColumn({ name: 'MaChiNhanh' })
-  chiNhanh: ChiNhanh;
-
-  @ManyToOne(() => DichVuYTe, { nullable: true })
-  @JoinColumn({ name: 'MaDichVuYTe' })
-  dichVuYTe: DichVuYTe;
+  BacSi: NhanVien;
 }
