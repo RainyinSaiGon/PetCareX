@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
-import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
 import { CustomerService } from '../services/customer.service';
 import { CreateCustomerDto, UpdateCustomerDto, CustomerResponseDto, CustomerStatisticsDto, InactiveCustomerDto } from '../dto/customer.dto';
 

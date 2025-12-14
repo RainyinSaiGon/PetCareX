@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { CustomerService } from '../../services/customer.service';
 import { KhachHang, PaginatedResponse } from '../../models/customer.model';
 
@@ -12,7 +14,7 @@ import { KhachHang, PaginatedResponse } from '../../models/customer.model';
   templateUrl: './customer-list.component.html',
   styleUrls: ['./customer-list.component.css']
 })
-export class CustomerListComponent implements OnInit {
+export class CustomerListComponent implements OnInit, OnDestroy {
   customers: KhachHang[] = [];
   loading = false;
   error = '';
@@ -25,6 +27,11 @@ export class CustomerListComponent implements OnInit {
   
   // Search
   searchKeyword = '';
+  private searchSubject = new Subject<string>();
+  private searchSubscription?: Subscription;
+
+  // Math object for template
+  Math = Math;
 
   constructor(
     private customerService: CustomerService,
@@ -32,7 +39,23 @@ export class CustomerListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.setupDebouncedSearch();
     this.loadCustomers();
+  }
+
+  ngOnDestroy(): void {
+    this.searchSubscription?.unsubscribe();
+  }
+
+  private setupDebouncedSearch(): void {
+    this.searchSubscription = this.searchSubject
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged()
+      )
+      .subscribe(() => {
+        this.onSearch();
+      });
   }
 
   loadCustomers(): void {
@@ -55,9 +78,18 @@ export class CustomerListComponent implements OnInit {
       });
   }
 
+  onSearchInput(): void {
+    this.searchSubject.next(this.searchKeyword);
+  }
+
   onSearch(): void {
     this.currentPage = 1;
     this.loadCustomers();
+  }
+
+  clearSearch(): void {
+    this.searchKeyword = '';
+    this.onSearch();
   }
 
   onPageChange(page: number): void {
@@ -73,6 +105,10 @@ export class CustomerListComponent implements OnInit {
 
   editCustomer(id: number): void {
     this.router.navigate(['/customers', id, 'edit']);
+  }
+
+  viewPets(customerId: number): void {
+    this.router.navigate(['/customers', customerId, 'pets']);
   }
 
   deleteCustomer(customer: KhachHang): void {
@@ -109,5 +145,25 @@ export class CustomerListComponent implements OnInit {
     }
     
     return pages;
+  }
+
+  getTierIcon(tier?: string): string {
+    if (!tier) return 'fa-medal';
+    
+    const tierLower = tier.toLowerCase();
+    switch (tierLower) {
+      case 'bronze':
+        return 'fa-medal';
+      case 'silver':
+        return 'fa-medal';
+      case 'gold':
+        return 'fa-trophy';
+      case 'platinum':
+        return 'fa-crown';
+      case 'diamond':
+        return 'fa-gem';
+      default:
+        return 'fa-medal';
+    }
   }
 }

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, LessThan } from 'typeorm';
-import { KhachHang } from '../../entities/khach-hang.entity';
-import { KhachHangThanhVien } from '../../entities/khach-hang-thanh-vien.entity';
-import { HoaDon } from '../../entities/hoa-don.entity';
-import { CreateCustomerDto, UpdateCustomerDto, CustomerResponseDto, CustomerStatisticsDto, InactiveCustomerDto } from './dto/customer.dto';
+import { Repository, Between } from 'typeorm';
+import { KhachHang } from '../../../entities/khach-hang.entity';
+import { KhachHangThanhVien } from '../../../entities/khach-hang-thanh-vien.entity';
+import { HoaDon } from '../../../entities/hoa-don.entity';
+import { CreateCustomerDto, UpdateCustomerDto, CustomerResponseDto, CustomerStatisticsDto, InactiveCustomerDto } from '../dto/customer.dto';
 
 @Injectable()
 export class CustomerService {
@@ -17,62 +17,52 @@ export class CustomerService {
     private invoiceRepository: Repository<HoaDon>,
   ) {}
 
-  /**
-   * Create a new customer
-   */
   async createCustomer(createCustomerDto: CreateCustomerDto): Promise<CustomerResponseDto> {
     try {
-      const customer = this.customerRepository.create({
-        HoTen: createCustomerDto.HoTen,
-        SoDienThoai: createCustomerDto.SoDienThoai,
-        Email: createCustomerDto.Email || null,
-        CCCD: createCustomerDto.CCCD || null,
-        DiaChi: createCustomerDto.DiaChi || null,
-        NgaySinh: createCustomerDto.NgaySinh || null,
-        GioiTinh: createCustomerDto.GioiTinh || 'Khác',
-        TongChiTieu: 0,
-        TenHang: 'Bronze', // Default tier
-      });
-
+      const customer = new KhachHang();
+      customer.HoTen = createCustomerDto.HoTen;
+      customer.SoDienThoai = createCustomerDto.SoDienThoai;
       const savedCustomer = await this.customerRepository.save(customer);
 
-      // Create initial membership record
-      await this.membershipRepository.create({
-        MaKhachHang: savedCustomer.MaKhachHang,
-        TenHang: 'Bronze',
-        TongChiTieu: 0,
-        TongDiem: 0,
-      });
+      const membership = new KhachHangThanhVien();
+      membership.MaKhachHang = savedCustomer.MaKhachHang;
+      membership.TongChiTieu = 0;
+      membership.TenHang = 'Bronze';
+      if (createCustomerDto.Email) membership.Email = createCustomerDto.Email;
+      if (createCustomerDto.CCCD) membership.CCCD = createCustomerDto.CCCD;
+      if (createCustomerDto.DiaChi) membership.DiaChi = createCustomerDto.DiaChi;
+      if (createCustomerDto.NgaySinh) membership.NgaySinh = createCustomerDto.NgaySinh;
+      if (createCustomerDto.GioiTinh) membership.GioiTinh = createCustomerDto.GioiTinh;
 
-      return this.mapCustomerToDto(savedCustomer);
+      const savedMembership = await this.membershipRepository.save(membership);
+
+      return this.mapCustomerToDto(savedCustomer, savedMembership);
     } catch (error) {
       throw new Error(`Failed to create customer: ${error.message}`);
     }
   }
 
-  /**
-   * Get customer by ID with full details
-   */
   async getCustomerById(customerId: number): Promise<CustomerResponseDto> {
     try {
       const customer = await this.customerRepository.findOne({
         where: { MaKhachHang: customerId },
-        relations: ['HoaDons', 'KhachHangThanhVien'],
+        relations: ['HoaDons'],
       });
 
       if (!customer) {
         throw new Error(`Customer with ID ${customerId} not found`);
       }
 
-      return this.mapCustomerToDto(customer);
+      const membership = await this.membershipRepository.findOne({
+        where: { MaKhachHang: customerId },
+      });
+
+      return this.mapCustomerToDto(customer, membership);
     } catch (error) {
       throw new Error(`Failed to get customer: ${error.message}`);
     }
   }
 
-  /**
-   * Get all customers with pagination and filtering
-   */
   async getAllCustomers(
     page: number = 1,
     limit: number = 10,
@@ -80,23 +70,21 @@ export class CustomerService {
     tier?: string,
   ): Promise<{ data: CustomerResponseDto[]; total: number; page: number; totalPages: number }> {
     try {
-      let query = this.customerRepository.createQueryBuilder('c')
-        .leftJoinAndSelect('c.HoaDons', 'invoices')
-        .orderBy('c.MaKhachHang', 'DESC');
+      let memberQuery = this.membershipRepository.createQueryBuilder('m')
+        .leftJoinAndSelect('m.KhachHang', 'c')
+        .orderBy('m.MaKhachHang', 'DESC');
 
-      // Search filter
       if (search) {
-        query = query.where('c.HoTen LIKE :search OR c.SoDienThoai LIKE :search', {
+        memberQuery = memberQuery.where('c.HoTen LIKE :search OR c.SoDienThoai LIKE :search', {
           search: `%${search}%`,
         });
       }
 
-      // Tier filter
       if (tier) {
-        query = query.andWhere('c.TenHang = :tier', { tier });
+        memberQuery = memberQuery.andWhere('m.TenHang = :tier', { tier });
       }
 
-      const [customers, total] = await query
+      const [members, total] = await memberQuery
         .skip((page - 1) * limit)
         .take(limit)
         .getManyAndCount();
@@ -104,7 +92,7 @@ export class CustomerService {
       const totalPages = Math.ceil(total / limit);
 
       return {
-        data: customers.map(c => this.mapCustomerToDto(c)),
+        data: members.map(m => this.mapCustomerToDto(m.KhachHang, m)),
         total,
         page,
         totalPages,
@@ -114,9 +102,6 @@ export class CustomerService {
     }
   }
 
-  /**
-   * Update customer information
-   */
   async updateCustomer(customerId: number, updateCustomerDto: UpdateCustomerDto): Promise<CustomerResponseDto> {
     try {
       const customer = await this.customerRepository.findOne({
@@ -127,23 +112,27 @@ export class CustomerService {
         throw new Error(`Customer with ID ${customerId} not found`);
       }
 
-      // Update only provided fields
       if (updateCustomerDto.HoTen) customer.HoTen = updateCustomerDto.HoTen;
-      if (updateCustomerDto.Email) customer.Email = updateCustomerDto.Email;
-      if (updateCustomerDto.DiaChi) customer.DiaChi = updateCustomerDto.DiaChi;
-      if (updateCustomerDto.NgaySinh) customer.NgaySinh = updateCustomerDto.NgaySinh;
-      if (updateCustomerDto.GioiTinh) customer.GioiTinh = updateCustomerDto.GioiTinh;
+
+      const membership = await this.membershipRepository.findOne({
+        where: { MaKhachHang: customerId },
+      });
+
+      if (membership) {
+        if (updateCustomerDto.Email) membership.Email = updateCustomerDto.Email;
+        if (updateCustomerDto.DiaChi) membership.DiaChi = updateCustomerDto.DiaChi;
+        if (updateCustomerDto.NgaySinh) membership.NgaySinh = updateCustomerDto.NgaySinh;
+
+        await this.membershipRepository.save(membership);
+      }
 
       const updated = await this.customerRepository.save(customer);
-      return this.mapCustomerToDto(updated);
+      return this.mapCustomerToDto(updated, membership);
     } catch (error) {
       throw new Error(`Failed to update customer: ${error.message}`);
     }
   }
 
-  /**
-   * Delete customer (soft delete by marking inactive)
-   */
   async deleteCustomer(customerId: number): Promise<{ success: boolean; message: string }> {
     try {
       const customer = await this.customerRepository.findOne({
@@ -154,33 +143,23 @@ export class CustomerService {
         throw new Error(`Customer with ID ${customerId} not found`);
       }
 
-      // Soft delete: mark as inactive
-      customer.IsActive = false;
-      await this.customerRepository.save(customer);
+      await this.customerRepository.remove(customer);
 
-      return { success: true, message: `Customer ${customerId} deactivated successfully` };
+      return { success: true, message: `Customer ${customerId} deleted successfully` };
     } catch (error) {
       throw new Error(`Failed to delete customer: ${error.message}`);
     }
   }
 
-  /**
-   * Get customer statistics (FS-02)
-   */
   async getCustomerStatistics(): Promise<CustomerStatisticsDto> {
     try {
-      // Get all customers
-      const allCustomers = await this.customerRepository.find({
-        relations: ['HoaDons', 'KhachHangThanhVien'],
+      const allMembers = await this.membershipRepository.find({
+        relations: ['KhachHang'],
       });
 
-      // Calculate basic statistics
-      const activeCustomers = allCustomers.filter(c => c.IsActive !== false).length;
-      const inactiveCustomers = allCustomers.filter(c => c.IsActive === false).length;
-      const totalSpending = allCustomers.reduce((sum, c) => sum + (c.TongChiTieu || 0), 0);
-      const averageSpending = activeCustomers > 0 ? totalSpending / activeCustomers : 0;
+      const totalSpending = allMembers.reduce((sum, m) => sum + (m.TongChiTieu || 0), 0);
+      const averageSpending = allMembers.length > 0 ? totalSpending / allMembers.length : 0;
 
-      // Tier distribution
       const tierDistribution = {
         bronze: 0,
         silver: 0,
@@ -188,30 +167,29 @@ export class CustomerService {
         platinum: 0,
       };
 
-      allCustomers.forEach(customer => {
-        const tier = (customer.TenHang || 'Bronze').toLowerCase();
+      allMembers.forEach(member => {
+        const tier = (member.TenHang || 'Bronze').toLowerCase();
         if (tier === 'bronze') tierDistribution.bronze++;
         else if (tier === 'silver') tierDistribution.silver++;
         else if (tier === 'gold') tierDistribution.gold++;
         else if (tier === 'platinum') tierDistribution.platinum++;
       });
 
-      // Top 10 spenders
-      const topSpenders = allCustomers
+      const topSpenders = allMembers
         .sort((a, b) => (b.TongChiTieu || 0) - (a.TongChiTieu || 0))
         .slice(0, 10)
-        .map(c => ({
-          MaKhachHang: c.MaKhachHang,
-          HoTen: c.HoTen,
-          SoDienThoai: c.SoDienThoai,
-          TongChiTieu: c.TongChiTieu || 0,
-          TenHang: c.TenHang,
-        }));
+        .map(m => ({
+          MaKhachHang: m.MaKhachHang,
+          HoTen: m.KhachHang?.HoTen || '',
+          SoDienThoai: m.KhachHang?.SoDienThoai || '',
+          TongChiTieu: m.TongChiTieu || 0,
+          TenHang: m.TenHang,
+        })) as any[];
 
       return {
-        totalCustomers: allCustomers.length,
-        activeCustomers,
-        inactiveCustomers,
+        totalCustomers: allMembers.length,
+        activeCustomers: allMembers.length,
+        inactiveCustomers: 0,
         totalSpending,
         averageSpending: Math.round(averageSpending * 100) / 100,
         tierDistribution,
@@ -222,59 +200,39 @@ export class CustomerService {
     }
   }
 
-  /**
-   * Get inactive customers (FS-02 - Inactive customer tracking)
-   */
   async getInactiveCustomers(daysSinceLastPurchase: number = 90): Promise<InactiveCustomerDto[]> {
     try {
       const cutoffDate = new Date();
       cutoffDate.setDate(cutoffDate.getDate() - daysSinceLastPurchase);
 
-      // Get all customers
-      const allCustomers = await this.customerRepository.find({
-        relations: ['HoaDons'],
+      const allMembers = await this.membershipRepository.find({
+        relations: ['KhachHang'],
       });
 
       const inactiveCustomers: InactiveCustomerDto[] = [];
 
-      for (const customer of allCustomers) {
-        // Skip if customer is already marked as inactive
-        if (customer.IsActive === false) {
-          inactiveCustomers.push({
-            MaKhachHang: customer.MaKhachHang,
-            HoTen: customer.HoTen,
-            SoDienThoai: customer.SoDienThoai,
-            Email: customer.Email,
-            TongChiTieu: customer.TongChiTieu || 0,
-            TenHang: customer.TenHang,
-            daysSinceLastPurchase,
-          });
-          continue;
-        }
+      for (const member of allMembers) {
+        const invoices = await this.invoiceRepository.find({
+          where: { MaKhachHang: member.MaKhachHang },
+          order: { NgayLap: 'DESC' },
+          take: 1,
+        });
 
-        // Find last purchase date
-        let lastPurchaseDate: Date | null = null;
-        if (customer.HoaDons && customer.HoaDons.length > 0) {
-          const sortedInvoices = customer.HoaDons.sort((a, b) => 
-            (b.NgayLap?.getTime() || 0) - (a.NgayLap?.getTime() || 0)
-          );
-          lastPurchaseDate = sortedInvoices[0]?.NgayLap || null;
-        }
+        const lastPurchaseDate = invoices.length > 0 ? invoices[0].NgayLap : null;
 
-        // Check if inactive
         if (!lastPurchaseDate || lastPurchaseDate < cutoffDate) {
           const days = lastPurchaseDate
             ? Math.floor((new Date().getTime() - lastPurchaseDate.getTime()) / (1000 * 60 * 60 * 24))
             : daysSinceLastPurchase;
 
           inactiveCustomers.push({
-            MaKhachHang: customer.MaKhachHang,
-            HoTen: customer.HoTen,
-            SoDienThoai: customer.SoDienThoai,
-            Email: customer.Email,
-            TongChiTieu: customer.TongChiTieu || 0,
-            TenHang: customer.TenHang,
-            lastPurchaseDate,
+            MaKhachHang: member.MaKhachHang,
+            HoTen: member.KhachHang?.HoTen || '',
+            SoDienThoai: member.KhachHang?.SoDienThoai || '',
+            Email: member.Email,
+            TongChiTieu: member.TongChiTieu || 0,
+            TenHang: member.TenHang,
+            lastPurchaseDate: lastPurchaseDate || undefined,
             daysSinceLastPurchase: days,
           });
         }
@@ -286,16 +244,13 @@ export class CustomerService {
     }
   }
 
-  /**
-   * Get spending trends by month
-   */
   async getSpendingTrends(months: number = 12): Promise<{
     month: string;
     totalSpending: number;
     transactionCount: number;
   }[]> {
     try {
-      const trends = [];
+      const trends: { month: string; totalSpending: number; transactionCount: number }[] = [];
       const currentDate = new Date();
 
       for (let i = months - 1; i >= 0; i--) {
@@ -323,75 +278,67 @@ export class CustomerService {
     }
   }
 
-  /**
-   * Search customers
-   */
   async searchCustomers(query: string): Promise<CustomerResponseDto[]> {
     try {
-      const customers = await this.customerRepository
-        .createQueryBuilder('c')
+      const members = await this.membershipRepository
+        .createQueryBuilder('m')
+        .leftJoinAndSelect('m.KhachHang', 'c')
         .where('c.HoTen LIKE :query', { query: `%${query}%` })
         .orWhere('c.SoDienThoai LIKE :query', { query: `%${query}%` })
-        .orWhere('c.Email LIKE :query', { query: `%${query}%` })
-        .orWhere('c.CCCD LIKE :query', { query: `%${query}%` })
+        .orWhere('m.Email LIKE :query', { query: `%${query}%` })
         .orderBy('c.HoTen', 'ASC')
         .getMany();
 
-      return customers.map(c => this.mapCustomerToDto(c));
+      return members.map(m => this.mapCustomerToDto(m.KhachHang, m));
     } catch (error) {
       throw new Error(`Failed to search customers: ${error.message}`);
     }
   }
 
-  /**
-   * Update customer tier and points
-   */
   async updateCustomerTier(customerId: number, tier: string, totalSpending: number): Promise<CustomerResponseDto> {
     try {
-      const customer = await this.customerRepository.findOne({
+      const member = await this.membershipRepository.findOne({
         where: { MaKhachHang: customerId },
+        relations: ['KhachHang'],
       });
 
-      if (!customer) {
+      if (!member) {
         throw new Error(`Customer with ID ${customerId} not found`);
       }
 
-      customer.TenHang = tier;
-      customer.TongChiTieu = totalSpending;
+      member.TenHang = tier;
+      member.TongChiTieu = totalSpending;
 
-      const updated = await this.customerRepository.save(customer);
-      return this.mapCustomerToDto(updated);
+      const updated = await this.membershipRepository.save(member);
+      return this.mapCustomerToDto(member.KhachHang, updated);
     } catch (error) {
       throw new Error(`Failed to update customer tier: ${error.message}`);
     }
   }
 
-  /**
-   * Get customers by tier
-   */
   async getCustomersByTier(tier: string): Promise<CustomerResponseDto[]> {
     try {
-      const customers = await this.customerRepository.find({
+      const members = await this.membershipRepository.find({
         where: { TenHang: tier },
-        relations: ['HoaDons'],
+        relations: ['KhachHang'],
       });
 
-      return customers.map(c => this.mapCustomerToDto(c));
+      return members.map(m => this.mapCustomerToDto(m.KhachHang, m));
     } catch (error) {
       throw new Error(`Failed to get customers by tier: ${error.message}`);
     }
   }
 
-  /**
-   * Export customers to CSV (basic format)
-   */
   async exportCustomersToCsv(): Promise<string> {
     try {
-      const customers = await this.customerRepository.find();
-      let csv = 'MaKhachHang,HoTen,SoDienThoai,Email,DiaChi,TongChiTieu,TenHang,IsActive\n';
+      const members = await this.membershipRepository.find({
+        relations: ['KhachHang'],
+      });
 
-      customers.forEach(c => {
-        csv += `${c.MaKhachHang},"${c.HoTen}","${c.SoDienThoai}","${c.Email || ''}","${c.DiaChi || ''}",${c.TongChiTieu || 0},"${c.TenHang}",${c.IsActive ? 'Yes' : 'No'}\n`;
+      let csv = 'MaKhachHang,HoTen,SoDienThoai,Email,DiaChi,TongChiTieu,TenHang\n';
+
+      members.forEach(m => {
+        csv += `${m.MaKhachHang},"${m.KhachHang?.HoTen || ''}","${m.KhachHang?.SoDienThoai || ''}","${m.Email || ''}","${m.DiaChi || ''}",${m.TongChiTieu || 0},"${m.TenHang}"\n`;
       });
 
       return csv;
@@ -400,23 +347,19 @@ export class CustomerService {
     }
   }
 
-  /**
-   * Helper method to map customer entity to DTO
-   */
-  private mapCustomerToDto(customer: KhachHang): CustomerResponseDto {
+  private mapCustomerToDto(customer: KhachHang, membership: KhachHangThanhVien | null): CustomerResponseDto {
     return {
       MaKhachHang: customer.MaKhachHang,
       HoTen: customer.HoTen,
       SoDienThoai: customer.SoDienThoai,
-      Email: customer.Email || undefined,
-      CCCD: customer.CCCD || undefined,
-      DiaChi: customer.DiaChi || undefined,
-      NgaySinh: customer.NgaySinh || undefined,
-      GioiTinh: customer.GioiTinh || undefined,
-      TongChiTieu: customer.TongChiTieu || 0,
-      TenHang: customer.TenHang,
-      CreatedAt: customer.CreatedAt,
-      IsActive: customer.IsActive !== false,
+      Email: membership?.Email || undefined,
+      CCCD: membership?.CCCD || undefined,
+      DiaChi: membership?.DiaChi || undefined,
+      NgaySinh: membership?.NgaySinh || undefined,
+      GioiTinh: membership?.GioiTinh || undefined,
+      TongChiTieu: membership?.TongChiTieu || 0,
+      TenHang: membership?.TenHang || 'Bronze',
+      IsActive: true,
     };
   }
 }

@@ -23,23 +23,23 @@ export class CustomerService {
       params = params.set('keyword', keyword);
     }
 
-    return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/khach-hang`, { params });
+    return this.http.get<PaginatedResponse<KhachHang>>(this.apiUrl, { params });
   }
 
   getCustomerById(id: number): Observable<KhachHang> {
-    return this.http.get<KhachHang>(`${this.apiUrl}/khach-hang/${id}`);
+    return this.http.get<KhachHang>(`${this.apiUrl}/${id}`);
   }
 
   createCustomer(data: CreateKhachHangDto): Observable<KhachHang> {
-    return this.http.post<KhachHang>(`${this.apiUrl}/khach-hang`, data);
+    return this.http.post<KhachHang>(this.apiUrl, data);
   }
 
   updateCustomer(id: number, data: UpdateKhachHangDto): Observable<KhachHang> {
-    return this.http.put<KhachHang>(`${this.apiUrl}/khach-hang/${id}`, data);
+    return this.http.put<KhachHang>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteCustomer(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/khach-hang/${id}`);
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
   }
 
   searchCustomers(keyword: string, page: number = 1, limit: number = 10): Observable<PaginatedResponse<KhachHang>> {
@@ -48,7 +48,7 @@ export class CustomerService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/khach-hang/search`, { params });
+    return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/search`, { params });
   }
 
   // Pet endpoints
@@ -57,23 +57,23 @@ export class CustomerService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung`, { params });
+    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/${customerId}/pets`, { params });
   }
 
   getPetById(customerId: number, petId: number): Observable<ThuCung> {
-    return this.http.get<ThuCung>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung/${petId}`);
+    return this.http.get<ThuCung>(`${this.apiUrl}/${customerId}/pets/${petId}`);
   }
 
   createPet(customerId: number, data: CreateThuCungDto): Observable<ThuCung> {
-    return this.http.post<ThuCung>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung`, data);
+    return this.http.post<ThuCung>(`${this.apiUrl}/${customerId}/pets`, data);
   }
 
   updatePet(customerId: number, petId: number, data: UpdateThuCungDto): Observable<ThuCung> {
-    return this.http.put<ThuCung>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung/${petId}`, data);
+    return this.http.put<ThuCung>(`${this.apiUrl}/${customerId}/pets/${petId}`, data);
   }
 
   deletePet(customerId: number, petId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung/${petId}`);
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/${customerId}/pets/${petId}`);
   }
 
   searchPets(keyword: string, page: number = 1, limit: number = 10): Observable<PaginatedResponse<ThuCung>> {
@@ -82,7 +82,24 @@ export class CustomerService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/thu-cung/search`, { params });
+    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/pets/search`, { params });
+  }
+
+  // Customer Statistics & Export
+  getCustomerStatistics(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/statistics`);
+  }
+
+  getInactiveCustomers(days: number = 30): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/inactive?days=${days}`);
+  }
+
+  getSpendingTrends(months: number = 12): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/spending-trends?months=${months}`);
+  }
+
+  exportCustomersToCSV(): Observable<Blob> {
+    return this.http.get(`${this.apiUrl}/export-csv`, { responseType: 'blob' });
   }
 
   // Species endpoints

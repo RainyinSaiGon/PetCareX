@@ -1,42 +1,27 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { ThuCung } from '../../entities/thu-cung.entity';
-import { LichHen } from '../../entities/lich-hen.entity';
+import { ThuCung } from '../../../entities/thu-cung.entity';
+import { LichHen } from '../../../entities/lich-hen.entity';
 
 export class CreatePetDto {
-  TenThucUng: string;
-  LoaiThucUng: string;
-  GioiTinh?: string;
-  MauLong?: string;
-  CanNang?: number;
-  ChieuCao?: number;
-  NgaySinh?: Date;
-  GhiChu?: string;
+  TenThuCung: string;
+  MaChungLoai: string;
+  NgaySinhThuCung?: Date;
 }
 
 export class UpdatePetDto {
-  TenThucUng?: string;
-  GioiTinh?: string;
-  MauLong?: string;
-  CanNang?: number;
-  ChieuCao?: number;
-  GhiChu?: string;
+  TenThuCung?: string;
+  MaChungLoai?: string;
+  NgaySinhThuCung?: Date;
 }
 
 export class PetResponseDto {
   MaThuCung: number;
   MaKhachHang: number;
   TenThuCung: string;
-  LoaiThuCung: string;
-  GioiTinh?: string;
-  MauLong?: string;
-  CanNang?: number;
-  ChieuCao?: number;
-  NgaySinh?: Date;
-  GhiChu?: string;
-  CreatedAt?: Date;
-  IsActive: boolean;
+  MaChungLoai: string;
+  NgaySinhThuCung?: Date;
 }
 
 @Injectable()
@@ -55,15 +40,9 @@ export class PetService {
     try {
       const pet = this.petRepository.create({
         MaKhachHang: customerId,
-        TenThucUng: createPetDto.TenThucUng,
-        LoaiThucUng: createPetDto.LoaiThucUng,
-        GioiTinh: createPetDto.GioiTinh || 'Khác',
-        MauLong: createPetDto.MauLong || null,
-        CanNang: createPetDto.CanNang || null,
-        ChieuCao: createPetDto.ChieuCao || null,
-        NgaySinh: createPetDto.NgaySinh || null,
-        GhiChu: createPetDto.GhiChu || null,
-        IsActive: true,
+        TenThuCung: createPetDto.TenThuCung,
+        MaChungLoai: createPetDto.MaChungLoai,
+        NgaySinhThuCung: createPetDto.NgaySinhThuCung,
       });
 
       const savedPet = await this.petRepository.save(pet);
@@ -79,8 +58,8 @@ export class PetService {
   async getPetById(petId: number): Promise<PetResponseDto> {
     try {
       const pet = await this.petRepository.findOne({
-        where: { MaThucUng: petId },
-        relations: ['KhachHang', 'LichHens'],
+        where: { MaThuCung: petId },
+        relations: ['ChungLoai'],
       });
 
       if (!pet) {
@@ -99,9 +78,9 @@ export class PetService {
   async getCustomerPets(customerId: number): Promise<PetResponseDto[]> {
     try {
       const pets = await this.petRepository.find({
-        where: { MaKhachHang: customerId, IsActive: true },
-        relations: ['LichHens'],
-        order: { MaThucUng: 'DESC' },
+        where: { MaKhachHang: customerId },
+        relations: ['ChungLoai'],
+        order: { MaThuCung: 'DESC' },
       });
 
       return pets.map(p => this.mapPetToDto(p));
@@ -116,19 +95,16 @@ export class PetService {
   async updatePet(petId: number, updatePetDto: UpdatePetDto): Promise<PetResponseDto> {
     try {
       const pet = await this.petRepository.findOne({
-        where: { MaThucUng: petId },
+        where: { MaThuCung: petId },
       });
 
       if (!pet) {
         throw new Error(`Pet with ID ${petId} not found`);
       }
 
-      if (updatePetDto.TenThucUng) pet.TenThucUng = updatePetDto.TenThucUng;
-      if (updatePetDto.GioiTinh) pet.GioiTinh = updatePetDto.GioiTinh;
-      if (updatePetDto.MauLong) pet.MauLong = updatePetDto.MauLong;
-      if (updatePetDto.CanNang !== undefined) pet.CanNang = updatePetDto.CanNang;
-      if (updatePetDto.ChieuCao !== undefined) pet.ChieuCao = updatePetDto.ChieuCao;
-      if (updatePetDto.GhiChu) pet.GhiChu = updatePetDto.GhiChu;
+      if (updatePetDto.TenThuCung) pet.TenThuCung = updatePetDto.TenThuCung;
+      if (updatePetDto.MaChungLoai) pet.MaChungLoai = updatePetDto.MaChungLoai;
+      if (updatePetDto.NgaySinhThuCung) pet.NgaySinhThuCung = updatePetDto.NgaySinhThuCung;
 
       const updated = await this.petRepository.save(pet);
       return this.mapPetToDto(updated);
@@ -143,17 +119,15 @@ export class PetService {
   async deletePet(petId: number): Promise<{ success: boolean; message: string }> {
     try {
       const pet = await this.petRepository.findOne({
-        where: { MaThucUng: petId },
+        where: { MaThuCung: petId },
       });
 
       if (!pet) {
         throw new Error(`Pet with ID ${petId} not found`);
       }
 
-      pet.IsActive = false;
-      await this.petRepository.save(pet);
-
-      return { success: true, message: `Pet ${petId} deactivated successfully` };
+      await this.petRepository.remove(pet);
+      return { success: true, message: `Pet ${petId} deleted successfully` };
     } catch (error) {
       throw new Error(`Failed to delete pet: ${error.message}`);
     }
@@ -165,8 +139,7 @@ export class PetService {
   async getPetMedicalHistory(petId: number): Promise<any[]> {
     try {
       const pet = await this.petRepository.findOne({
-        where: { MaThucUng: petId },
-        relations: ['LichHens'],
+        where: { MaThuCung: petId },
       });
 
       if (!pet) {
@@ -175,15 +148,15 @@ export class PetService {
 
       // Get appointments (representing medical visits)
       const appointments = await this.appointmentRepository.find({
-        where: { MaThucUng: petId },
-        order: { NgayLap: 'DESC' },
+        where: { MaThuCung: petId },
+        order: { NgayHen: 'DESC' },
       });
 
       return appointments.map(a => ({
         appointmentId: a.MaLichHen,
-        date: a.NgayLap,
-        service: a.GhiChu,
-        status: a.TrangThaiHen,
+        date: a.NgayHen,
+        time: a.GioHen,
+        status: a.TrangThai,
       }));
     } catch (error) {
       throw new Error(`Failed to get pet medical history: ${error.message}`);
@@ -195,17 +168,18 @@ export class PetService {
    */
   async getPetStatistics(): Promise<{
     totalPets: number;
-    activePets: number;
     petsByType: Record<string, number>;
     petsPerCustomer: number;
   }> {
     try {
-      const allPets = await this.petRepository.find();
-      const activePets = allPets.filter(p => p.IsActive !== false).length;
+      const allPets = await this.petRepository.find({
+        relations: ['ChungLoai'],
+      });
 
       const petsByType: Record<string, number> = {};
       allPets.forEach(p => {
-        petsByType[p.LoaiThucUng] = (petsByType[p.LoaiThucUng] || 0) + 1;
+        const typeName = p.ChungLoai?.TenChungLoaiThuCung || 'Unknown';
+        petsByType[typeName] = (petsByType[typeName] || 0) + 1;
       });
 
       // Get customer count to calculate average
@@ -217,7 +191,6 @@ export class PetService {
 
       return {
         totalPets: allPets.length,
-        activePets,
         petsByType,
         petsPerCustomer: Math.round(petsPerCustomer * 100) / 100,
       };
@@ -233,9 +206,9 @@ export class PetService {
     try {
       const pets = await this.petRepository
         .createQueryBuilder('p')
-        .where('p.TenThucUng LIKE :query', { query: `%${query}%` })
-        .orWhere('p.LoaiThucUng LIKE :query', { query: `%${query}%` })
-        .orderBy('p.TenThucUng', 'ASC')
+        .leftJoinAndSelect('p.ChungLoai', 'cl')
+        .where('p.TenThuCung LIKE :query', { query: `%${query}%` })
+        .orderBy('p.TenThuCung', 'ASC')
         .getMany();
 
       return pets.map(p => this.mapPetToDto(p));
@@ -247,20 +220,13 @@ export class PetService {
   /**
    * Helper method to map pet entity to DTO
    */
-  private mapPetToDto(pet: KhachHangThucUng): PetResponseDto {
+  private mapPetToDto(pet: ThuCung): PetResponseDto {
     return {
-      MaThucUng: pet.MaThucUng,
+      MaThuCung: pet.MaThuCung,
       MaKhachHang: pet.MaKhachHang,
-      TenThucUng: pet.TenThucUng,
-      LoaiThucUng: pet.LoaiThucUng,
-      GioiTinh: pet.GioiTinh || undefined,
-      MauLong: pet.MauLong || undefined,
-      CanNang: pet.CanNang || undefined,
-      ChieuCao: pet.ChieuCao || undefined,
-      NgaySinh: pet.NgaySinh || undefined,
-      GhiChu: pet.GhiChu || undefined,
-      CreatedAt: pet.CreatedAt,
-      IsActive: pet.IsActive !== false,
+      TenThuCung: pet.TenThuCung,
+      MaChungLoai: pet.MaChungLoai,
+      NgaySinhThuCung: pet.NgaySinhThuCung || undefined,
     };
   }
 }

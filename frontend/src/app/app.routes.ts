@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { CustomerListComponent } from './components/customer-list/customer-list.component';
 import { CustomerFormComponent } from './components/customer-form/customer-form.component';
+import { CustomerStatisticsComponent } from './components/customer-statistics/customer-statistics.component';
 import { PetListComponent } from './components/pet-list/pet-list.component';
 import { PetFormComponent } from './components/pet-form/pet-form.component';
 import { LoginComponent } from './components/auth/login.component';
@@ -17,6 +18,8 @@ export const routes: Routes = [
   { path: '', redirectTo: '/customers', pathMatch: 'full' },
   { path: 'customers', component: CustomerListComponent, canActivate: [AuthGuard] },
   { path: 'customers/new', component: CustomerFormComponent, canActivate: [AuthGuard] },
+  { path: 'customers/statistics', component: CustomerStatisticsComponent, canActivate: [AuthGuard] },
+  { path: 'customers/:id', component: CustomerFormComponent, canActivate: [AuthGuard] },
   { path: 'customers/:id/edit', component: CustomerFormComponent, canActivate: [AuthGuard] },
   { path: 'customers/:id/pets', component: PetListComponent, canActivate: [AuthGuard] },
   { path: 'customers/:id/pets/new', component: PetFormComponent, canActivate: [AuthGuard] },

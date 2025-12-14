@@ -31,10 +31,6 @@
         <th>Mã TC</th>
         <th>Tên Thú Cưng</th>
         <th>Chủng Loại</th>
-        <th>Ngày Sinh</th>
-        <th>Giới Tính</th>
-        <th>Cân Nặng</th>
-        <th>Màu Sắc</th>
         <th>Thao Tác</th>
       </tr>
     </thead>
@@ -42,11 +38,7 @@
       <tr *ngFor="let pet of pets">
         <td>{{ pet.MaThuCung }}</td>
         <td>{{ pet.TenThuCung }}</td>
-        <td>{{ pet.ChungLoai?.TenChungLoai || 'N/A' }}</td>
-        <td>{{ pet.NgaySinh | date: 'dd/MM/yyyy' }}</td>
-        <td>{{ pet.GioiTinh || 'N/A' }}</td>
-        <td>{{ pet.CanNang ? pet.CanNang + ' kg' : 'N/A' }}</td>
-        <td>{{ pet.MauSac || 'N/A' }}</td>
+        <td>{{ pet.ChungLoai?.TenChungLoaiThuCung || 'N/A' }}</td>
         <td class="actions">
           <button class="btn-icon btn-view" (click)="viewPet(pet.MaThuCung)" title="Xem chi tiết">
             👁️

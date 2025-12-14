@@ -32,11 +32,7 @@ export class PetFormComponent implements OnInit {
     this.petForm = this.fb.group({
       TenThuCung: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       MaChungLoai: ['', [Validators.required]],
-      NgaySinh: [''],
-      GioiTinh: [''],
-      CanNang: ['', [Validators.min(0), Validators.max(200)]],
-      MauSac: ['', [Validators.maxLength(50)]],
-      DacDiem: ['', [Validators.maxLength(500)]]
+      NgaySinhThuCung: ['']
     });
   }
 
@@ -92,11 +88,7 @@ export class PetFormComponent implements OnInit {
           this.petForm.patchValue({
             TenThuCung: pet.TenThuCung,
             MaChungLoai: pet.MaChungLoai,
-            NgaySinh: pet.NgaySinh ? this.formatDate(new Date(pet.NgaySinh)) : '',
-            GioiTinh: pet.GioiTinh || '',
-            CanNang: pet.CanNang || '',
-            MauSac: pet.MauSac || '',
-            DacDiem: pet.DacDiem || ''
+            NgaySinhThuCung: pet.NgaySinhThuCung ? this.formatDate(new Date(pet.NgaySinhThuCung)) : ''
           });
           this.loading = false;
         },

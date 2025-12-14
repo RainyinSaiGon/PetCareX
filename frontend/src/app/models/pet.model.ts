@@ -2,42 +2,36 @@ export interface ThuCung {
   MaThuCung: number;
   MaKhachHang: number;
   TenThuCung: string;
-  MaChungLoai: number;
-  NgaySinh?: Date;
-  GioiTinh?: string;
-  CanNang?: number;
-  MauSac?: string;
-  DacDiem?: string;
-  NgayTao?: Date;
+  MaChungLoai: string;
+  NgaySinhThuCung?: Date;
   ChungLoai?: {
-    MaChungLoai: number;
-    TenChungLoai: string;
+    MaChungLoaiThuCung: string;
+    TenChungLoaiThuCung: string;
+    MaLoaiThuCung: string;
   };
 }
 
 export interface CreateThuCungDto {
-  MaKhachHang: number;
   TenThuCung: string;
-  MaChungLoai: number;
-  NgaySinh?: string;
-  GioiTinh?: string;
-  CanNang?: number;
-  MauSac?: string;
-  DacDiem?: string;
+  MaChungLoai: string;
+  NgaySinhThuCung?: Date;
 }
 
 export interface UpdateThuCungDto {
   TenThuCung?: string;
-  MaChungLoai?: number;
-  NgaySinh?: string;
-  GioiTinh?: string;
-  CanNang?: number;
-  MauSac?: string;
-  DacDiem?: string;
+  MaChungLoai?: string;
+  NgaySinhThuCung?: Date;
 }
 
 export interface ChungLoaiThuCung {
-  MaChungLoai: number;
-  TenChungLoai: string;
-  MaLoai: number;
+  MaChungLoaiThuCung: string;
+  TenChungLoaiThuCung: string;
+  MaLoaiThuCung: string;
 }
+
+export interface PetStatistics {
+  totalPets: number;
+  petsByType: { [type: string]: number };
+  petsPerCustomer: number;
+}
+

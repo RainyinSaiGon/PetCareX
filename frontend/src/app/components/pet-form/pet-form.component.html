@@ -45,8 +45,8 @@
           [class.invalid]="isFieldInvalid('MaChungLoai')"
         >
           <option value="">-- Chọn chủng loại --</option>
-          <option *ngFor="let sp of species" [value]="sp.MaChungLoai">
-            {{ sp.TenChungLoai }}
+          <option *ngFor="let sp of species" [value]="sp.MaChungLoaiThuCung">
+            {{ sp.TenChungLoaiThuCung }}
           </option>
         </select>
         <span class="error-message" *ngIf="isFieldInvalid('MaChungLoai')">
@@ -57,73 +57,17 @@
 
     <div class="form-row">
       <div class="form-group">
-        <label for="NgaySinh">Ngày Sinh</label>
+        <label for="NgaySinhThuCung">Ngày Sinh</label>
         <input
           type="date"
-          id="NgaySinh"
-          formControlName="NgaySinh"
-          [class.invalid]="isFieldInvalid('NgaySinh')"
+          id="NgaySinhThuCung"
+          formControlName="NgaySinhThuCung"
+          [class.invalid]="isFieldInvalid('NgaySinhThuCung')"
         />
-        <span class="error-message" *ngIf="isFieldInvalid('NgaySinh')">
-          {{ getErrorMessage('NgaySinh') }}
+        <span class="error-message" *ngIf="isFieldInvalid('NgaySinhThuCung')">
+          {{ getErrorMessage('NgaySinhThuCung') }}
         </span>
       </div>
-
-      <div class="form-group">
-        <label for="GioiTinh">Giới Tính</label>
-        <select id="GioiTinh" formControlName="GioiTinh">
-          <option value="">-- Chọn giới tính --</option>
-          <option value="Đực">Đực</option>
-          <option value="Cái">Cái</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="form-row">
-      <div class="form-group">
-        <label for="CanNang">Cân Nặng (kg)</label>
-        <input
-          type="number"
-          id="CanNang"
-          formControlName="CanNang"
-          [class.invalid]="isFieldInvalid('CanNang')"
-          placeholder="Nhập cân nặng"
-          step="0.1"
-          min="0"
-          max="200"
-        />
-        <span class="error-message" *ngIf="isFieldInvalid('CanNang')">
-          {{ getErrorMessage('CanNang') }}
-        </span>
-      </div>
-
-      <div class="form-group">
-        <label for="MauSac">Màu Sắc</label>
-        <input
-          type="text"
-          id="MauSac"
-          formControlName="MauSac"
-          [class.invalid]="isFieldInvalid('MauSac')"
-          placeholder="Nhập màu sắc"
-        />
-        <span class="error-message" *ngIf="isFieldInvalid('MauSac')">
-          {{ getErrorMessage('MauSac') }}
-        </span>
-      </div>
-    </div>
-
-    <div class="form-group">
-      <label for="DacDiem">Đặc Điểm</label>
-      <textarea
-        id="DacDiem"
-        formControlName="DacDiem"
-        rows="4"
-        [class.invalid]="isFieldInvalid('DacDiem')"
-        placeholder="Nhập đặc điểm đặc biệt của thú cưng (không bắt buộc)"
-      ></textarea>
-      <span class="error-message" *ngIf="isFieldInvalid('DacDiem')">
-        {{ getErrorMessage('DacDiem') }}
-      </span>
     </div>
 
     <div class="form-actions">

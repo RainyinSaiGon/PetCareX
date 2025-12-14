@@ -1,98 +1,224 @@
-<div class="container">
-  <div class="header">
-    <h1>Quản Lý Khách Hàng</h1>
-    <button class="btn btn-primary" (click)="createCustomer()">
-      <span class="icon">+</span> Thêm Khách Hàng
+<div class="customer-list-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <i class="fas fa-users"></i>
+        <h1>Quản Lý Khách Hàng</h1>
+        <span class="badge-count" *ngIf="!loading">{{ totalItems }}</span>
+      </div>
+      <button class="btn btn-primary" (click)="createCustomer()">
+        <i class="fas fa-plus"></i>
+        <span>Thêm Khách Hàng Mới</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Search and Filters Section -->
+  <div class="filters-section">
+    <div class="search-container">
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          placeholder="Tìm kiếm theo tên, SĐT, email..." 
+          [(ngModel)]="searchKeyword"
+          (input)="onSearchInput()"
+          (keyup.enter)="onSearch()"
+          class="search-input"
+        >
+        <button 
+          class="btn-clear" 
+          *ngIf="searchKeyword"
+          (click)="clearSearch()"
+          title="Xóa tìm kiếm"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <button class="btn btn-search" (click)="onSearch()">
+        <i class="fas fa-search"></i>
+        <span>Tìm Kiếm</span>
+      </button>
+    </div>
+    
+    <div class="stats-bar" *ngIf="!loading && customers.length > 0">
+      <div class="stat-item">
+        <i class="fas fa-users"></i>
+        <span>Tổng: <strong>{{ totalItems }}</strong></span>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-eye"></i>
+        <span>Đang xem: <strong>{{ customers.length }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="alert alert-error" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ error }}</span>
+    <button class="close-btn" (click)="error = ''" aria-label="Đóng">
+      <i class="fas fa-times"></i>
     </button>
   </div>
 
-  <div class="search-bar">
-    <input 
-      type="text" 
-      [(ngModel)]="searchKeyword" 
-      (keyup.enter)="onSearch()"
-      placeholder="Tìm kiếm theo tên, số điện thoại..."
-      class="search-input"
-    />
-    <button class="btn btn-secondary" (click)="onSearch()">Tìm Kiếm</button>
-  </div>
-
-  <div *ngIf="error" class="alert alert-error">
-    {{ error }}
-  </div>
-
-  <div *ngIf="loading" class="loading">
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="loading">
     <div class="spinner"></div>
     <p>Đang tải dữ liệu...</p>
   </div>
 
-  <div *ngIf="!loading && customers.length === 0" class="empty-state">
-    <p>Không tìm thấy khách hàng nào.</p>
+  <!-- Customer Table -->
+  <div class="table-wrapper" *ngIf="!loading && customers.length > 0">
+    <div class="table-container">
+      <table class="customers-table">
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-name">Họ Tên</th>
+            <th class="col-phone">Số Điện Thoại</th>
+            <th class="col-email">Email</th>
+            <th class="col-address">Địa Chỉ</th>
+            <th class="col-tier">Hạng Thành Viên</th>
+            <th class="col-spending">Tổng Chi Tiêu</th>
+            <th class="col-actions">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let customer of customers" class="customer-row">
+            <td class="customer-id">{{ customer.MaKhachHang }}</td>
+            <td class="customer-name">
+              <div class="name-wrapper">
+                <strong>{{ customer.HoTen }}</strong>
+              </div>
+            </td>
+            <td class="customer-phone">
+              <a [href]="'tel:' + customer.SoDienThoai" class="phone-link">
+                <i class="fas fa-phone"></i>
+                {{ customer.SoDienThoai }}
+              </a>
+            </td>
+            <td class="customer-email">
+              <a *ngIf="customer.Email" [href]="'mailto:' + customer.Email" class="email-link">
+                <i class="fas fa-envelope"></i>
+                {{ customer.Email }}
+              </a>
+              <span *ngIf="!customer.Email" class="empty-value">-</span>
+            </td>
+            <td class="customer-address">
+              <span *ngIf="customer.DiaChi" [title]="customer.DiaChi">
+                {{ customer.DiaChi.length > 30 ? (customer.DiaChi | slice:0:30) + '...' : customer.DiaChi }}
+              </span>
+              <span *ngIf="!customer.DiaChi" class="empty-value">-</span>
+            </td>
+            <td class="customer-tier">
+              <span class="tier-badge" [ngClass]="'tier-' + (customer.TenHang?.toLowerCase() || 'bronze')">
+                <i class="fas" [ngClass]="getTierIcon(customer.TenHang)"></i>
+                {{ customer.TenHang || 'Bronze' }}
+              </span>
+            </td>
+            <td class="customer-spending">
+              <span class="spending-amount">{{ customer.TongChiTieu | number:'1.0-0' }} đ</span>
+            </td>
+            <td class="customer-actions">
+              <div class="action-buttons">
+                <button 
+                  class="btn-action btn-view" 
+                  (click)="viewCustomer(customer.MaKhachHang)" 
+                  title="Xem chi tiết"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button 
+                  class="btn-action btn-edit" 
+                  (click)="editCustomer(customer.MaKhachHang)" 
+                  title="Chỉnh sửa"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  class="btn-action btn-pets" 
+                  (click)="viewPets(customer.MaKhachHang)" 
+                  title="Quản lý thú cưng"
+                >
+                  <i class="fas fa-paw"></i>
+                </button>
+                <button 
+                  class="btn-action btn-delete" 
+                  (click)="deleteCustomer(customer)" 
+                  title="Xóa"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <table *ngIf="!loading && customers.length > 0" class="customer-table">
-    <thead>
-      <tr>
-        <th>Mã KH</th>
-        <th>Họ Tên</th>
-        <th>Số Điện Thoại</th>
-        <th>Email</th>
-        <th>Địa Chỉ</th>
-        <th>Ngày Tạo</th>
-        <th>Thao Tác</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let customer of customers">
-        <td>{{ customer.MaKhachHang }}</td>
-        <td>{{ customer.HoTen }}</td>
-        <td>{{ customer.SoDienThoai }}</td>
-        <td>{{ customer.Email || 'N/A' }}</td>
-        <td>{{ customer.DiaChi || 'N/A' }}</td>
-        <td>{{ customer.NgayTao | date: 'dd/MM/yyyy' }}</td>
-        <td class="actions">
-          <button class="btn-icon btn-view" (click)="viewCustomer(customer.MaKhachHang)" title="Xem chi tiết">
-            👁️
-          </button>
-          <button class="btn-icon btn-edit" (click)="editCustomer(customer.MaKhachHang)" title="Chỉnh sửa">
-            ✏️
-          </button>
-          <button class="btn-icon btn-delete" (click)="deleteCustomer(customer)" title="Xóa">
-            🗑️
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div *ngIf="!loading && totalPages > 1" class="pagination">
-    <button 
-      class="btn-page" 
-      (click)="onPageChange(currentPage - 1)"
-      [disabled]="currentPage === 1"
-    >
-      &laquo; Trước
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && customers.length === 0">
+    <div class="empty-icon">
+      <i class="fas fa-users-slash"></i>
+    </div>
+    <h3>Không tìm thấy khách hàng</h3>
+    <p *ngIf="searchKeyword">
+      Không có kết quả nào cho từ khóa "<strong>{{ searchKeyword }}</strong>"
+    </p>
+    <p *ngIf="!searchKeyword">Chưa có khách hàng nào trong hệ thống.</p>
+    <button class="btn btn-primary" (click)="createCustomer()" *ngIf="!searchKeyword">
+      <i class="fas fa-plus"></i>
+      <span>Thêm Khách Hàng Đầu Tiên</span>
     </button>
-
-    <button 
-      *ngFor="let page of getPaginationPages()"
-      class="btn-page"
-      [class.active]="page === currentPage"
-      (click)="onPageChange(page)"
-    >
-      {{ page }}
+    <button class="btn btn-secondary" (click)="clearSearch()" *ngIf="searchKeyword">
+      <i class="fas fa-times"></i>
+      <span>Xóa Bộ Lọc</span>
     </button>
+  </div>
 
-    <button 
-      class="btn-page" 
-      (click)="onPageChange(currentPage + 1)"
-      [disabled]="currentPage === totalPages"
-    >
-      Sau &raquo;
-    </button>
-
-    <span class="page-info">
-      Trang {{ currentPage }} / {{ totalPages }} (Tổng: {{ totalItems }} khách hàng)
-    </span>
+  <!-- Pagination -->
+  <div class="pagination-wrapper" *ngIf="!loading && totalPages > 1">
+    <div class="pagination-info">
+      <span>
+        Hiển thị <strong>{{ (currentPage - 1) * pageSize + 1 }}</strong> - 
+        <strong>{{ Math.min(currentPage * pageSize, totalItems) }}</strong> 
+        trong <strong>{{ totalItems }}</strong> khách hàng
+      </span>
+    </div>
+    <div class="pagination-controls">
+      <button 
+        class="btn-pagination" 
+        (click)="onPageChange(currentPage - 1)"
+        [disabled]="currentPage === 1"
+        title="Trang trước"
+      >
+        <i class="fas fa-chevron-left"></i>
+        <span>Trước</span>
+      </button>
+      
+      <div class="page-numbers">
+        <button 
+          *ngFor="let page of getPaginationPages()"
+          class="btn-page"
+          [class.active]="page === currentPage"
+          (click)="onPageChange(page)"
+        >
+          {{ page }}
+        </button>
+      </div>
+      
+      <button 
+        class="btn-pagination"
+        (click)="onPageChange(currentPage + 1)"
+        [disabled]="currentPage === totalPages"
+        title="Trang sau"
+      >
+        <span>Sau</span>
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    </div>
   </div>
 </div>
