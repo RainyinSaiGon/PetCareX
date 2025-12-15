@@ -74,6 +74,7 @@
   box-sizing: border-box;
   transition: all 0.3s ease;
   background-color: #fafafa;
+  color: black;
 }
 
 .form-group input:focus,

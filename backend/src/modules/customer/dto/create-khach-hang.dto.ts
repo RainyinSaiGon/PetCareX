@@ -1,4 +1,4 @@
-import { IsString, IsOptional, Length, Matches } from 'class-validator';
+import { IsString, IsOptional, Length, Matches, IsEmail, MaxLength, ValidateIf } from 'class-validator';
 
 export class CreateKhachHangDto {
   @IsString()
@@ -9,4 +9,14 @@ export class CreateKhachHangDto {
   @Length(10, 10)
   @Matches(/^0[0-9]{9}$/, { message: 'Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số' })
   SoDienThoai: string;
+
+  @ValidateIf((o) => o.Email && o.Email.trim() !== '')
+  @IsEmail()
+  @IsOptional()
+  Email?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  DiaChi?: string;
 }

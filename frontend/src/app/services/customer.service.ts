@@ -23,23 +23,23 @@ export class CustomerService {
       params = params.set('keyword', keyword);
     }
 
-    return this.http.get<PaginatedResponse<KhachHang>>(this.apiUrl, { params });
+    return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/khach-hang`, { params });
   }
 
   getCustomerById(id: number): Observable<KhachHang> {
-    return this.http.get<KhachHang>(`${this.apiUrl}/${id}`);
+    return this.http.get<KhachHang>(`${this.apiUrl}/khach-hang/${id}`);
   }
 
   createCustomer(data: CreateKhachHangDto): Observable<KhachHang> {
-    return this.http.post<KhachHang>(this.apiUrl, data);
+    return this.http.post<KhachHang>(`${this.apiUrl}/khach-hang`, data);
   }
 
   updateCustomer(id: number, data: UpdateKhachHangDto): Observable<KhachHang> {
-    return this.http.put<KhachHang>(`${this.apiUrl}/${id}`, data);
+    return this.http.put<KhachHang>(`${this.apiUrl}/khach-hang/${id}`, data);
   }
 
   deleteCustomer(id: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/khach-hang/${id}`);
   }
 
   searchCustomers(keyword: string, page: number = 1, limit: number = 10): Observable<PaginatedResponse<KhachHang>> {
@@ -48,7 +48,7 @@ export class CustomerService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/search`, { params });
+    return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/khach-hang/search`, { params });
   }
 
   // Pet endpoints
@@ -57,23 +57,23 @@ export class CustomerService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/${customerId}/pets`, { params });
+    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung`, { params });
   }
 
   getPetById(customerId: number, petId: number): Observable<ThuCung> {
-    return this.http.get<ThuCung>(`${this.apiUrl}/${customerId}/pets/${petId}`);
+    return this.http.get<ThuCung>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung/${petId}`);
   }
 
   createPet(customerId: number, data: CreateThuCungDto): Observable<ThuCung> {
-    return this.http.post<ThuCung>(`${this.apiUrl}/${customerId}/pets`, data);
+    return this.http.post<ThuCung>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung`, data);
   }
 
   updatePet(customerId: number, petId: number, data: UpdateThuCungDto): Observable<ThuCung> {
-    return this.http.put<ThuCung>(`${this.apiUrl}/${customerId}/pets/${petId}`, data);
+    return this.http.put<ThuCung>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung/${petId}`, data);
   }
 
   deletePet(customerId: number, petId: number): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${this.apiUrl}/${customerId}/pets/${petId}`);
+    return this.http.delete<{ message: string }>(`${this.apiUrl}/khach-hang/${customerId}/thu-cung/${petId}`);
   }
 
   searchPets(keyword: string, page: number = 1, limit: number = 10): Observable<PaginatedResponse<ThuCung>> {
@@ -82,7 +82,7 @@ export class CustomerService {
       .set('page', page.toString())
       .set('limit', limit.toString());
 
-    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/pets/search`, { params });
+    return this.http.get<PaginatedResponse<ThuCung>>(`${this.apiUrl}/thu-cung/search`, { params });
   }
 
   // Customer Statistics & Export
