@@ -113,9 +113,9 @@
               <span *ngIf="!customer.DiaChi" class="empty-value">-</span>
             </td>
             <td class="customer-tier">
-              <span class="tier-badge" [ngClass]="'tier-' + (customer.TenHang?.toLowerCase() || 'bronze')">
+              <span class="tier-badge" [ngClass]="getTierClass(customer.TenHang)">
                 <i class="fas" [ngClass]="getTierIcon(customer.TenHang)"></i>
-                {{ customer.TenHang || 'Bronze' }}
+                {{ customer.TenHang || 'Cơ bản' }}
               </span>
             </td>
             <td class="customer-spending">

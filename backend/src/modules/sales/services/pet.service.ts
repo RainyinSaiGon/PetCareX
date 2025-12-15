@@ -3,26 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ThuCung } from '../../../entities/thu-cung.entity';
 import { LichHen } from '../../../entities/lich-hen.entity';
-
-export class CreatePetDto {
-  TenThuCung: string;
-  MaChungLoai: string;
-  NgaySinhThuCung?: Date;
-}
-
-export class UpdatePetDto {
-  TenThuCung?: string;
-  MaChungLoai?: string;
-  NgaySinhThuCung?: Date;
-}
-
-export class PetResponseDto {
-  MaThuCung: number;
-  MaKhachHang: number;
-  TenThuCung: string;
-  MaChungLoai: string;
-  NgaySinhThuCung?: Date;
-}
+import { CreatePetDto, UpdatePetDto, PetResponseDto } from '../dto/pet.dto';
 
 @Injectable()
 export class PetService {
@@ -73,17 +54,31 @@ export class PetService {
   }
 
   /**
-   * Get all pets for a customer
+   * Get all pets for a customer with pagination
    */
-  async getCustomerPets(customerId: number): Promise<PetResponseDto[]> {
+  async getCustomerPets(customerId: number, page: number = 1, limit: number = 10): Promise<{
+    data: PetResponseDto[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
     try {
-      const pets = await this.petRepository.find({
+      const [pets, total] = await this.petRepository.findAndCount({
         where: { MaKhachHang: customerId },
         relations: ['ChungLoai'],
         order: { MaThuCung: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
       });
 
-      return pets.map(p => this.mapPetToDto(p));
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        data: pets.map(p => this.mapPetToDto(p)),
+        total,
+        page,
+        totalPages,
+      };
     } catch (error) {
       throw new Error(`Failed to get customer pets: ${error.message}`);
     }
@@ -227,6 +222,11 @@ export class PetService {
       TenThuCung: pet.TenThuCung,
       MaChungLoai: pet.MaChungLoai,
       NgaySinhThuCung: pet.NgaySinhThuCung || undefined,
+      ChungLoai: pet.ChungLoai ? {
+        MaChungLoaiThuCung: pet.ChungLoai.MaChungLoaiThuCung,
+        TenChungLoaiThuCung: pet.ChungLoai.TenChungLoaiThuCung,
+        MaLoaiThuCung: pet.ChungLoai.MaLoaiThuCung,
+      } : undefined,
     };
   }
 }

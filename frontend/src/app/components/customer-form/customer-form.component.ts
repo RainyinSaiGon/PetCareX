@@ -1,7 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CustomerService } from '../../services/customer.service';
 import { KhachHang } from '../../models/customer.model';
 
@@ -12,13 +14,15 @@ import { KhachHang } from '../../models/customer.model';
   templateUrl: './customer-form.component.html',
   styleUrls: ['./customer-form.component.css']
 })
-export class CustomerFormComponent implements OnInit {
+export class CustomerFormComponent implements OnInit, OnDestroy {
   customerForm: FormGroup;
   isEditMode = false;
+  isViewMode = false;
   customerId?: number;
   loading = false;
   error = '';
   success = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -36,8 +40,11 @@ export class CustomerFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.customerId = Number(this.route.snapshot.paramMap.get('id'));
+    const isEditRoute = this.route.snapshot.url.some(segment => segment.path === 'edit');
+    
     if (this.customerId) {
-      this.isEditMode = true;
+      this.isEditMode = isEditRoute;
+      this.isViewMode = !isEditRoute;
       this.loadCustomer();
     }
   }
@@ -47,8 +54,10 @@ export class CustomerFormComponent implements OnInit {
     
     this.loading = true;
     this.customerService.getCustomerById(this.customerId)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (customer: KhachHang) => {
+        next: (response: any) => {
+          const customer = response.data || response;
           this.customerForm.patchValue({
             HoTen: customer.HoTen,
             SoDienThoai: customer.SoDienThoai,
@@ -101,6 +110,12 @@ export class CustomerFormComponent implements OnInit {
     this.router.navigate(['/customers']);
   }
 
+  editCustomer(): void {
+    if (this.customerId) {
+      this.router.navigate(['/customers', this.customerId, 'edit']);
+    }
+  }
+
   private markFormGroupTouched(formGroup: FormGroup): void {
     Object.keys(formGroup.controls).forEach(key => {
       const control = formGroup.get(key);
@@ -136,5 +151,10 @@ export class CustomerFormComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.customerForm.get(fieldName);
     return !!(control && control.invalid && control.touched);
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

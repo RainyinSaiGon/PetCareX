@@ -1,8 +1,0 @@
-# Frontend Dependencies for PetCareX
-# This file lists all npm packages required for the Angular frontend
-
-# Angular Core packages will be installed automatically via @angular/cli
-# Additional packages can be added here as needed
-
-# To install dependencies, run:
-# npm install

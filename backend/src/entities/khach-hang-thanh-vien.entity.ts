@@ -22,9 +22,6 @@ export class KhachHangThanhVien {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
   TongChiTieu: number;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
-  TenHang: string;
-
   @Column({ type: 'varchar', length: 150, nullable: true })
   DiaChi: string;
 
@@ -38,7 +35,11 @@ export class KhachHangThanhVien {
   @JoinColumn({ name: 'MaKhachHang' })
   KhachHang: KhachHang;
 
-  @ManyToOne(() => HangThanhVien, hang => hang.KhachHangThanhViens)
-  @JoinColumn({ name: 'TenHang' })
+  @ManyToOne(() => HangThanhVien, hang => hang.KhachHangThanhViens, { eager: false })
+  @JoinColumn({ name: 'TenHang', referencedColumnName: 'TenHang' })
   Hang: HangThanhVien;
+  
+  // TenHang is the foreign key column
+  @Column({ type: 'varchar', length: 10, nullable: true })
+  TenHang: string;
 }

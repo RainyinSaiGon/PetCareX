@@ -420,3 +420,50 @@ ALTER TABLE THANHTOANDICHVUYTE ADD CONSTRAINT FK_TTDV_HOADON FOREIGN KEY (MaHoaD
 ALTER TABLE THANHTOANDICHVUYTE ADD CONSTRAINT FK_TTDV_DICHVU FOREIGN KEY (MaDichVu) REFERENCES DICHVUYTE(MaDichVu);
 ALTER TABLE DANHGIAYTE ADD CONSTRAINT FK_DGYTE_HOADON FOREIGN KEY (MaHoaDon) REFERENCES HOADON(MaHoaDon);
 ALTER TABLE DANHGIAMUAHANG ADD CONSTRAINT FK_DGMH_HOADON FOREIGN KEY (MaHoaDon) REFERENCES HOADON(MaHoaDon);
+
+/*******************************************************************************
+ * PHẦN 3: SEED DATA - LOẠI THÚ CƯNG VÀ CHỦNG LOẠI
+ ******************************************************************************/
+
+-- Insert Pet Types (Loại Thú Cưng)
+INSERT INTO LOAITHUCUNG (MaLoaiThuCung, TenLoaiThuCung) VALUES
+('C1', 'Chó'),
+('C2', 'Mèo'),
+('C3', 'Gà'),
+('C4', 'Vịt');
+
+-- Insert Pet Breeds (Chủng Loại) - Dog Breeds
+INSERT INTO CHUNGLOAITHUCUNG (MaChungLoaiThuCung, TenChungLoaiThuCung, MaLoaiThuCung) VALUES
+('D1', 'Husky', 'C1'),
+('D2', 'Labrador', 'C1'),
+('D3', 'Golden Retriever', 'C1'),
+('D4', 'German Shepherd', 'C1'),
+('D5', 'Poodle', 'C1'),
+('D6', 'Bulldog', 'C1'),
+('D7', 'Chihuahua', 'C1'),
+('D8', 'Shiba Inu', 'C1');
+
+-- Insert Cat Breeds
+INSERT INTO CHUNGLOAITHUCUNG (MaChungLoaiThuCung, TenChungLoaiThuCung, MaLoaiThuCung) VALUES
+('M1', 'Persian', 'C2'),
+('M2', 'Siamese', 'C2'),
+('M3', 'Bengal', 'C2'),
+('M4', 'Maine Coon', 'C2'),
+('M5', 'British Shorthair', 'C2'),
+('M6', 'Ragdoll', 'C2'),
+('M7', 'Scottish Fold', 'C2'),
+('M8', 'Sphynx', 'C2');
+
+-- Insert Chicken Breeds
+INSERT INTO CHUNGLOAITHUCUNG (MaChungLoaiThuCung, TenChungLoaiThuCung, MaLoaiThuCung) VALUES
+('G1', 'Gà Ngoại', 'C3'),
+('G2', 'Gà Nội', 'C3'),
+('G3', 'Gà Đông Tảo', 'C3'),
+('G4', 'Gà Các', 'C3');
+
+-- Insert Duck Breeds
+INSERT INTO CHUNGLOAITHUCUNG (MaChungLoaiThuCung, TenChungLoaiThuCung, MaLoaiThuCung) VALUES
+('V1', 'Vịt Ngoại', 'C4'),
+('V2', 'Vịt Nội', 'C4'),
+('V3', 'Vịt Aylesbury', 'C4'),
+('V4', 'Vịt Pekin', 'C4');

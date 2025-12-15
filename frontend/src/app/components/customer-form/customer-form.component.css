@@ -10,12 +10,32 @@
   border-bottom: 3px solid #456882;
 }
 
+.header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
 .header h1 {
   color: #1B3C53;
   font-size: 32px;
   margin: 0;
   font-weight: 700;
   text-shadow: 2px 2px 4px rgba(27, 60, 83, 0.1);
+}
+
+.mode-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  background: #E8F4F8;
+  color: #0288D1;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
 }
 
 .alert {
@@ -75,6 +95,14 @@
   transition: all 0.3s ease;
   background-color: #fafafa;
   color: black;
+}
+
+.form-group input:readonly,
+.form-group textarea:readonly {
+  background-color: #f0f0f0;
+  color: #333;
+  border-color: #D3D3D3;
+  cursor: default;
 }
 
 .form-group input:focus,
@@ -150,4 +178,72 @@
   background: linear-gradient(135deg, #d0d0d0 0%, #c0c0c0 100%);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+/* Readonly Fields */
+.form-group input:readonly,
+.form-group textarea:readonly {
+  background: linear-gradient(to right, #f8fafb, #f0f2f5);
+  color: #333;
+  border-color: #D3D3D3;
+  cursor: default;
+  font-weight: 500;
+}
+
+.form-group input:readonly:focus,
+.form-group textarea:readonly:focus {
+  box-shadow: none;
+  border-color: #D3D3D3;
+}
+
+/* Loading Skeleton */
+.loading-skeleton {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.skeleton-group {
+  margin-bottom: 28px;
+}
+
+.skeleton-label {
+  height: 16px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  width: 100px;
+}
+
+.skeleton-input {
+  height: 44px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: loading 2s infinite;
+}
+
+.skeleton-textarea {
+  height: 120px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 200% 100%;
+  border-radius: 8px;
+  animation: loading 2s infinite;
+}
+
+@keyframes loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
 }

@@ -27,7 +27,7 @@ export class CustomerService {
       const membership = new KhachHangThanhVien();
       membership.MaKhachHang = savedCustomer.MaKhachHang;
       membership.TongChiTieu = 0;
-      membership.TenHang = 'Bronze';
+      membership.TenHang = 'Cơ bản';
       if (createCustomerDto.Email) membership.Email = createCustomerDto.Email;
       if (createCustomerDto.CCCD) membership.CCCD = createCustomerDto.CCCD;
       if (createCustomerDto.DiaChi) membership.DiaChi = createCustomerDto.DiaChi;
@@ -161,18 +161,16 @@ export class CustomerService {
       const averageSpending = allMembers.length > 0 ? totalSpending / allMembers.length : 0;
 
       const tierDistribution = {
-        bronze: 0,
-        silver: 0,
-        gold: 0,
-        platinum: 0,
+        'co-ban': 0,
+        'than-thiet': 0,
+        'vip': 0,
       };
 
       allMembers.forEach(member => {
-        const tier = (member.TenHang || 'Bronze').toLowerCase();
-        if (tier === 'bronze') tierDistribution.bronze++;
-        else if (tier === 'silver') tierDistribution.silver++;
-        else if (tier === 'gold') tierDistribution.gold++;
-        else if (tier === 'platinum') tierDistribution.platinum++;
+        const tier = (member.TenHang || 'Cơ bản').toLowerCase();
+        if (tier === 'cơ bản') tierDistribution['co-ban']++;
+        else if (tier === 'thân thiết') tierDistribution['than-thiet']++;
+        else if (tier === 'vip') tierDistribution['vip']++;
       });
 
       const topSpenders = allMembers
@@ -358,7 +356,7 @@ export class CustomerService {
       NgaySinh: membership?.NgaySinh || undefined,
       GioiTinh: membership?.GioiTinh || undefined,
       TongChiTieu: membership?.TongChiTieu || 0,
-      TenHang: membership?.TenHang || 'Bronze',
+      TenHang: membership?.TenHang || 'Cơ bản',
       IsActive: true,
     };
   }

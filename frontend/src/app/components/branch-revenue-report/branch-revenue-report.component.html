@@ -1,0 +1,140 @@
+<div class="revenue-report-container">
+  <div class="header-section">
+    <h1>📊 Báo Cáo Doanh Thu Chi Nhánh</h1>
+    <p class="subtitle">Phân tích doanh thu theo chi nhánh và thời gian</p>
+  </div>
+
+  <div class="controls-section">
+    <div class="filter-group">
+      <label>Lọc theo Chi Nhánh:</label>
+      <select [(ngModel)]="selectedBranch" (change)="onFilterChange()" class="filter-select">
+        <option value="">-- Tất cả chi nhánh --</option>
+        <option value="CN01">Chi nhánh Hà Nội</option>
+        <option value="CN02">Chi nhánh TP HCM</option>
+        <option value="CN03">Chi nhánh Đà Nẵng</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Năm:</label>
+      <input type="number" [(ngModel)]="selectedYear" (change)="onFilterChange()" min="2020" max="2099" />
+    </div>
+  </div>
+
+  <!-- System Revenue Summary -->
+  <div class="summary-section" *ngIf="systemRevenue && !loading">
+    <div class="summary-card">
+      <div class="summary-icon">💰</div>
+      <div class="summary-content">
+        <p class="summary-label">Tổng Doanh Thu Hệ Thống</p>
+        <p class="summary-value">{{ formatCurrency(systemRevenue.totalRevenue) }}</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon">📈</div>
+      <div class="summary-content">
+        <p class="summary-label">Tổng Giao Dịch</p>
+        <p class="summary-value">{{ systemRevenue.totalTransactions }}</p>
+      </div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon">🔢</div>
+      <div class="summary-content">
+        <p class="summary-label">Giá Trị Trung Bình</p>
+        <p class="summary-value">{{ formatCurrency(systemRevenue.averageTransactionValue) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branch Revenue Table -->
+  <div class="revenue-table-section">
+    <h2>Doanh Thu Chi Nhánh</h2>
+    <div class="table-wrapper" *ngIf="!loading">
+      <table class="revenue-table" *ngIf="revenueReports.length > 0">
+        <thead>
+          <tr>
+            <th>Mã Chi Nhánh</th>
+            <th>Tên Chi Nhánh</th>
+            <th>Tổng Doanh Thu</th>
+            <th>Số Giao Dịch</th>
+            <th>Giá Trị TB</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let report of revenueReports" class="data-row">
+            <td>
+              <span class="badge">{{ report.MaChiNhanh }}</span>
+            </td>
+            <td class="branch-name">{{ report.TenChiNhanh }}</td>
+            <td class="revenue-value">{{ formatCurrency(report.TotalRevenue) }}</td>
+            <td class="transaction-count">{{ report.TransactionCount }}</td>
+            <td>{{ formatCurrency(report.AverageTransactionValue) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="top-products-section">
+    <h2>Top Sản Phẩm Bán Chạy</h2>
+    <div class="products-grid">
+      <div class="product-card" *ngFor="let product of topProducts.slice(0, 6)">
+        <div class="product-rank">🥇</div>
+        <p class="product-name">{{ product.TenSanPham }}</p>
+        <p class="product-revenue">{{ formatCurrency(product.TotalRevenue) }}</p>
+        <p class="product-units">{{ product.UnitsSold }} bộ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monthly Revenue Chart -->
+  <div class="chart-section">
+    <h2>Doanh Thu Theo Tháng</h2>
+    <div class="chart-container">
+      <div class="chart-bars">
+        <div class="bar-wrapper" *ngFor="let month of monthlyChartData">
+          <div 
+            class="bar" 
+            [style.height.%]="(month.totalRevenue / (monthlyChartData | map: 'totalRevenue' | max)) * 100"
+            [title]="formatCurrency(month.totalRevenue)"
+          ></div>
+          <span class="bar-label">{{ getMonthName(month.month) }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-section" *ngIf="revenueReports.length > 0">
+    <button
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(1)"
+      class="pagination-btn"
+    >
+      ⏮️
+    </button>
+    <button
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(currentPage - 1)"
+      class="pagination-btn"
+    >
+      ◀️
+    </button>
+    <span class="page-indicator">{{ currentPage }} / {{ totalPages }}</span>
+    <button
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(currentPage + 1)"
+      class="pagination-btn"
+    >
+      ▶️
+    </button>
+    <button
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(totalPages)"
+      class="pagination-btn"
+    >
+      ⏭️
+    </button>
+  </div>
+</div>

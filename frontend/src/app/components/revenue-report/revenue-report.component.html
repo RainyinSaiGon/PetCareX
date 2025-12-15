@@ -1,0 +1,197 @@
+<div class="revenue-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title"><i class="fas fa-chart-pie"></i> Báo Cáo Doanh Thu Chi Nhánh</h1>
+      <p class="page-subtitle">Phân tích chi tiết doanh thu và hiệu suất kinh doanh của các chi nhánh</p>
+    </div>
+  </div>
+
+  <!-- Key Metrics -->
+  <div class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon revenue">
+        <i class="fas fa-wallet"></i>
+      </div>
+      <div class="metric-content">
+        <h4>Tổng Doanh Thu</h4>
+        <p class="metric-value">{{ formatCurrency(totalRevenue) }}</p>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon transactions">
+        <i class="fas fa-receipt"></i>
+      </div>
+      <div class="metric-content">
+        <h4>Tổng Giao Dịch</h4>
+        <p class="metric-value">{{ totalTransactions }}</p>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon branches">
+        <i class="fas fa-building"></i>
+      </div>
+      <div class="metric-content">
+        <h4>Số Chi Nhánh</h4>
+        <p class="metric-value">{{ totalBranches }}</p>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon average">
+        <i class="fas fa-chart-line"></i>
+      </div>
+      <div class="metric-content">
+        <h4>Trung Bình / Giao Dịch</h4>
+        <p class="metric-value">{{ formatCurrency(averageTransaction) }}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-section">
+    <div class="tabs-header">
+      <button [class.active]="activeTab === 'overview'" (click)="switchTab('overview')" class="tab-btn">
+        <i class="fas fa-chart-pie"></i> Tổng Quan
+      </button>
+      <button [class.active]="activeTab === 'details'" (click)="switchTab('details')" class="tab-btn">
+        <i class="fas fa-list"></i> Chi Tiết
+      </button>
+      <button [class.active]="activeTab === 'monthly'" (click)="switchTab('monthly')" class="tab-btn">
+        <i class="fas fa-calendar"></i> Theo Tháng
+      </button>
+      <button [class.active]="activeTab === 'services'" (click)="switchTab('services')" class="tab-btn">
+        <i class="fas fa-stethoscope"></i> Top Dịch Vụ
+      </button>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+      <div class="filter-item">
+        <label>Chi Nhánh</label>
+        <select [(ngModel)]="selectedBranch" (change)="onBranchChange()" class="form-control">
+          <option value="">Tất Cả Chi Nhánh</option>
+          <option *ngFor="let b of branches" [value]="b.MaChiNhanh">{{ b.TenChiNhanh }}</option>
+        </select>
+      </div>
+
+      <div class="filter-item">
+        <label>Từ Ngày</label>
+        <input type="date" [(ngModel)]="startDate" class="form-control" (change)="onSearchDateRange()" />
+      </div>
+
+      <div class="filter-item">
+        <label>Đến Ngày</label>
+        <input type="date" [(ngModel)]="endDate" class="form-control" (change)="onSearchDateRange()" />
+      </div>
+
+      <button class="btn btn-primary" (click)="onSearchDateRange()">
+        <i class="fas fa-search"></i> Tìm Kiếm
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu báo cáo...</p>
+  </div>
+
+  <!-- Tab Content -->
+  <ng-container *ngIf="!loading">
+    <!-- Overview Tab -->
+    <div *ngIf="activeTab === 'overview'" class="tab-content overview-tab">
+      <div class="branch-cards-grid">
+        <div *ngFor="let report of revenueReports" class="branch-card">
+          <div class="card-header">
+            <h3>{{ report.TenChiNhanh }}</h3>
+            <span class="branch-badge">{{ report.TenChiNhanh.substring(0, 2) }}</span>
+          </div>
+          <div class="card-body">
+            <div class="stat-row">
+              <div class="stat-item">
+                <span class="stat-label">Doanh Thu</span>
+                <span class="stat-value revenue">{{ formatCurrency(report.TotalRevenue) }}</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-label">Giao Dịch</span>
+                <span class="stat-value">{{ report.TransactionCount }}</span>
+              </div>
+            </div>
+            <div class="stat-item full-width">
+              <span class="stat-label">Trung Bình / Giao Dịch</span>
+              <span class="stat-value">{{ formatCurrency(report.AverageTransactionValue) }}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" [style.width]="(report.TotalRevenue / getMaxRevenue() * 100) + '%'"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details Tab -->
+    <div *ngIf="activeTab === 'details'" class="tab-content">
+      <div class="table-section">
+        <div class="table-header">
+          <h3>Chi Tiết Doanh Thu</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="report-table">
+            <thead>
+              <tr>
+                <th><i class="fas fa-building"></i> Chi Nhánh</th>
+                <th class="text-right"><i class="fas fa-wallet"></i> Doanh Thu</th>
+                <th class="text-right"><i class="fas fa-receipt"></i> Giao Dịch</th>
+                <th class="text-right"><i class="fas fa-calculator"></i> Trung Bình</th>
+                <th><i class="fas fa-circle-notch"></i> Tỷ Lệ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let report of revenueReports" class="table-row">
+                <td><strong>{{ report.TenChiNhanh }}</strong></td>
+                <td class="text-right"><span class="price-badge">{{ formatCurrency(report.TotalRevenue) }}</span></td>
+                <td class="text-right">{{ report.TransactionCount }}</td>
+                <td class="text-right">{{ formatCurrency(report.AverageTransactionValue) }}</td>
+                <td>
+                  <div class="progress-inline">
+                    <div class="progress-bar">
+                      <div class="progress-fill" [style.width]="getRevenuePercentage(report.TotalRevenue) + '%'"></div>
+                    </div>
+                    <span>{{ getRevenuePercentage(report.TotalRevenue).toFixed(1) }}%</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monthly Tab -->
+    <div *ngIf="activeTab === 'monthly'" class="tab-content">
+      <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i>
+        Báo cáo theo tháng đang được phát triển. Vui lòng quay lại sau.
+      </div>
+    </div>
+
+    <!-- Services Tab -->
+    <div *ngIf="activeTab === 'services'" class="tab-content services-tab">
+      <div class="services-grid">
+        <div *ngFor="let service of topServices" class="service-card">
+          <div class="service-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="service-content">
+            <h4>{{ service.TenDichVu || 'Dịch Vụ' }}</h4>
+            <p class="service-revenue">{{ formatCurrency(service.TotalRevenue) }}</p>
+            <span class="service-rank">Top Dịch Vụ</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

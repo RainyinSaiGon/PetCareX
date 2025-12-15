@@ -1,0 +1,113 @@
+<div class="inventory-container">
+  <div class="header-section">
+    <h1>📦 Quản Lý Kho Hàng</h1>
+    <p class="subtitle">Theo dõi và quản lý tồn kho</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-section" *ngIf="summary && !loading">
+    <div class="summary-card">
+      <div class="summary-icon">📊</div>
+      <p>Tổng SKU: {{ summary.totalItems }}</p>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon">🏢</div>
+      <p>Chi Nhánh: {{ summary.totalBranches }}</p>
+    </div>
+    <div class="summary-card">
+      <div class="summary-icon">💰</div>
+      <p>Giá Trị Kho: {{ formatCurrency(summary.totalValue) }}</p>
+    </div>
+    <div class="summary-card alert">
+      <div class="summary-icon">⚠️</div>
+      <p>Cảnh báo: {{ summary.lowStockCount + summary.outOfStockCount }}</p>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-section">
+    <button 
+      *ngFor="let tab of ['inventory', 'alerts', 'import-export']"
+      [class.active]="activeTab === tab"
+      (click)="activeTab = tab"
+      class="tab-btn"
+    >
+      {{ tab === 'inventory' ? '📦 Tồn Kho' : tab === 'alerts' ? '⚠️ Cảnh Báo' : '🔄 Nhập/Xuất' }}
+    </button>
+  </div>
+
+  <!-- Inventory Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'inventory'">
+    <table class="inventory-table" *ngIf="inventories.length > 0">
+      <thead>
+        <tr>
+          <th>Sản Phẩm</th>
+          <th>Chi Nhánh</th>
+          <th>Số Lượng</th>
+          <th>Giá</th>
+          <th>Tổng Giá Trị</th>
+          <th>Trạng Thái</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let inv of inventories" [class.low-stock]="inv.Status === 'Low Stock'" [class.out-of-stock]="inv.Status === 'Out of Stock'">
+          <td class="product-name">{{ inv.TenSanPham }}</td>
+          <td>{{ inv.TenChiNhanh }}</td>
+          <td class="quantity">{{ inv.SoLuong }}</td>
+          <td>{{ formatCurrency(inv.GiaThanh) }}</td>
+          <td class="total-value">{{ formatCurrency(inv.TotalValue) }}</td>
+          <td>
+            <span class="status-badge" [ngClass]="inv.Status.toLowerCase().replace(' ', '-')">
+              {{ getStatusBadge(inv.Status) }} {{ inv.Status }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Alerts Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'alerts'">
+    <div class="alerts-list">
+      <div class="alert-item" *ngFor="let alert of lowStockAlerts">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-content">
+          <p class="alert-product">{{ alert.TenSanPham }}</p>
+          <p class="alert-info">{{ alert.TenChiNhanh }} - Còn {{ alert.CurrentStock }}/{{ alert.ThresholdLevel }}</p>
+        </div>
+        <div class="alert-deficit">Thiếu: {{ alert.DeficitCount }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Import/Export Tab -->
+  <div class="tab-content" *ngIf="activeTab === 'import-export'">
+    <div class="transaction-forms">
+      <div class="form-card">
+        <h3>📥 Nhập Kho</h3>
+        <input [(ngModel)]="importData.MaChiNhanh" placeholder="Chi nhánh" />
+        <input [(ngModel)]="importData.MaSanPham" type="number" placeholder="Mã sản phẩm" />
+        <input [(ngModel)]="importData.SoLuong" type="number" placeholder="Số lượng" />
+        <textarea [(ngModel)]="importData.GhiChu" placeholder="Ghi chú"></textarea>
+        <button (click)="onImport()" class="btn-submit">✓ Nhập</button>
+      </div>
+
+      <div class="form-card">
+        <h3>📤 Xuất Kho</h3>
+        <input [(ngModel)]="exportData.MaChiNhanh" placeholder="Chi nhánh" />
+        <input [(ngModel)]="exportData.MaSanPham" type="number" placeholder="Mã sản phẩm" />
+        <input [(ngModel)]="exportData.SoLuong" type="number" placeholder="Số lượng" />
+        <textarea [(ngModel)]="exportData.GhiChu" placeholder="Ghi chú"></textarea>
+        <button (click)="onExport()" class="btn-submit">✓ Xuất</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination-section" *ngIf="inventories.length > 0 && activeTab === 'inventory'">
+    <button [disabled]="currentPage === 1" (click)="onPageChange(1)" class="pagination-btn">⏮️</button>
+    <button [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)" class="pagination-btn">◀️</button>
+    <span class="page-indicator">{{ currentPage }}</span>
+    <button (click)="onPageChange(currentPage + 1)" class="pagination-btn">▶️</button>
+  </div>
+</div>

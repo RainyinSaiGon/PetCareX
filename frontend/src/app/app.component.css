@@ -6,7 +6,7 @@
 
 body {
   font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, 'Helvetica Neue', Arial, sans-serif;
-  background: linear-gradient(135deg, #E3E3E3 0%, #f5f5f5 100%);
+  background: #0F1117;
 }
 
 .app-container {
@@ -95,6 +95,7 @@ body {
   flex: 1;
   padding: 30px 20px;
   min-height: calc(100vh - 180px);
+  background: #0F1117;
 }
 
 .footer {

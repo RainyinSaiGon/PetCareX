@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { KhachHang } from '../../entities/khach-hang.entity';
 import { ThuCung } from '../../entities/thu-cung.entity';
 import { ChungLoaiThuCung } from '../../entities/chung-loai-thu-cung.entity';
+import { LoaiThuCung } from '../../entities/loai-thu-cung.entity';
 import { CreateKhachHangDto } from './dto/create-khach-hang.dto';
 import { UpdateKhachHangDto } from './dto/update-khach-hang.dto';
 import { CreateThuCungDto } from './dto/create-thu-cung.dto';
@@ -18,6 +19,8 @@ export class CustomerService {
     private thuCungRepository: Repository<ThuCung>,
     @InjectRepository(ChungLoaiThuCung)
     private chungLoaiRepository: Repository<ChungLoaiThuCung>,
+    @InjectRepository(LoaiThuCung)
+    private loaiThuCungRepository: Repository<LoaiThuCung>,
   ) {}
 
   // ==================== KHÁCH HÀNG CRUD ====================
@@ -38,7 +41,7 @@ export class CustomerService {
 
   async findAllKhachHang(page: number = 1, limit: number = 10): Promise<{ data: KhachHang[]; total: number; page: number; limit: number }> {
     const [data, total] = await this.khachHangRepository.findAndCount({
-      relations: ['ThuCungs', 'ThanhVien'],
+      relations: ['ThanhVien'],
       skip: (page - 1) * limit,
       take: limit,
       order: { MaKhachHang: 'DESC' },
@@ -50,7 +53,7 @@ export class CustomerService {
   async findOneKhachHang(id: number): Promise<KhachHang> {
     const khachHang = await this.khachHangRepository.findOne({
       where: { MaKhachHang: id },
-      relations: ['ThuCungs', 'ThuCungs.ChungLoai', 'ThuCungs.ChungLoai.LoaiThuCung', 'ThanhVien', 'ThanhVien.Hang'],
+      relations: ['ThanhVien', 'ThanhVien.Hang'],
     });
 
     if (!khachHang) {
@@ -63,7 +66,7 @@ export class CustomerService {
   async findKhachHangByPhone(phone: string): Promise<KhachHang> {
     const khachHang = await this.khachHangRepository.findOne({
       where: { SoDienThoai: phone },
-      relations: ['ThuCungs', 'ThanhVien'],
+      relations: ['ThanhVien'],
     });
 
     if (!khachHang) {
@@ -219,5 +222,27 @@ export class CustomerService {
       })
       .take(20)
       .getMany();
+  }
+
+  // ==================== PET TYPE & BREED ====================
+
+  async getAllLoaiThuCung(): Promise<LoaiThuCung[]> {
+    return await this.loaiThuCungRepository.find({
+      order: { TenLoaiThuCung: 'ASC' },
+    });
+  }
+
+  async getAllChungLoai(): Promise<ChungLoaiThuCung[]> {
+    return await this.chungLoaiRepository.find({
+      relations: ['LoaiThuCung'],
+      order: { TenChungLoaiThuCung: 'ASC' },
+    });
+  }
+
+  async getChungLoaiByLoaiThuCung(maLoaiThuCung: string): Promise<ChungLoaiThuCung[]> {
+    return await this.chungLoaiRepository.find({
+      where: { MaLoaiThuCung: maLoaiThuCung },
+      order: { TenChungLoaiThuCung: 'ASC' },
+    });
   }
 }

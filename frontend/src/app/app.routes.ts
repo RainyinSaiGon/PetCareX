@@ -8,10 +8,12 @@ import { LoginComponent } from './components/auth/login.component';
 import { RegisterComponent } from './components/auth/register.component';
 import { ProfileComponent } from './components/auth/profile.component';
 import { ForgotComponent } from './components/auth/forgot.component';
-import { StaffListComponent } from './components/staff-list/staff-list.component';
-import { StaffFormComponent } from './components/staff-form/staff-form.component';
-import { StaffSalaryComponent } from './components/staff-salary/staff-salary.component';
+import { EmployeeListComponent } from './components/employee-list/employee-list.component';
+import { EmployeeFormComponent } from './components/employee-form/employee-form.component';
+import { EmployeeSalaryComponent } from './components/employee-salary/employee-salary.component';
 import { AnalyticsDashboardComponent } from './components/analytics-dashboard/analytics-dashboard.component';
+import { ServiceOfferingComponent } from './components/service-offering/service-offering.component';
+import { RevenueReportComponent } from './components/revenue-report/revenue-report.component';
 import { AuthGuard } from './services/auth.guard';
 
 export const routes: Routes = [
@@ -24,10 +26,19 @@ export const routes: Routes = [
   { path: 'customers/:id/pets', component: PetListComponent, canActivate: [AuthGuard] },
   { path: 'customers/:id/pets/new', component: PetFormComponent, canActivate: [AuthGuard] },
   { path: 'customers/:id/pets/:petId/edit', component: PetFormComponent, canActivate: [AuthGuard] },
-  { path: 'admin/staff', component: StaffListComponent, canActivate: [AuthGuard] },
-  { path: 'admin/staff/new', component: StaffFormComponent, canActivate: [AuthGuard] },
-  { path: 'admin/staff/salary', component: StaffSalaryComponent, canActivate: [AuthGuard] },
-  { path: 'admin/staff/:id/edit', component: StaffFormComponent, canActivate: [AuthGuard] },
+  // Consolidated employee management - single unified endpoint
+  { path: 'admin/staff', component: EmployeeListComponent, canActivate: [AuthGuard] }, // Legacy support
+  { path: 'admin/staff/new', component: EmployeeFormComponent, canActivate: [AuthGuard] }, // Legacy support
+  { path: 'admin/staff/salary', component: EmployeeSalaryComponent, canActivate: [AuthGuard] }, // Legacy support
+  { path: 'admin/staff/:id/edit', component: EmployeeFormComponent, canActivate: [AuthGuard] }, // Legacy support
+  // New unified routes (recommended)
+  { path: 'employees', component: EmployeeListComponent, canActivate: [AuthGuard] },
+  { path: 'employees/new', component: EmployeeFormComponent, canActivate: [AuthGuard] },
+  { path: 'employees/salary', component: EmployeeSalaryComponent, canActivate: [AuthGuard] },
+  { path: 'employees/:id/edit', component: EmployeeFormComponent, canActivate: [AuthGuard] },
+  // Branch Management Routes
+  { path: 'branch/service-offerings', component: ServiceOfferingComponent, canActivate: [AuthGuard] },
+  { path: 'branch/revenue-reports', component: RevenueReportComponent, canActivate: [AuthGuard] },
   { path: 'admin/analytics', component: AnalyticsDashboardComponent, canActivate: [AuthGuard] },
   { path: 'auth/login', component: LoginComponent },
   { path: 'auth/register', component: RegisterComponent },

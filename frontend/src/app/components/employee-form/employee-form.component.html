@@ -1,0 +1,208 @@
+<div class="employee-form-container">
+  <div class="header-section">
+    <h1>{{ isEditMode ? '✏️ Chỉnh Sửa Nhân Viên' : '➕ Tạo Nhân Viên Mới' }}</h1>
+    <p class="subtitle">{{ isEditMode ? 'Cập nhật thông tin nhân viên' : 'Thêm nhân viên mới vào hệ thống' }}</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Đang tải thông tin...</p>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    ✅ {{ successMessage }}
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="error" class="alert alert-error">
+    ❌ {{ error }}
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()" class="employee-form" *ngIf="!loading">
+    <div class="form-section">
+      <h2><i class="fas fa-id-card"></i> Thông Tin Cơ Bản</h2>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="MaNhanVien" class="required">Mã Nhân Viên</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="MaNhanVien"
+              formControlName="MaNhanVien"
+              placeholder="VD: NV001 (5 ký tự)"
+              [disabled]="isEditMode"
+              [class.invalid]="isFieldInvalid('MaNhanVien')"
+            />
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('MaNhanVien') || errorMessages['MaNhanVien']">
+            {{ errorMessages['MaNhanVien'] || getErrorMessage('MaNhanVien') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="HoTen" class="required">Họ Tên</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="HoTen"
+              formControlName="HoTen"
+              placeholder="Nhập họ tên nhân viên"
+              [class.invalid]="isFieldInvalid('HoTen')"
+            />
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('HoTen')">
+            {{ getErrorMessage('HoTen') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="SDT">Số Điện Thoại</label>
+          <div class="input-wrapper">
+            <input
+              type="tel"
+              id="SDT"
+              formControlName="SDT"
+              placeholder="VD: 0123456789"
+              [class.invalid]="isFieldInvalid('SDT') || errorMessages['SDT']"
+            />
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('SDT') || errorMessages['SDT']">
+            {{ errorMessages['SDT'] || getErrorMessage('SDT') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="NgaySinh">Ngày Sinh</label>
+          <div class="input-wrapper">
+            <input
+              type="date"
+              id="NgaySinh"
+              formControlName="NgaySinh"
+              [class.invalid]="isFieldInvalid('NgaySinh') || errorMessages['NgaySinh']"
+            />
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('NgaySinh') || errorMessages['NgaySinh']">
+            {{ errorMessages['NgaySinh'] || getErrorMessage('NgaySinh') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2><i class="fas fa-building"></i> Thông Tin Công Việc</h2>
+      
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="NgayVaoLam" class="required">Ngày Vào Làm</label>
+          <div class="input-wrapper">
+            <input
+              type="date"
+              id="NgayVaoLam"
+              formControlName="NgayVaoLam"
+              [class.invalid]="isFieldInvalid('NgayVaoLam')"
+            />
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('NgayVaoLam')">
+            {{ getErrorMessage('NgayVaoLam') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="MaChiNhanh" class="required">Chi Nhánh</label>
+          <div class="input-wrapper">
+            <select
+              id="MaChiNhanh"
+              formControlName="MaChiNhanh"
+              [class.invalid]="isFieldInvalid('MaChiNhanh')"
+            >
+              <option value="">-- Chọn chi nhánh --</option>
+              <option *ngFor="let branch of branches" [value]="branch.MaChiNhanh">
+                {{ branch.TenChiNhanh }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('MaChiNhanh')">
+            {{ getErrorMessage('MaChiNhanh') }}
+          </span>
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="LoaiNhanVien" class="required">Loại Nhân Viên</label>
+          <div class="input-wrapper">
+            <select
+              id="LoaiNhanVien"
+              formControlName="LoaiNhanVien"
+              [class.invalid]="isFieldInvalid('LoaiNhanVien')"
+            >
+              <option value="">-- Chọn loại nhân viên --</option>
+              <option *ngFor="let type of employeeTypes" [value]="type">
+                {{ type }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('LoaiNhanVien')">
+            {{ getErrorMessage('LoaiNhanVien') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="MaKhoa">Khoa</label>
+          <div class="input-wrapper">
+            <select id="MaKhoa" formControlName="MaKhoa">
+              <option value="">-- Chọn khoa --</option>
+              <option *ngFor="let dept of departments" [value]="dept.MaKhoa">
+                {{ dept.TenKhoa }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Salary Info Display -->
+    <div *ngIf="form.get('LoaiNhanVien')?.value" class="form-section">
+      <h2><i class="fas fa-dollar-sign"></i> Thông Tin Lương</h2>
+      <div class="salary-card">
+        <div class="salary-info">
+          <span class="label">Mức lương cơ bản cho {{ form.get('LoaiNhanVien')?.value }}:</span>
+          <span class="value">{{ formatCurrency(getEmployeeTypeSalary()) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn btn-primary"
+          [disabled]="submitting"
+        >
+          <span *ngIf="!submitting">
+            <i class="fas fa-save"></i> {{ isEditMode ? 'Cập nhật' : 'Tạo mới' }}
+          </span>
+          <span *ngIf="submitting">
+            <i class="fas fa-spinner fa-spin"></i> Đang lưu...
+          </span>
+        </button>
+        <button
+          type="button"
+          class="btn btn-secondary"
+          (click)="onCancel()"
+          [disabled]="submitting"
+        >
+          <i class="fas fa-times"></i> Hủy
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

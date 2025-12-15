@@ -23,10 +23,16 @@ export interface UpdateThuCungDto {
   NgaySinhThuCung?: Date;
 }
 
+export interface LoaiThuCung {
+  MaLoaiThuCung: string;
+  TenLoaiThuCung: string;
+}
+
 export interface ChungLoaiThuCung {
   MaChungLoaiThuCung: string;
   TenChungLoaiThuCung: string;
   MaLoaiThuCung: string;
+  LoaiThuCung?: LoaiThuCung;
 }
 
 export interface PetStatistics {

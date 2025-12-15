@@ -143,4 +143,33 @@ export class CustomerController {
   async deleteThuCung(@Param('id', ParseIntPipe) id: number) {
     await this.customerService.deleteThuCung(id);
   }
+
+  // ==================== PET TYPE & BREED ENDPOINTS ====================
+
+  @Get('loai-thu-cung')
+  async getAllLoaiThuCung() {
+    const loaiThuCungs = await this.customerService.getAllLoaiThuCung();
+    return {
+      message: 'Lấy danh sách loại thú cưng thành công',
+      data: loaiThuCungs,
+    };
+  }
+
+  @Get('chung-loai')
+  async getAllChungLoai() {
+    const chungLoais = await this.customerService.getAllChungLoai();
+    return {
+      message: 'Lấy danh sách chủng loại thú cưng thành công',
+      data: chungLoais,
+    };
+  }
+
+  @Get('chung-loai/:maLoaiThuCung')
+  async getChungLoaiByLoaiThuCung(@Param('maLoaiThuCung') maLoaiThuCung: string) {
+    const chungLoais = await this.customerService.getChungLoaiByLoaiThuCung(maLoaiThuCung);
+    return {
+      message: 'Lấy danh sách chủng loại thú cưng thành công',
+      data: chungLoais,
+    };
+  }
 }

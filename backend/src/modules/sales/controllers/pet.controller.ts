@@ -1,6 +1,7 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, HttpStatus, HttpCode } from '@nestjs/common';
 import { JwtAuthGuard } from '../../../common/guards/jwt-auth.guard';
-import { PetService, CreatePetDto, UpdatePetDto, PetResponseDto } from '../services/pet.service';
+import { PetService } from '../services/pet.service';
+import { CreatePetDto, UpdatePetDto, PetResponseDto } from '../dto/pet.dto';
 
 @Controller('api/pets')
 @UseGuards(JwtAuthGuard)
@@ -22,8 +23,21 @@ export class PetController {
   }
 
   @Get('customer/:customerId')
-  async getCustomerPets(@Param('customerId') customerId: string): Promise<PetResponseDto[]> {
-    return this.petService.getCustomerPets(parseInt(customerId));
+  async getCustomerPets(
+    @Param('customerId') customerId: string,
+    @Query('page') page: string = '1',
+    @Query('limit') limit: string = '10',
+  ): Promise<{
+    data: PetResponseDto[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    return this.petService.getCustomerPets(
+      parseInt(customerId),
+      parseInt(page),
+      parseInt(limit)
+    );
   }
 
   @Put(':id')

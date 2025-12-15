@@ -1,66 +1,187 @@
-<div class="container">
-  <div class="breadcrumb">
-    <span class="link" (click)="backToCustomers()">Khách Hàng</span>
-    <span class="separator">/</span>
-    <span>{{ customerName || 'Thú Cưng' }}</span>
+<div class="pet-list-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="header-title">
+        <i class="fas fa-paw"></i>
+        <h1>Quản Lý Thú Cưng</h1>
+        <span class="badge-count" *ngIf="!loading">{{ totalItems }}</span>
+      </div>
+      <button class="btn btn-primary" (click)="createPet()">
+        <i class="fas fa-plus"></i>
+        <span>Thêm Thú Cưng</span>
+      </button>
+    </div>
+    <p class="customer-subtitle">Khách hàng: <strong>{{ customerName }}</strong></p>
   </div>
 
-  <div class="header">
-    <h1>Quản Lý Thú Cưng - {{ customerName }}</h1>
-    <button class="btn btn-primary" (click)="createPet()">
-      <span class="icon">+</span> Thêm Thú Cưng
+  <!-- Search and Filters Section -->
+  <div class="filters-section">
+    <div class="search-container">
+      <div class="search-wrapper">
+        <i class="fas fa-search search-icon"></i>
+        <input 
+          type="text" 
+          placeholder="Tìm kiếm theo tên hoặc chủng loại..." 
+          [(ngModel)]="searchKeyword"
+          (keyup.enter)="onSearch()"
+          class="search-input"
+          aria-label="Tìm kiếm thú cưng"
+        >
+        <button 
+          class="btn-clear" 
+          *ngIf="searchKeyword"
+          (click)="searchKeyword = ''; onSearch()"
+          title="Xóa tìm kiếm"
+        >
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <button class="btn btn-search" (click)="onSearch()">
+        <i class="fas fa-search"></i>
+        <span>Tìm Kiếm</span>
+      </button>
+    </div>
+
+    <div class="stats-bar" *ngIf="!loading && pets.length > 0">
+      <div class="stat-item">
+        <i class="fas fa-paw"></i>
+        <span>Tổng: <strong>{{ totalItems }}</strong></span>
+      </div>
+      <div class="stat-item">
+        <i class="fas fa-eye"></i>
+        <span>Đang xem: <strong>{{ pets.length }}</strong></span>
+      </div>
+      <div class="stat-item" *ngIf="totalPages > 1">
+        <i class="fas fa-list"></i>
+        <span>Trang: <strong>{{ currentPage }}/{{ totalPages }}</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Error Message -->
+  <div class="alert alert-error" *ngIf="error">
+    <i class="fas fa-exclamation-circle"></i>
+    <span>{{ error }}</span>
+    <button class="close-btn" (click)="error = ''" aria-label="Đóng">
+      <i class="fas fa-times"></i>
     </button>
   </div>
 
-  <div *ngIf="error" class="alert alert-error">
-    {{ error }}
+  <!-- Skeleton Loading -->
+  <div class="table-wrapper" *ngIf="loading">
+    <div class="table-container">
+      <table class="pets-table">
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-name">Tên Thú Cưng</th>
+            <th class="col-breed">Chủng Loại</th>
+            <th class="col-dob">Ngày Sinh</th>
+            <th class="col-actions">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of [1,2,3,4,5,6,7,8]" class="skeleton-row">
+            <td><div class="skeleton skeleton-text skeleton-id"></div></td>
+            <td><div class="skeleton skeleton-text skeleton-name"></div></td>
+            <td><div class="skeleton skeleton-badge"></div></td>
+            <td><div class="skeleton skeleton-text skeleton-date"></div></td>
+            <td>
+              <div class="skeleton-actions">
+                <div class="skeleton skeleton-btn"></div>
+                <div class="skeleton skeleton-btn"></div>
+                <div class="skeleton skeleton-btn"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <div *ngIf="loading" class="loading">
-    <div class="spinner"></div>
-    <p>Đang tải dữ liệu...</p>
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loading && pets.length === 0">
+    <i class="fas fa-inbox"></i>
+    <h3>Chưa có thú cưng nào</h3>
+    <p>Thêm thú cưng để bắt đầu quản lý.</p>
+    <button class="btn btn-primary" (click)="createPet()">
+      <i class="fas fa-plus"></i>
+      Thêm Thú Cưng
+    </button>
   </div>
 
-  <div *ngIf="!loading && pets.length === 0" class="empty-state">
-    <p>Chưa có thú cưng nào. Hãy thêm thú cưng đầu tiên!</p>
+  <!-- Pets Table -->
+  <div class="table-wrapper" *ngIf="!loading && pets.length > 0">
+    <div class="table-container">
+      <table class="pets-table">
+        <thead>
+          <tr>
+            <th class="col-id">ID</th>
+            <th class="col-name">Tên Thú Cưng</th>
+            <th class="col-breed">Chủng Loại</th>
+            <th class="col-dob">Ngày Sinh</th>
+            <th class="col-actions">Thao Tác</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let pet of pets" class="pet-row">
+            <td class="pet-id">{{ pet.MaThuCung }}</td>
+            <td class="pet-name">
+              <strong>{{ pet.TenThuCung }}</strong>
+            </td>
+            <td class="pet-breed">
+              <span *ngIf="pet.ChungLoai?.TenChungLoaiThuCung" class="breed-badge">
+                <i [ngClass]="getPetIcon(pet.ChungLoai?.TenChungLoaiThuCung)"></i>
+                {{ pet.ChungLoai?.TenChungLoaiThuCung }}
+              </span>
+              <span *ngIf="!pet.ChungLoai?.TenChungLoaiThuCung" class="empty-value">-</span>
+            </td>
+            <td class="pet-dob">
+              <span *ngIf="pet.NgaySinhThuCung">{{ pet.NgaySinhThuCung | date:'dd/MM/yyyy' }}</span>
+              <span *ngIf="!pet.NgaySinhThuCung" class="empty-value">-</span>
+            </td>
+            <td class="pet-actions">
+              <div class="action-buttons">
+                <button 
+                  class="btn-action btn-view" 
+                  (click)="viewPet(pet.MaThuCung)" 
+                  title="Xem chi tiết"
+                >
+                  <i class="fas fa-eye"></i>
+                </button>
+                <button 
+                  class="btn-action btn-edit" 
+                  (click)="editPet(pet.MaThuCung)" 
+                  title="Chỉnh sửa"
+                >
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button 
+                  class="btn-action btn-delete" 
+                  (click)="deletePet(pet)" 
+                  title="Xóa"
+                >
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <table *ngIf="!loading && pets.length > 0" class="pet-table">
-    <thead>
-      <tr>
-        <th>Mã TC</th>
-        <th>Tên Thú Cưng</th>
-        <th>Chủng Loại</th>
-        <th>Thao Tác</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let pet of pets">
-        <td>{{ pet.MaThuCung }}</td>
-        <td>{{ pet.TenThuCung }}</td>
-        <td>{{ pet.ChungLoai?.TenChungLoaiThuCung || 'N/A' }}</td>
-        <td class="actions">
-          <button class="btn-icon btn-view" (click)="viewPet(pet.MaThuCung)" title="Xem chi tiết">
-            👁️
-          </button>
-          <button class="btn-icon btn-edit" (click)="editPet(pet.MaThuCung)" title="Chỉnh sửa">
-            ✏️
-          </button>
-          <button class="btn-icon btn-delete" (click)="deletePet(pet)" title="Xóa">
-            🗑️
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div *ngIf="!loading && totalPages > 1" class="pagination">
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="!loading && totalPages > 1">
     <button 
       class="btn-page" 
       (click)="onPageChange(currentPage - 1)"
       [disabled]="currentPage === 1"
+      title="Trang trước"
     >
-      &laquo; Trước
+      <i class="fas fa-chevron-left"></i>
+      <span>Trước</span>
     </button>
 
     <button 
@@ -76,12 +197,22 @@
       class="btn-page" 
       (click)="onPageChange(currentPage + 1)"
       [disabled]="currentPage === totalPages"
+      title="Trang sau"
     >
-      Sau &raquo;
+      <span>Sau</span>
+      <i class="fas fa-chevron-right"></i>
     </button>
 
     <span class="page-info">
-      Trang {{ currentPage }} / {{ totalPages }} (Tổng: {{ totalItems }} thú cưng)
+      Trang <strong>{{ currentPage }}</strong> / <strong>{{ totalPages }}</strong>
     </span>
+  </div>
+
+  <!-- Back to Customer -->
+  <div class="back-link">
+    <button class="link-btn" (click)="backToCustomers()">
+      <i class="fas fa-arrow-left"></i>
+      Quay lại Khách Hàng
+    </button>
   </div>
 </div>

@@ -8,41 +8,42 @@ import { environment } from '../../environments/environment';
   providedIn: 'root'
 })
 export class PetService {
-  private apiUrl = `${environment.apiUrl}/customer`;
+  private apiUrl = `${environment.apiUrl}/api/pets`;
 
   constructor(private http: HttpClient) {}
 
   // Pet endpoints
   getPetsByCustomer(customerId: number): Observable<ThuCung[]> {
-    return this.http.get<ThuCung[]>(`${this.apiUrl}/${customerId}/pets`);
+    return this.http.get<ThuCung[]>(`${this.apiUrl}/customer/${customerId}`);
   }
 
-  getPetById(customerId: number, petId: number): Observable<ThuCung> {
-    return this.http.get<ThuCung>(`${this.apiUrl}/${customerId}/pets/${petId}`);
+  getPetById(petId: number): Observable<ThuCung> {
+    return this.http.get<ThuCung>(`${this.apiUrl}/${petId}`);
   }
 
   createPet(customerId: number, data: CreateThuCungDto): Observable<ThuCung> {
-    return this.http.post<ThuCung>(`${this.apiUrl}/${customerId}/pets`, data);
+    const params = new HttpParams().set('customerId', customerId.toString());
+    return this.http.post<ThuCung>(this.apiUrl, data, { params });
   }
 
-  updatePet(customerId: number, petId: number, data: UpdateThuCungDto): Observable<ThuCung> {
-    return this.http.put<ThuCung>(`${this.apiUrl}/${customerId}/pets/${petId}`, data);
+  updatePet(petId: number, data: UpdateThuCungDto): Observable<ThuCung> {
+    return this.http.put<ThuCung>(`${this.apiUrl}/${petId}`, data);
   }
 
-  deletePet(customerId: number, petId: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${customerId}/pets/${petId}`);
+  deletePet(petId: number): Observable<{ success: boolean; message: string }> {
+    return this.http.delete<{ success: boolean; message: string }>(`${this.apiUrl}/${petId}`);
   }
 
-  getPetMedicalHistory(customerId: number, petId: number): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/${customerId}/pets/${petId}/medical-history`);
+  getPetMedicalHistory(petId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/${petId}/medical-history`);
   }
 
   getPetStatistics(): Observable<PetStatistics> {
-    return this.http.get<PetStatistics>(`${this.apiUrl}/pets/statistics`);
+    return this.http.get<PetStatistics>(`${this.apiUrl}/statistics/overview`);
   }
 
   searchPets(query: string): Observable<ThuCung[]> {
     const params = new HttpParams().set('query', query);
-    return this.http.get<ThuCung[]>(`${this.apiUrl}/pets/search`, { params });
+    return this.http.get<ThuCung[]>(`${this.apiUrl}/search`, { params });
   }
 }

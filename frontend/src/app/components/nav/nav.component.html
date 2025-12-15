@@ -22,7 +22,14 @@
           <li><a routerLink="/customers" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-users"></i> Khách Hàng</a></li>
           <li><a routerLink="/customers/1/pets" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-dog"></i> Thú Cưng</a></li>
           <li><a routerLink="/admin/staff" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-user-tie"></i> Nhân Viên</a></li>
-          <li><a routerLink="/admin/analytics" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-chart-line"></i> Báo Cáo</a></li>
+          <li class="dropdown" [class.open]="dropdownOpen">
+            <button class="dropdown-toggle" (click)="toggleDropdown()" type="button"><i class="fa-solid fa-chart-line"></i> Báo Cáo</button>
+            <ul class="dropdown-menu">
+              <li><a routerLink="/admin/analytics" routerLinkActive="active" (click)="close()">Tổng Quát</a></li>
+              <li><a routerLink="/branch/revenue-reports" routerLinkActive="active" (click)="close()">Doanh Thu Chi Nhánh</a></li>
+              <li><a routerLink="/branch/service-offerings" routerLinkActive="active" (click)="close()">Dịch Vụ Chi Nhánh</a></li>
+            </ul>
+          </li>
           <li><a routerLink="/appointments" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-calendar-check"></i> Lịch</a></li>
         </ul>
 
@@ -30,8 +37,8 @@
           <li *ngIf="!isAuthenticated"><a routerLink="/auth/login" (click)="close()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a></li>
           <li *ngIf="!isAuthenticated"><a routerLink="/auth/register" (click)="close()"><i class="fa-solid fa-user-plus"></i> Đăng ký</a></li>
 
-          <li *ngIf="isAuthenticated" class="dropdown">
-            <a class="dropdown-toggle"><i class="fa-solid fa-user"></i> Tài khoản</a>
+          <li *ngIf="isAuthenticated" class="dropdown" [class.open]="accountDropdownOpen">
+            <button class="dropdown-toggle" (click)="toggleAccountDropdown()" type="button"><i class="fa-solid fa-user"></i> Tài khoản</button>
             <ul class="dropdown-menu">
               <li><a routerLink="/auth/profile" (click)="close()">Hồ sơ</a></li>
               <li><a (click)="logout()">Đăng xuất</a></li>

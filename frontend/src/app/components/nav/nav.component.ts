@@ -13,6 +13,8 @@ import { Router } from '@angular/router';
 })
 export class NavComponent implements AfterViewInit {
   isOpen = false;
+  dropdownOpen = false;
+  accountDropdownOpen = false;
 
   constructor(private host: ElementRef<HTMLElement>, private auth: AuthService, private router: Router) {}
 
@@ -41,8 +43,18 @@ export class NavComponent implements AfterViewInit {
     this.isOpen = !this.isOpen;
   }
 
+  toggleDropdown() {
+    this.dropdownOpen = !this.dropdownOpen;
+  }
+
+  toggleAccountDropdown() {
+    this.accountDropdownOpen = !this.accountDropdownOpen;
+  }
+
   close() {
     this.isOpen = false;
+    this.dropdownOpen = false;
+    this.accountDropdownOpen = false;
   }
 
   @HostListener('document:keydown.escape', ['$event'])

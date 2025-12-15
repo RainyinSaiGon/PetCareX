@@ -50,9 +50,9 @@ export class AdminService {
     } = filterDto;
 
     const query = this.nhanVienRepo.createQueryBuilder('nv')
-      .leftJoinAndSelect('nv.ChiNhanhNV', 'cn')
+      .leftJoinAndSelect('nv.ChiNhanh', 'cn')
       .leftJoinAndSelect('nv.LoaiNV', 'lnv')
-      .leftJoinAndSelect('nv.KhoaNV', 'k');
+      .leftJoinAndSelect('nv.Khoa', 'k');
 
     // Search filter
     if (search) {

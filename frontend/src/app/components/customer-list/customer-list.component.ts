@@ -148,22 +148,34 @@ export class CustomerListComponent implements OnInit, OnDestroy {
   }
 
   getTierIcon(tier?: string): string {
-    if (!tier) return 'fa-medal';
+    if (!tier) return 'fa-user';
     
     const tierLower = tier.toLowerCase();
     switch (tierLower) {
-      case 'bronze':
-        return 'fa-medal';
-      case 'silver':
-        return 'fa-medal';
-      case 'gold':
-        return 'fa-trophy';
-      case 'platinum':
+      case 'cơ bản':
+        return 'fa-user';
+      case 'thân thiết':
+        return 'fa-heart';
+      case 'vip':
         return 'fa-crown';
-      case 'diamond':
-        return 'fa-gem';
       default:
-        return 'fa-medal';
+        return 'fa-user';
+    }
+  }
+
+  getTierClass(tier?: string): string {
+    if (!tier) return 'tier-co-ban';
+    
+    const tierLower = tier.toLowerCase();
+    switch (tierLower) {
+      case 'cơ bản':
+        return 'tier-co-ban';
+      case 'thân thiết':
+        return 'tier-than-thiet';
+      case 'vip':
+        return 'tier-vip';
+      default:
+        return 'tier-co-ban';
     }
   }
 }

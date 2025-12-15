@@ -1,6 +1,9 @@
 <div class="container">
   <div class="header">
-    <h1>{{ isEditMode ? 'Chỉnh Sửa Khách Hàng' : 'Thêm Khách Hàng Mới' }}</h1>
+    <div class="header-top">
+      <h1>{{ isEditMode ? 'Chỉnh Sửa Khách Hàng' : (customerId ? 'Thông Tin Khách Hàng' : 'Thêm Khách Hàng Mới') }}</h1>
+      <span class="mode-badge" *ngIf="customerId && !isEditMode">Xem chi tiết</span>
+    </div>
   </div>
 
   <div *ngIf="error" class="alert alert-error">
@@ -11,7 +14,27 @@
     {{ success }}
   </div>
 
-  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="customer-form">
+  <!-- Loading Skeleton -->
+  <div class="customer-form loading-skeleton" *ngIf="loading && customerId">
+    <div class="skeleton-group">
+      <div class="skeleton-label"></div>
+      <div class="skeleton-input"></div>
+    </div>
+    <div class="skeleton-group">
+      <div class="skeleton-label"></div>
+      <div class="skeleton-input"></div>
+    </div>
+    <div class="skeleton-group">
+      <div class="skeleton-label"></div>
+      <div class="skeleton-input"></div>
+    </div>
+    <div class="skeleton-group">
+      <div class="skeleton-label"></div>
+      <div class="skeleton-textarea"></div>
+    </div>
+  </div>
+
+  <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="customer-form" *ngIf="!loading || !customerId">
     <div class="form-group">
       <label for="HoTen" class="required">Họ Tên</label>
       <input
@@ -19,6 +42,7 @@
         id="HoTen"
         formControlName="HoTen"
         [class.invalid]="isFieldInvalid('HoTen')"
+        [readonly]="isViewMode"
         placeholder="Nhập họ tên khách hàng"
       />
       <span class="error-message" *ngIf="isFieldInvalid('HoTen')">
@@ -33,6 +57,7 @@
         id="SoDienThoai"
         formControlName="SoDienThoai"
         [class.invalid]="isFieldInvalid('SoDienThoai')"
+        [readonly]="isViewMode"
         placeholder="Nhập số điện thoại (VD: 0912345678)"
       />
       <span class="error-message" *ngIf="isFieldInvalid('SoDienThoai')">
@@ -47,6 +72,7 @@
         id="Email"
         formControlName="Email"
         [class.invalid]="isFieldInvalid('Email')"
+        [readonly]="isViewMode"
         placeholder="Nhập email (không bắt buộc)"
       />
       <span class="error-message" *ngIf="isFieldInvalid('Email')">
@@ -61,6 +87,7 @@
         formControlName="DiaChi"
         rows="3"
         [class.invalid]="isFieldInvalid('DiaChi')"
+        [readonly]="isViewMode"
         placeholder="Nhập địa chỉ (không bắt buộc)"
       ></textarea>
       <span class="error-message" *ngIf="isFieldInvalid('DiaChi')">
@@ -70,9 +97,13 @@
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
-        Hủy
+        {{ customerId && !isEditMode ? 'Quay Lại' : 'Hủy' }}
       </button>
-      <button type="submit" class="btn btn-primary" [disabled]="loading">
+      <button type="button" class="btn btn-primary" *ngIf="customerId && !isEditMode" (click)="editCustomer()" [disabled]="loading">
+        <i class="fas fa-edit"></i>
+        <span>Chỉnh Sửa</span>
+      </button>
+      <button type="submit" class="btn btn-primary" [disabled]="loading" *ngIf="isEditMode || !customerId">
         {{ loading ? 'Đang xử lý...' : (isEditMode ? 'Cập Nhật' : 'Thêm Mới') }}
       </button>
     </div>

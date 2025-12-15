@@ -25,10 +25,9 @@ export class MemberTierDatabaseSetup {
     -- Insert tier definitions
     INSERT INTO hang_thanh_vien (id, ten_hang, muc_chi_tieu_toi_thieu, thi_le_giam_gia, mo_ta)
     VALUES 
-      ('bronze', 'Bronze', 0, 0, 'Hạng thành viên cơ bản - Tích lũy điểm'),
-      ('silver', 'Silver', 50000000, 5, 'Hạng thành viên bạc - Giảm 5% - 1 triệu VND+'),
-      ('gold', 'Gold', 150000000, 10, 'Hạng thành viên vàng - Giảm 10% - 150 triệu VND+'),
-      ('platinum', 'Platinum', 300000000, 15, 'Hạng thành viên kim cương - Giảm 15% - 300 triệu VND+')
+      ('co-ban', 'Cơ bản', 0, 0, 'Hạng thành viên cơ bản - Không có ưu đãi'),
+      ('than-thiet', 'Thân thiết', 50000000, 5, 'Hạng thành viên thân thiết - Giảm 5% - 50 triệu VND+'),
+      ('vip', 'VIP', 150000000, 10, 'Hạng thành viên VIP - Giảm 10% - 150 triệu VND+')
     ON CONFLICT (id) DO NOTHING;
   `;
 
@@ -58,7 +57,7 @@ export class MemberTierDatabaseSetup {
       if (!existing) {
         const membership = new KhachHangThanhVien();
         membership.MaKhachHang = customer.MaKhachHang;
-        membership.TenHang = 'bronze';
+        membership.TenHang = 'Cơ bản';
         membership.NgayNangHang = new Date();
         membership.TongChiTieu = 0;
 

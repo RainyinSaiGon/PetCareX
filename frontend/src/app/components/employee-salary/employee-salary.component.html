@@ -1,0 +1,521 @@
+<div class="salary-container">
+  <div class="header-section">
+    <h1><i class="fas fa-money-bill-wave"></i> Quản Lý Lương Nhân Viên</h1>
+    <p class="subtitle">Cập nhật, quản lý và phân tích lương nhân viên theo loại</p>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <i class="fas fa-check-circle"></i> {{ successMessage }}
+  </div>
+  <div *ngIf="error" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-navigation">
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'update'"
+      (click)="switchTab('update')"
+    >
+      <i class="fas fa-sync-alt"></i> Cập Nhật Lương
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'bulk'"
+      (click)="switchTab('bulk')"
+    >
+      <i class="fas fa-layer-group"></i> Cập Nhật Hàng Loạt
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'history'"
+      (click)="switchTab('history')"
+    >
+      <i class="fas fa-history"></i> Lịch Sử
+    </button>
+    <button
+      class="tab-button"
+      [class.active]="activeTab === 'statistics'"
+      (click)="switchTab('statistics')"
+    >
+      <i class="fas fa-chart-bar"></i> Thống Kê
+    </button>
+  </div>
+
+  <!-- UPDATE SALARY TAB -->
+  <div *ngIf="activeTab === 'update'" class="tab-content">
+    <div class="content-card">
+      <h2><i class="fas fa-edit"></i> Cập Nhật Lương Từng Loại</h2>
+
+      <form [formGroup]="updateForm" (ngSubmit)="submitSalaryUpdate()" class="salary-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Loại Nhân Viên <span class="required">*</span></label>
+            <select
+              formControlName="selectedType"
+              class="form-select"
+              (change)="onUpdateFormChange()"
+            >
+              <option value="">-- Chọn loại nhân viên --</option>
+              <option *ngFor="let type of employeeTypes" [value]="type">
+                {{ type }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Mức Lương Mới <span class="required">*</span></label>
+            <input
+              type="number"
+              formControlName="newSalary"
+              placeholder="Nhập mức lương mới"
+              class="form-input"
+              (change)="onUpdateFormChange()"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Lý Do Cập Nhật</label>
+            <textarea
+              formControlName="updateReason"
+              placeholder="Nhập lý do cập nhật lương"
+              class="form-textarea"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div *ngIf="showUpdatePreview" class="preview-section">
+          <h3><i class="fas fa-eye"></i> Xem Trước</h3>
+          <div class="preview-grid">
+            <div class="preview-card">
+              <span class="label">Loại Nhân Viên:</span>
+              <span class="value">{{ previewUpdateData.loaiNhanVien }}</span>
+            </div>
+            <div class="preview-card">
+              <span class="label">Lương Cũ:</span>
+              <span class="value">{{ formatCurrency(previewUpdateData.oldSalary) }}</span>
+            </div>
+            <div class="preview-card">
+              <span class="label">Lương Mới:</span>
+              <span class="value">{{ formatCurrency(previewUpdateData.newSalary) }}</span>
+            </div>
+            <div class="preview-card">
+              <span class="label">Thay Đổi:</span>
+              <span class="value" [style.color]="getPercentageColor(previewUpdateData.percentageChange)">
+                +{{ previewUpdateData.percentageChange.toFixed(2) }}%
+              </span>
+            </div>
+            <div class="preview-card">
+              <span class="label">Số Nhân Viên Ảnh Hưởng:</span>
+              <span class="value">{{ previewUpdateData.affectedEmployees }}</span>
+            </div>
+            <div class="preview-card">
+              <span class="label">Tăng Tổng Lương:</span>
+              <span class="value">{{ formatCurrency(previewUpdateData.totalBudgetIncrease) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="previewSalaryUpdate()"
+            [disabled]="!updateForm.valid || submitting"
+          >
+            <i class="fas fa-eye"></i> Xem Trước
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!showUpdatePreview || submitting"
+          >
+            <i class="fas fa-save"></i> {{ submitting ? 'Đang lưu...' : 'Cập Nhật Lương' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- BULK UPDATE TAB -->
+  <div *ngIf="activeTab === 'bulk'" class="tab-content">
+    <div class="content-card">
+      <h2><i class="fas fa-layer-group"></i> Cập Nhật Lương Tập Thể</h2>
+
+      <form [formGroup]="bulkForm" (ngSubmit)="submitBulkUpdate()" class="salary-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Loại Nhân Viên</label>
+            <select
+              formControlName="bulkType"
+              class="form-select"
+              (change)="onBulkFormChange()"
+            >
+              <option value="">-- Áp dụng cho tất cả --</option>
+              <option *ngFor="let type of employeeTypes" [value]="type">
+                {{ type }}
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Phần Trăm Tăng <span class="required">*</span></label>
+            <input
+              type="number"
+              formControlName="percentageIncrease"
+              placeholder="VD: 10"
+              class="form-input"
+              (change)="onBulkFormChange()"
+            />
+            <small>Nhập số dương để tăng, âm để giảm</small>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group full-width">
+            <label>Lý Do Cập Nhật</label>
+            <textarea
+              formControlName="bulkReason"
+              placeholder="Nhập lý do cập nhật lương hàng loạt"
+              class="form-textarea"
+              rows="3"
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Advanced Filters -->
+        <div class="filter-section">
+          <button type="button" class="toggle-filters" (click)="toggleAdvancedFilters()">
+            <i [class]="showAdvancedFilters ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+            Bộ Lọc Nâng Cao
+          </button>
+
+          <div *ngIf="showAdvancedFilters" class="advanced-filters">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Lương Tối Thiểu</label>
+                <input
+                  type="number"
+                  formControlName="minSalary"
+                  placeholder="0"
+                  class="form-input"
+                />
+              </div>
+              <div class="form-group">
+                <label>Lương Tối Đa</label>
+                <input
+                  type="number"
+                  formControlName="maxSalary"
+                  placeholder="100000000"
+                  class="form-input"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div *ngIf="showBulkPreview" class="preview-section">
+          <h3><i class="fas fa-eye"></i> Xem Trước Cập Nhật Hàng Loạt</h3>
+
+          <div class="summary-stats">
+            <div class="stat-card">
+              <span class="label">Tổng Nhân Viên Ảnh Hưởng:</span>
+              <span class="value">{{ previewBulkData.affectedEmployees }}</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Phần Trăm Tăng:</span>
+              <span class="value">{{ previewBulkData.percentageIncrease }}%</span>
+            </div>
+            <div class="stat-card">
+              <span class="label">Tổng Tăng Lương:</span>
+              <span class="value">{{ formatCurrency(previewBulkData.totalBudgetIncrease) }}</span>
+            </div>
+          </div>
+
+          <table class="preview-table">
+            <thead>
+              <tr>
+                <th>Loại Nhân Viên</th>
+                <th>Số Lượng</th>
+                <th>Lương Cũ</th>
+                <th>Lương Mới</th>
+                <th>Tăng/Người</th>
+                <th>Tăng Tổng</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let change of previewBulkData.changes">
+                <td>{{ change.loaiNhanVien }}</td>
+                <td>{{ change.affectedCount }}</td>
+                <td>{{ formatCurrency(change.oldSalary) }}</td>
+                <td>{{ formatCurrency(change.newSalary) }}</td>
+                <td>{{ formatCurrency(change.perTypeIncrease) }}</td>
+                <td>{{ formatCurrency(change.totalTypeIncrease) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="button-group">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="previewBulkUpdate()"
+            [disabled]="!bulkForm.valid || submitting"
+          >
+            <i class="fas fa-eye"></i> Xem Trước
+          </button>
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!showBulkPreview || submitting"
+          >
+            <i class="fas fa-save"></i> {{ submitting ? 'Đang lưu...' : 'Cập Nhật Tất Cả' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- HISTORY TAB -->
+  <div *ngIf="activeTab === 'history'" class="tab-content">
+    <div class="content-card">
+      <div class="history-header">
+        <h2><i class="fas fa-history"></i> Lịch Sử Cập Nhật Lương</h2>
+        <div class="history-actions">
+          <button class="btn btn-secondary" (click)="exportHistory()" [disabled]="salaryHistory.length === 0">
+            <i class="fas fa-download"></i> Xuất
+          </button>
+          <button class="btn btn-danger" (click)="clearHistory()" [disabled]="salaryHistory.length === 0">
+            <i class="fas fa-trash"></i> Xóa Tất Cả
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="salaryHistory.length === 0" class="empty-state">
+        <i class="fas fa-inbox"></i>
+        <p>Chưa có lịch sử cập nhật lương</p>
+      </div>
+
+      <div *ngIf="salaryHistory.length > 0" class="history-list" #historyContainer>
+        <div *ngFor="let item of salaryHistory" class="history-item">
+          <div class="history-header-item">
+            <div class="header-info">
+              <h3>{{ item.loaiNhanVien }}</h3>
+              <span class="date">{{ formatDate(item.timestamp) }}</span>
+            </div>
+            <div class="salary-change">
+              <span
+                class="percentage"
+                [style.color]="getPercentageColor(item.percentageChange)"
+              >
+                {{ item.percentageChange > 0 ? '+' : '' }}{{ item.percentageChange.toFixed(2) }}%
+              </span>
+            </div>
+          </div>
+
+          <div class="history-details">
+            <div class="detail-row">
+              <span class="label">Lương Cũ:</span>
+              <span class="value">{{ formatCurrency(item.oldSalary) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Lương Mới:</span>
+              <span class="value">{{ formatCurrency(item.newSalary) }}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Nhân Viên Ảnh Hưởng:</span>
+              <span class="value">{{ item.affectedEmployees }} người</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">Lý Do:</span>
+              <span class="value">{{ item.reason || 'Không có ghi chú' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATISTICS TAB -->
+  <div *ngIf="activeTab === 'statistics'" class="tab-content">
+    <div *ngIf="loadingStats" class="loading">
+      <div class="spinner"></div>
+      <p>Đang tải thống kê...</p>
+    </div>
+
+    <div *ngIf="!loadingStats && statistics" class="statistics-content">
+      <!-- Summary Cards -->
+      <div class="summary-cards">
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="fas fa-users"></i>
+          </div>
+          <div class="card-content">
+            <span class="label">Tổng Nhân Viên</span>
+            <span class="value">{{ statistics.totalEmployees }}</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="fas fa-money-bill-wave"></i>
+          </div>
+          <div class="card-content">
+            <span class="label">Tổng Lương</span>
+            <span class="value">{{ formatCurrency(statistics.totalSalaryBudget) }}</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <div class="card-content">
+            <span class="label">Lương Trung Bình</span>
+            <span class="value">{{ formatCurrency(statistics.averageSalary) }}</span>
+          </div>
+        </div>
+
+        <div class="summary-card">
+          <div class="card-icon">
+            <i class="fas fa-star"></i>
+          </div>
+          <div class="card-content">
+            <span class="label">Lương Cao Nhất</span>
+            <span class="value">{{ formatCurrency(statistics.highestSalary) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Table -->
+      <div class="content-card">
+        <h2><i class="fas fa-table"></i> Thống Kê Theo Loại Nhân Viên</h2>
+
+        <div class="sort-controls">
+          <button
+            class="sort-btn"
+            [class.active]="sortBy === 'type'"
+            (click)="changeSortOption('type')"
+          >
+            Loại {{ sortOrder === 'asc' ? '↑' : '↓' }}
+          </button>
+          <button
+            class="sort-btn"
+            [class.active]="sortBy === 'salary'"
+            (click)="changeSortOption('salary')"
+          >
+            Lương {{ sortOrder === 'asc' ? '↑' : '↓' }}
+          </button>
+          <button
+            class="sort-btn"
+            [class.active]="sortBy === 'count'"
+            (click)="changeSortOption('count')"
+          >
+            Số Lượng {{ sortOrder === 'asc' ? '↑' : '↓' }}
+          </button>
+        </div>
+
+        <table class="statistics-table">
+          <thead>
+            <tr>
+              <th>Loại Nhân Viên</th>
+              <th>Số Lượng</th>
+              <th>Lương Trung Bình</th>
+              <th>Tổng Lương</th>
+              <th>% Tổng Lương</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let stat of getSortedStatistics()?.byType">
+              <td class="type-cell">{{ stat.loaiNhanVien }}</td>
+              <td>{{ stat.count }}</td>
+              <td>{{ formatCurrency(stat.averageSalary) }}</td>
+              <td>{{ formatCurrency(stat.totalSalaryBudget) }}</td>
+              <td>
+                <div class="progress-bar">
+                  <div
+                    class="progress-fill"
+                    [style.width.%]="(stat.totalSalaryBudget / (statistics!.totalSalaryBudget || 1)) * 100"
+                  ></div>
+                  <span class="percentage">
+                    {{ ((stat.totalSalaryBudget / (statistics!.totalSalaryBudget || 1)) * 100).toFixed(1) }}%
+                  </span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Salary Comparison -->
+      <div class="content-card">
+        <h2><i class="fas fa-compare"></i> So Sánh Lương Với Trung Bình</h2>
+
+        <div class="search-box">
+          <input
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="Tìm kiếm loại nhân viên..."
+            class="form-input"
+          />
+        </div>
+
+        <div class="comparison-grid">
+          <div *ngFor="let item of getFilteredComparisons()" class="comparison-card">
+            <h3>{{ item[0] }}</h3>
+            <div class="comparison-item">
+              <span class="label">Lương Hiện Tại:</span>
+              <span class="value">{{ formatCurrency(item[1].currentSalary) }}</span>
+            </div>
+            <div class="comparison-item">
+              <span class="label">Trung Bình Hệ Thống:</span>
+              <span class="value">{{ formatCurrency(item[1].systemAverage) }}</span>
+            </div>
+            <div class="comparison-item">
+              <span class="label">% Trung Bình:</span>
+              <span class="value" [style.color]="item[1].percentageOfAverage >= 100 ? '#27ae60' : '#e74c3c'">
+                {{ item[1].percentageOfAverage.toFixed(1) }}%
+              </span>
+            </div>
+            <div class="recommendation" [class.below-average]="item[1].percentageOfAverage < 80">
+              <i class="fas" [class.fa-exclamation-triangle]="item[1].percentageOfAverage < 80" [class.fa-check]="item[1].percentageOfAverage >= 80"></i>
+              {{ item[1].recommendation }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Salary Forecast -->
+      <div class="content-card">
+        <h2><i class="fas fa-crystal-ball"></i> Dự Phóng Lương</h2>
+
+        <table class="forecast-table">
+          <thead>
+            <tr>
+              <th>Tháng</th>
+              <th>Dự Kiến Tổng Lương</th>
+              <th>Dự Kiến Số Nhân Viên</th>
+              <th>Lương Trung Bình Dự Kiến</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let forecast of salaryForecasts">
+              <td>{{ forecast.month }}</td>
+              <td>{{ formatCurrency(forecast.estimatedBudget) }}</td>
+              <td>{{ forecast.projectedEmployeeCount }}</td>
+              <td>{{ formatCurrency(forecast.estimatedAverageSalary) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

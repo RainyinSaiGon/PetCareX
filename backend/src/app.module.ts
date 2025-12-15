@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { SalesModule } from './modules/sales/sales.module';
+import { BranchModule } from './modules/branch/branch.module';
 
 // Import entities
 import { User } from './entities/user.entity';
@@ -121,7 +122,7 @@ import { DanhGiaMuaHang } from './entities/danh-gia-mua-hang.entity';
         ? { rejectUnauthorized: false }
         : false,
 
-    // ✅ REQUIRED for Supabase Pooler stability
+    // REQUIRED for Supabase Pooler stability
     extra: {
       keepAlive: true,
     },
@@ -133,6 +134,7 @@ import { DanhGiaMuaHang } from './entities/danh-gia-mua-hang.entity';
     CustomerModule,
     AdminModule,
     SalesModule,
+    BranchModule,
   ],
   controllers: [AppController],
   providers: [AppService],

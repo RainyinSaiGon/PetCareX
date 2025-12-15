@@ -1,81 +1,210 @@
 <div class="container">
   <div class="breadcrumb">
-    <span class="link" (click)="router.navigate(['/customers'])">Khách Hàng</span>
+    <span class="link" (click)="router.navigate(['/customers'])">
+      <i class="fas fa-users"></i> Khách Hàng
+    </span>
     <span class="separator">/</span>
     <span class="link" (click)="router.navigate(['/customers', customerId, 'pets'])">
-      {{ customerName || 'Thú Cưng' }}
+      <i class="fas fa-paw"></i> {{ customerName || 'Thú Cưng' }}
     </span>
     <span class="separator">/</span>
     <span>{{ isEditMode ? 'Chỉnh Sửa' : 'Thêm Mới' }}</span>
   </div>
 
   <div class="header">
-    <h1>{{ isEditMode ? 'Chỉnh Sửa Thú Cưng' : 'Thêm Thú Cưng Mới' }}</h1>
+    <div class="header-content">
+      <div>
+        <h1>{{ isEditMode ? 'Chỉnh Sửa Thú Cưng' : 'Thêm Thú Cưng Mới' }}</h1>
+        <p class="subtitle">Cập nhật thông tin chi tiết cho thú cưng của bạn</p>
+      </div>
+    </div>
   </div>
 
   <div *ngIf="error" class="alert alert-error">
-    {{ error }}
+    <i class="fas fa-exclamation-circle"></i> {{ error }}
   </div>
 
   <div *ngIf="success" class="alert alert-success">
-    {{ success }}
+    <i class="fas fa-check-circle"></i> {{ success }}
   </div>
 
-  <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form">
-    <div class="form-row">
-      <div class="form-group">
-        <label for="TenThuCung" class="required">Tên Thú Cưng</label>
-        <input
-          type="text"
-          id="TenThuCung"
-          formControlName="TenThuCung"
-          [class.invalid]="isFieldInvalid('TenThuCung')"
-          placeholder="Nhập tên thú cưng"
-        />
-        <span class="error-message" *ngIf="isFieldInvalid('TenThuCung')">
-          {{ getErrorMessage('TenThuCung') }}
-        </span>
+  <!-- Skeleton Loading -->
+  <div *ngIf="loading && isEditMode" class="pet-form skeleton-form">
+    <div class="form-section">
+      <div class="section-title">
+        <div class="skeleton skeleton-title"></div>
       </div>
-
-      <div class="form-group">
-        <label for="MaChungLoai" class="required">Chủng Loại</label>
-        <select
-          id="MaChungLoai"
-          formControlName="MaChungLoai"
-          [class.invalid]="isFieldInvalid('MaChungLoai')"
-        >
-          <option value="">-- Chọn chủng loại --</option>
-          <option *ngFor="let sp of species" [value]="sp.MaChungLoaiThuCung">
-            {{ sp.TenChungLoaiThuCung }}
-          </option>
-        </select>
-        <span class="error-message" *ngIf="isFieldInvalid('MaChungLoai')">
-          {{ getErrorMessage('MaChungLoai') }}
-        </span>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-input"></div>
+        </div>
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group">
-        <label for="NgaySinhThuCung">Ngày Sinh</label>
-        <input
-          type="date"
-          id="NgaySinhThuCung"
-          formControlName="NgaySinhThuCung"
-          [class.invalid]="isFieldInvalid('NgaySinhThuCung')"
-        />
-        <span class="error-message" *ngIf="isFieldInvalid('NgaySinhThuCung')">
-          {{ getErrorMessage('NgaySinhThuCung') }}
-        </span>
+    <div class="form-section">
+      <div class="section-title">
+        <div class="skeleton skeleton-title"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-input"></div>
+        </div>
+        <div class="form-group">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-input"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <div class="section-title">
+        <div class="skeleton skeleton-title"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-input"></div>
+        </div>
+        <div class="form-group">
+          <div class="skeleton skeleton-label"></div>
+          <div class="skeleton skeleton-input"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <div class="skeleton skeleton-button"></div>
+      <div class="skeleton skeleton-button"></div>
+    </div>
+  </div>
+
+  <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form" *ngIf="!loading || !isEditMode">
+    <!-- Customer Selection -->
+    <div class="form-section">
+      <div class="section-title">
+        <i class="fas fa-user-circle"></i> Chủ Sở Hữu
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="MaKhachHang" class="required">Chọn Khách Hàng</label>
+          <div class="input-wrapper">
+            <select
+              id="MaKhachHang"
+              formControlName="MaKhachHang"
+              [class.invalid]="isFieldInvalid('MaKhachHang')"
+            >
+              <option value="">-- Chọn khách hàng --</option>
+              <option *ngFor="let customer of customers" [value]="customer.MaKhachHang">
+                👤 {{ customer.HoTen }} ({{ customer.SoDienThoai }})
+              </option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('MaKhachHang')">
+            {{ getErrorMessage('MaKhachHang') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Basic Pet Information -->
+    <div class="form-section">
+      <div class="section-title">
+        <i class="fas fa-info-circle"></i> Thông Tin Cơ Bản
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="TenThuCung" class="required">Tên Thú Cưng</label>
+          <div class="input-wrapper">
+            <input
+              type="text"
+              id="TenThuCung"
+              formControlName="TenThuCung"
+              [class.invalid]="isFieldInvalid('TenThuCung')"
+              placeholder="Vd: Bông, Miu Miu..."
+            />
+            <i class="fas fa-paw"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('TenThuCung')">
+            {{ getErrorMessage('TenThuCung') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="NgaySinhThuCung">Ngày Sinh</label>
+          <div class="input-wrapper">
+            <input
+              type="date"
+              id="NgaySinhThuCung"
+              formControlName="NgaySinhThuCung"
+              [class.invalid]="isFieldInvalid('NgaySinhThuCung')"
+              placeholder="mm/dd/yyyy"
+            />
+            <i class="fas fa-calendar calendar-icon" (click)="focusDateInput('NgaySinhThuCung')" title="Chọn ngày"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('NgaySinhThuCung')">
+            {{ getErrorMessage('NgaySinhThuCung') }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pet Classification -->
+    <div class="form-section">
+      <div class="section-title">
+        <i class="fas fa-cubes"></i> Phân Loại Thú Cưng
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="MaLoaiThuCung" class="required">Loại Thú Cưng</label>
+          <div class="input-wrapper">
+            <select
+              id="MaLoaiThuCung"
+              formControlName="MaLoaiThuCung"
+              [class.invalid]="isFieldInvalid('MaLoaiThuCung')"
+            >
+              <option value="">-- Chọn loại thú cưng --</option>
+              <option *ngFor="let petType of petTypes" [value]="petType.MaLoaiThuCung">
+                {{ getPetTypeEmoji(petType.TenLoaiThuCung) }} {{ petType.TenLoaiThuCung }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('MaLoaiThuCung')">
+            {{ getErrorMessage('MaLoaiThuCung') }}
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label for="MaChungLoai" class="required">Chủng Loại</label>
+          <div class="input-wrapper">
+            <select
+              id="MaChungLoai"
+              formControlName="MaChungLoai"
+              [class.invalid]="isFieldInvalid('MaChungLoai')"
+            >
+              <option value="">-- Chọn chủng loại --</option>
+              <option *ngFor="let breed of filteredBreeds" [value]="breed.MaChungLoaiThuCung">
+                {{ breed.TenChungLoaiThuCung }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+          </div>
+          <span class="error-message" *ngIf="isFieldInvalid('MaChungLoai')">
+            {{ getErrorMessage('MaChungLoai') }}
+          </span>
+        </div>
       </div>
     </div>
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
-        Hủy
+        <i class="fas fa-times"></i> Hủy
       </button>
       <button type="submit" class="btn btn-primary" [disabled]="loading">
-        {{ loading ? 'Đang xử lý...' : (isEditMode ? 'Cập Nhật' : 'Thêm Mới') }}
+        <i class="fas fa-save"></i> {{ loading ? 'Đang xử lý...' : (isEditMode ? 'Cập Nhật' : 'Thêm Mới') }}
       </button>
     </div>
   </form>

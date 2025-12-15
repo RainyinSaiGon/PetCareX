@@ -1,9 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { CustomerService } from '../../services/customer.service';
-import { ThuCung, ChungLoaiThuCung } from '../../models/pet.model';
+import { ThuCung, ChungLoaiThuCung, LoaiThuCung } from '../../models/pet.model';
+import { KhachHang } from '../../models/customer.model';
 
 @Component({
   selector: 'app-pet-form',
@@ -12,16 +15,23 @@ import { ThuCung, ChungLoaiThuCung } from '../../models/pet.model';
   templateUrl: './pet-form.component.html',
   styleUrls: ['./pet-form.component.css']
 })
-export class PetFormComponent implements OnInit {
+export class PetFormComponent implements OnInit, OnDestroy {
   petForm: FormGroup;
   isEditMode = false;
   customerId!: number;
   petId?: number;
   customerName?: string;
-  species: ChungLoaiThuCung[] = [];
+  
+  // Pet type and breed data
+  petTypes: LoaiThuCung[] = [];
+  breeds: ChungLoaiThuCung[] = [];
+  filteredBreeds: ChungLoaiThuCung[] = [];
+  
+  customers: KhachHang[] = [];
   loading = false;
   error = '';
   success = '';
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -30,7 +40,9 @@ export class PetFormComponent implements OnInit {
     private route: ActivatedRoute
   ) {
     this.petForm = this.fb.group({
+      MaKhachHang: ['', [Validators.required]],
       TenThuCung: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
+      MaLoaiThuCung: ['', [Validators.required]],
       MaChungLoai: ['', [Validators.required]],
       NgaySinhThuCung: ['']
     });
@@ -45,8 +57,22 @@ export class PetFormComponent implements OnInit {
       this.isEditMode = true;
     }
 
-    this.loadCustomerInfo();
-    this.loadSpecies();
+    // If customerId is set from route, pre-fill it
+    if (this.customerId) {
+      this.petForm.patchValue({ MaKhachHang: this.customerId });
+      this.loadCustomerInfo();
+    }
+
+    this.loadCustomers();
+    this.loadPetTypes();
+    this.loadBreeds();
+    
+    // Listen to pet type changes to filter breeds
+    this.petForm.get('MaLoaiThuCung')?.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((maLoaiThuCung) => {
+        this.onPetTypeChange(maLoaiThuCung);
+      });
     
     if (this.isEditMode && this.petId) {
       this.loadPet();
@@ -55,8 +81,10 @@ export class PetFormComponent implements OnInit {
 
   loadCustomerInfo(): void {
     this.customerService.getCustomerById(this.customerId)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (customer) => {
+        next: (response: any) => {
+          const customer = response.data || response;
           this.customerName = customer.HoTen;
         },
         error: (err) => {
@@ -65,17 +93,58 @@ export class PetFormComponent implements OnInit {
       });
   }
 
-  loadSpecies(): void {
-    this.customerService.getSpecies()
+  loadCustomers(): void {
+    this.customerService.getCustomers(1, 1000)
+      .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (species) => {
-          this.species = species;
+        next: (response: any) => {
+          this.customers = response.data || [];
+        },
+        error: (err) => {
+          this.error = 'Không thể tải danh sách khách hàng.';
+          console.error('Error loading customers:', err);
+        }
+      });
+  }
+
+  loadPetTypes(): void {
+    this.customerService.getPetTypes()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.petTypes = response.data || [];
+        },
+        error: (err) => {
+          this.error = 'Không thể tải danh sách loại thú cưng.';
+          console.error('Error loading pet types:', err);
+        }
+      });
+  }
+
+  loadBreeds(): void {
+    this.customerService.getBreeds()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (response: any) => {
+          this.breeds = response.data || [];
         },
         error: (err) => {
           this.error = 'Không thể tải danh sách chủng loại.';
-          console.error('Error loading species:', err);
+          console.error('Error loading breeds:', err);
         }
       });
+  }
+
+  onPetTypeChange(maLoaiThuCung: string): void {
+    if (maLoaiThuCung) {
+      // Filter breeds based on selected pet type
+      this.filteredBreeds = this.breeds.filter(
+        breed => breed.MaLoaiThuCung === maLoaiThuCung
+      );
+    } else {
+      // Show all breeds when no pet type is selected
+      this.filteredBreeds = this.breeds;
+    }
   }
 
   loadPet(): void {
@@ -87,9 +156,14 @@ export class PetFormComponent implements OnInit {
         next: (pet: ThuCung) => {
           this.petForm.patchValue({
             TenThuCung: pet.TenThuCung,
+            MaLoaiThuCung: pet.ChungLoai?.MaLoaiThuCung || '',
             MaChungLoai: pet.MaChungLoai,
             NgaySinhThuCung: pet.NgaySinhThuCung ? this.formatDate(new Date(pet.NgaySinhThuCung)) : ''
           });
+          // Trigger breed filtering
+          if (pet.ChungLoai?.MaLoaiThuCung) {
+            this.onPetTypeChange(pet.ChungLoai.MaLoaiThuCung);
+          }
           this.loading = false;
         },
         error: (err) => {
@@ -111,8 +185,9 @@ export class PetFormComponent implements OnInit {
     this.success = '';
 
     const formData = {
-      ...this.petForm.value,
-      MaKhachHang: this.customerId
+      TenThuCung: this.petForm.get('TenThuCung')?.value,
+      MaChungLoai: this.petForm.get('MaChungLoai')?.value,
+      NgaySinhThuCung: this.petForm.get('NgaySinhThuCung')?.value || undefined
     };
 
     const request = this.isEditMode && this.petId
@@ -181,5 +256,34 @@ export class PetFormComponent implements OnInit {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.petForm.get(fieldName);
     return !!(control && control.invalid && control.touched);
+  }
+
+  getPetTypeEmoji(petTypeName: string): string {
+    const emojiMap: { [key: string]: string } = {
+      'Chó': '🐕',
+      'Mèo': '🐱',
+      'Gà': '🐔',
+      'Vịt': '🦆',
+    };
+    return emojiMap[petTypeName] || '🐾';
+  }
+
+  focusDateInput(fieldId: string): void {
+    const element = document.getElementById(fieldId) as HTMLInputElement;
+    if (element) {
+      element.focus();
+      // Use showPicker() for modern browsers
+      if (element.showPicker && typeof element.showPicker === 'function') {
+        element.showPicker();
+      } else {
+        // Fallback for older browsers
+        element.click();
+      }
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

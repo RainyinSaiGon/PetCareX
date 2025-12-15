@@ -92,7 +92,7 @@ export class PetListComponent implements OnInit {
   }
 
   viewPet(petId: number): void {
-    this.router.navigate(['/customers', this.customerId, 'pets', petId]);
+    this.router.navigate(['/customers', this.customerId, 'pets', petId, 'edit']);
   }
 
   editPet(petId: number): void {
@@ -139,5 +139,45 @@ export class PetListComponent implements OnInit {
     }
     
     return pages;
+  }
+
+  getPetIcon(breedName?: string): string {
+    if (!breedName) return 'fas fa-paw';
+    
+    const breed = breedName.toLowerCase();
+    
+    // Dog breeds
+    if (breed.includes('husky') || breed.includes('poodle') || breed.includes('bulldog') || 
+        breed.includes('beagle') || breed.includes('corgi') || breed.includes('chó') || 
+        breed.includes('dog') || breed.includes('retriever') || breed.includes('shepherd')) {
+      return 'fas fa-dog';
+    }
+    
+    // Cat breeds
+    if (breed.includes('persian') || breed.includes('siamese') || breed.includes('bengal') || 
+        breed.includes('ragdoll') || breed.includes('mèo') || breed.includes('cat')) {
+      return 'fas fa-cat';
+    }
+    
+    // Birds
+    if (breed.includes('chicken') || breed.includes('gà') || breed.includes('parrot') || 
+        breed.includes('canary') || breed.includes('cockatiel') || breed.includes('bird') || 
+        breed.includes('chim')) {
+      return 'fas fa-dove';
+    }
+    
+    // Fish
+    if (breed.includes('cá') || breed.includes('fish') || breed.includes('goldfish') || 
+        breed.includes('koi')) {
+      return 'fas fa-fish';
+    }
+    
+    // Rabbit
+    if (breed.includes('rabbit') || breed.includes('thỏ') || breed.includes('bunny')) {
+      return 'fas fa-rabbit';
+    }
+    
+    // Default
+    return 'fas fa-paw';
   }
 }

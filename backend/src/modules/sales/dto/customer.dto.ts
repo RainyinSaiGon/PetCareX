@@ -80,10 +80,9 @@ export class CustomerStatisticsDto {
   totalSpending: number;
   averageSpending: number;
   tierDistribution: {
-    bronze: number;
-    silver: number;
-    gold: number;
-    platinum: number;
+    'co-ban': number;
+    'than-thiet': number;
+    'vip': number;
   };
   topSpenders: {
     MaKhachHang: number;
