@@ -6,6 +6,7 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { User } from '../entities/user.entity';
+import { KhachHang } from '../entities/khach-hang.entity';
 import { UserRole, UserStatus } from '../common/enums/user-role.enum';
 import { RegisterDto, LoginDto, RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto, ChangePasswordDto } from './dto/auth.dto';
 
@@ -14,7 +15,7 @@ interface JwtPayload {
   username: string;
   email: string;
   role: UserRole;
-  ma_nhan_vien?: number;
+  ma_nhan_vien?: string;
   ma_khach_hang?: number;
 }
 
@@ -23,9 +24,11 @@ export class AuthService {
   constructor(
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectRepository(KhachHang)
+    private khachHangRepository: Repository<KhachHang>,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     // Check if user exists
@@ -52,6 +55,19 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
+
+    // If user is a customer, automatically create a customer record
+    if (user.role === UserRole.CUSTOMER) {
+      const khachHang = this.khachHangRepository.create({
+        HoTen: registerDto.full_name || registerDto.username,
+        SoDienThoai: registerDto.phone || undefined,
+      });
+      await this.khachHangRepository.save(khachHang);
+
+      // Link user to customer
+      user.ma_khach_hang = khachHang.MaKhachHang;
+      await this.userRepository.save(user);
+    }
 
     // Generate tokens
     const tokens = await this.generateTokens(user);
@@ -245,9 +261,9 @@ export class AuthService {
     return this.sanitizeUser(user);
   }
 
-  async linkToEmployee(userId: number, maNhanVien: number) {
+  async linkToEmployee(userId: number, maNhanVien: string) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    
+
     if (!user) {
       throw new NotFoundException('Người dùng không tồn tại');
     }
@@ -260,7 +276,7 @@ export class AuthService {
 
   async linkToCustomer(userId: number, maKhachHang: number) {
     const user = await this.userRepository.findOne({ where: { id: userId } });
-    
+
     if (!user) {
       throw new NotFoundException('Người dùng không tồn tại');
     }

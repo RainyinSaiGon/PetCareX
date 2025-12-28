@@ -1,0 +1,315 @@
+<div class="container">
+    <!-- Header with Reminder Bell -->
+    <div class="header-section">
+        <div class="header-title">
+            <i class="fa-solid fa-calendar-check"></i>
+            <h1>Lịch Hẹn Khám</h1>
+        </div>
+        <div class="header-actions">
+            <!-- Reminder Bell -->
+            <div class="reminder-bell" (click)="toggleReminders()">
+                <i class="fa-solid fa-bell"></i>
+                <span class="badge" *ngIf="getUrgentCount() > 0">{{ getUrgentCount() }}</span>
+            </div>
+            <button class="btn-primary" (click)="openWalkInForm()">
+                <i class="fa-solid fa-plus"></i> Tạo lịch trực tiếp
+            </button>
+        </div>
+    </div>
+
+    <!-- Reminder Panel -->
+    <div class="reminder-panel" *ngIf="showReminders && upcomingAppointments.length > 0">
+        <div class="reminder-header">
+            <i class="fa-solid fa-clock"></i>
+            <h3>Lịch Hẹn Sắp Tới</h3>
+            <button class="close-btn-sm" (click)="toggleReminders()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+        <div class="reminder-list">
+            <div *ngFor="let apt of upcomingAppointments" class="reminder-item" [class.urgent]="apt.isUrgent">
+                <div class="reminder-time">
+                    <span class="time">{{ apt.gioHen }}</span>
+                    <span class="label" *ngIf="apt.isToday">Hôm nay</span>
+                    <span class="label tomorrow" *ngIf="apt.isTomorrow">Ngày mai</span>
+                    <span class="urgent-badge" *ngIf="apt.isUrgent">
+                        <i class="fa-solid fa-exclamation-triangle"></i> Sắp đến!
+                    </span>
+                </div>
+                <div class="reminder-info">
+                    <span class="pet-name">{{ apt.thuCung?.tenThuCung }}</span>
+                    <span class="customer">{{ apt.khachHang?.hoTen }}</span>
+                </div>
+                <button class="btn-icon btn-dismiss" (click)="dismissReminder(apt)" title="Bỏ qua">
+                    <i class="fa-solid fa-check"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Toggle and Filters -->
+    <div class="controls-section">
+        <div class="view-toggle">
+            <button [class.active]="viewMode === 'list'" (click)="switchToListView()">
+                <i class="fa-solid fa-list"></i> Danh sách
+            </button>
+            <button [class.active]="viewMode === 'calendar'" (click)="switchToCalendarView()">
+                <i class="fa-solid fa-calendar"></i> Lịch
+            </button>
+        </div>
+
+        <div class="filters-section" *ngIf="viewMode === 'list'">
+            <div class="filter-group">
+                <label>Ngày</label>
+                <input type="date" [(ngModel)]="selectedDate" (change)="loadAppointments()" class="form-control" />
+            </div>
+            <div class="filter-group">
+                <label>Trạng thái</label>
+                <select [(ngModel)]="statusFilter" (change)="loadAppointments()" class="form-control">
+                    <option value="">Tất cả</option>
+                    <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+                </select>
+            </div>
+            <button class="btn-secondary" (click)="loadAppointments()">
+                <i class="fa-solid fa-refresh"></i> Làm mới
+            </button>
+        </div>
+    </div>
+
+    <!-- Calendar View -->
+    <div class="calendar-view" *ngIf="viewMode === 'calendar'">
+        <div class="calendar-header">
+            <button class="btn-nav" (click)="prevMonth()">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <h2>{{ formatMonthYear() }}</h2>
+            <button class="btn-nav" (click)="nextMonth()">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+
+        <div class="calendar-weekdays">
+            <span>CN</span>
+            <span>T2</span>
+            <span>T3</span>
+            <span>T4</span>
+            <span>T5</span>
+            <span>T6</span>
+            <span>T7</span>
+        </div>
+
+        <div class="calendar-grid">
+            <div *ngFor="let day of calendarDays" class="calendar-day" [class.other-month]="!day.isCurrentMonth"
+                [class.today]="day.isToday"
+                [class.selected]="selectedCalendarDate && day.date.getTime() === selectedCalendarDate.getTime()"
+                [class.has-appointments]="day.appointments.length > 0" (click)="selectCalendarDate(day)">
+                <span class="day-number">{{ day.date.getDate() }}</span>
+                <div class="day-appointments" *ngIf="day.appointments.length > 0">
+                    <div *ngFor="let apt of day.appointments.slice(0, 2)" class="day-appointment"
+                        [ngClass]="getStatusClass(apt.trangThai)">
+                        {{ apt.gioHen }} - {{ apt.thuCung?.tenThuCung }}
+                    </div>
+                    <div class="more-appointments" *ngIf="day.appointments.length > 2">
+                        +{{ day.appointments.length - 2 }} thêm
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Date Appointments -->
+        <div class="selected-date-appointments" *ngIf="selectedCalendarDate">
+            <h3>
+                <i class="fa-solid fa-calendar-day"></i>
+                Lịch hẹn ngày {{ formatDate(selectedCalendarDate) }}
+            </h3>
+            <button class="btn-add-small" (click)="openWalkInForm(selectedCalendarDate)">
+                <i class="fa-solid fa-plus"></i> Thêm lịch hẹn
+            </button>
+        </div>
+    </div>
+
+    <!-- Appointments List -->
+    <div class="appointments-list" *ngIf="viewMode === 'list' || selectedCalendarDate">
+        <div class="loading" *ngIf="isLoading">
+            <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+        </div>
+
+        <div class="no-data" *ngIf="!isLoading && appointments.length === 0">
+            <i class="fa-solid fa-calendar-xmark"></i>
+            <span>Không có lịch hẹn nào</span>
+            <button class="btn-primary-small" (click)="openWalkInForm()">
+                <i class="fa-solid fa-plus"></i> Tạo lịch hẹn mới
+            </button>
+        </div>
+
+        <div class="appointment-card" *ngFor="let apt of appointments">
+            <div class="appointment-time">
+                <span class="time">{{ apt.gioHen }}</span>
+                <span class="date">{{ formatDate(apt.ngayHen) }}</span>
+            </div>
+
+            <div class="appointment-info">
+                <div class="customer-pet">
+                    <div class="pet-name">
+                        <i class="fa-solid fa-paw"></i>
+                        {{ apt.thuCung?.tenThuCung || 'N/A' }}
+                        <span class="pet-breed">{{ apt.thuCung?.chungLoai }}</span>
+                    </div>
+                    <div class="customer-name">
+                        <i class="fa-solid fa-user"></i>
+                        {{ apt.khachHang?.hoTen || 'N/A' }}
+                        <span class="customer-phone">{{ apt.khachHang?.soDienThoai }}</span>
+                    </div>
+                </div>
+                <div class="doctor-info" *ngIf="apt.bacSi">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    BS. {{ apt.bacSi.hoTen }}
+                </div>
+                <div class="notes-info" *ngIf="apt.ghiChu">
+                    <i class="fa-solid fa-sticky-note"></i>
+                    {{ apt.ghiChu }}
+                </div>
+            </div>
+
+            <div class="appointment-status">
+                <select [ngModel]="apt.trangThai || 'Đang chờ'" (ngModelChange)="updateStatus(apt, $event)"
+                    class="status-select" [ngClass]="getStatusClass(apt.trangThai || 'Đang chờ')">
+                    <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+                </select>
+            </div>
+
+            <div class="appointment-actions">
+                <!-- Create Examination Button -->
+                <button class="btn-icon btn-exam" title="Tạo Hồ Sơ Khám" (click)="createExamination(apt)"
+                    *ngIf="apt.trangThai !== 'Đã hủy'">
+                    <i class="fa-solid fa-stethoscope"></i>
+                </button>
+                <button class="btn-icon btn-danger" title="Xóa" (click)="deleteAppointment(apt)">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Walk-in Appointment Modal -->
+<div class="modal-overlay" *ngIf="showWalkInForm" (click)="closeWalkInForm()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <div class="modal-title">
+                <i class="fa-solid fa-user-plus"></i>
+                <h2>Tạo Lịch Khám Trực Tiếp</h2>
+            </div>
+            <button class="close-btn" (click)="closeWalkInForm()">
+                <i class="fa-solid fa-times"></i>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Pet ID Input -->
+            <div class="form-group pet-search-container">
+                <label><i class="fa-solid fa-paw"></i> Mã Thú Cưng *</label>
+                <div class="search-wrapper">
+                    <input type="number" [(ngModel)]="walkInForm.petId" placeholder="Nhập mã thú cưng (VD: 1, 2, 3...)"
+                        class="form-control" [readonly]="walkInForm.selectedPet" autocomplete="off" />
+                    <button *ngIf="!walkInForm.selectedPet && walkInForm.petId" type="button" class="btn-search"
+                        (click)="lookupPetById()" [disabled]="isSearchingPets">
+                        <i class="fa-solid" [ngClass]="isSearchingPets ? 'fa-spinner fa-spin' : 'fa-search'"></i>
+                    </button>
+                    <button *ngIf="walkInForm.selectedPet" type="button" class="btn-clear"
+                        (click)="clearPetSelection()">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Selected Pet Card -->
+            <div class="selected-pet-card" *ngIf="walkInForm.selectedPet">
+                <div class="selected-pet-icon">
+                    <i class="fa-solid fa-paw"></i>
+                </div>
+                <div class="selected-pet-info">
+                    <span class="selected-pet-name">{{ walkInForm.selectedPet.TenThuCung }}</span>
+                    <span class="selected-pet-details">
+                        {{ walkInForm.selectedPet.ChungLoai?.TenChungLoaiThuCung }} |
+                        Chủ: {{ walkInForm.selectedPet.KhachHang?.HoTen || 'N/A' }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Branch Selection -->
+            <div class="form-group">
+                <label><i class="fa-solid fa-building"></i> Chi Nhánh *</label>
+                <select [(ngModel)]="walkInForm.maChiNhanh" (change)="onBranchChange()" class="form-control">
+                    <option value="">-- Chọn chi nhánh --</option>
+                    <option *ngFor="let branch of branches" [value]="branch.MaChiNhanh">
+                        {{ branch.TenChiNhanh }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Service Selection -->
+            <div class="form-group">
+                <label><i class="fa-solid fa-stethoscope"></i> Dịch Vụ</label>
+                <select [(ngModel)]="walkInForm.maDichVu" class="form-control" [disabled]="!walkInForm.maChiNhanh">
+                    <option value="">-- Chọn dịch vụ --</option>
+                    <option *ngFor="let service of services" [value]="service.MaDichVu">
+                        {{ service.TenDichVu }}
+                    </option>
+                </select>
+            </div>
+
+            <!-- Doctor Selection -->
+            <div class="form-group">
+                <label><i class="fa-solid fa-user-doctor"></i> Bác Sĩ Phụ Trách</label>
+                <select [(ngModel)]="walkInForm.maBacSi" class="form-control">
+                    <option value="">-- Chọn bác sĩ (tùy chọn) --</option>
+                    <option *ngFor="let doctor of doctors" [value]="doctor.maNhanVien">
+                        {{ doctor.hoTen }}
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-calendar"></i> Ngày hẹn</label>
+                    <input type="date" [(ngModel)]="walkInForm.ngayHen" class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-clock"></i> Giờ bắt đầu</label>
+                    <input type="time" [(ngModel)]="walkInForm.gioBatDau" (change)="onStartTimeChange()"
+                        class="form-control" />
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-clock"></i> Giờ kết thúc</label>
+                    <input type="time" [(ngModel)]="walkInForm.gioKetThuc" class="form-control" readonly />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label><i class="fa-solid fa-flag"></i> Trạng thái</label>
+                <select [(ngModel)]="walkInForm.trangThai" class="form-control">
+                    <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+                </select>
+            </div>
+
+            <!-- Notes/Reason Field -->
+            <div class="form-group">
+                <label><i class="fa-solid fa-sticky-note"></i> Lý Do / Ghi Chú</label>
+                <textarea [(ngModel)]="walkInForm.ghiChu" placeholder="Nhập lý do khám hoặc ghi chú..."
+                    class="form-control textarea" rows="3"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeWalkInForm()">
+                <i class="fa-solid fa-times"></i> Hủy
+            </button>
+            <button class="btn-save" (click)="createWalkInAppointment()"
+                [disabled]="isCreating || !walkInForm.selectedPet">
+                <i class="fa-solid" [ngClass]="isCreating ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+                {{ isCreating ? 'Đang tạo...' : 'Tạo Lịch Hẹn' }}
+            </button>
+        </div>
+    </div>
+</div>

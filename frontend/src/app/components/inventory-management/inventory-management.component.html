@@ -1,113 +1,433 @@
 <div class="inventory-container">
-  <div class="header-section">
-    <h1>📦 Quản Lý Kho Hàng</h1>
-    <p class="subtitle">Theo dõi và quản lý tồn kho</p>
+  <!-- Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1><i class="fas fa-boxes"></i> Quản Lý Kho Hàng</h1>
+    </div>
   </div>
 
   <!-- Summary Cards -->
-  <div class="summary-section" *ngIf="summary && !loading">
-    <div class="summary-card">
-      <div class="summary-icon">📊</div>
-      <p>Tổng SKU: {{ summary.totalItems }}</p>
+  <div class="summary-grid" *ngIf="summary && !loading">
+    <div class="summary-card revenue">
+      <div class="card-icon"><i class="fas fa-coins"></i></div>
+      <div class="card-content">
+        <h4>Giá Trị Kho</h4>
+        <p class="card-value">{{ formatCurrency(summary.summary.totalValue) }}</p>
+        <span class="card-trend">Tổng giá trị hàng tồn kho</span>
+      </div>
     </div>
-    <div class="summary-card">
-      <div class="summary-icon">🏢</div>
-      <p>Chi Nhánh: {{ summary.totalBranches }}</p>
+
+    <div class="summary-card transactions">
+      <div class="card-icon"><i class="fas fa-boxes"></i></div>
+      <div class="card-content">
+        <h4>Tổng SKU</h4>
+        <p class="card-value">{{ summary.summary.totalItems }}</p>
+        <span class="card-trend">Loại sản phẩm tồn kho</span>
+      </div>
     </div>
-    <div class="summary-card">
-      <div class="summary-icon">💰</div>
-      <p>Giá Trị Kho: {{ formatCurrency(summary.totalValue) }}</p>
+
+    <div class="summary-card branches">
+      <div class="card-icon"><i class="fas fa-building"></i></div>
+      <div class="card-content">
+        <h4>Chi Nhánh</h4>
+        <p class="card-value">{{ summary.summary.totalBranches }}</p>
+        <span class="card-trend">Số chi nhánh quản lý</span>
+      </div>
     </div>
-    <div class="summary-card alert">
-      <div class="summary-icon">⚠️</div>
-      <p>Cảnh báo: {{ summary.lowStockCount + summary.outOfStockCount }}</p>
+
+    <div class="summary-card average">
+      <div class="card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <div class="card-content">
+        <h4>Cảnh Báo</h4>
+        <p class="card-value">{{ summary.summary.lowStockCount + summary.summary.outOfStockCount }}</p>
+        <span class="card-trend">{{ summary.summary.criticalItems || 0 }} hết hàng</span>
+      </div>
     </div>
   </div>
 
-  <!-- Tabs -->
+  <!-- Tabs Navigation -->
   <div class="tabs-section">
-    <button 
-      *ngFor="let tab of ['inventory', 'alerts', 'import-export']"
-      [class.active]="activeTab === tab"
-      (click)="activeTab = tab"
-      class="tab-btn"
-    >
-      {{ tab === 'inventory' ? '📦 Tồn Kho' : tab === 'alerts' ? '⚠️ Cảnh Báo' : '🔄 Nhập/Xuất' }}
-    </button>
-  </div>
+    <div class="tabs-header">
+      <button [class.active]="activeTab === 'overview'" (click)="switchTab('overview')" class="tab-btn">
+        <i class="fas fa-chart-pie"></i> Tồn Kho
+      </button>
+      <button [class.active]="activeTab === 'alerts'" (click)="switchTab('alerts')" class="tab-btn">
+        <i class="fas fa-bell"></i> Cảnh Báo ({{ lowStockAlerts.length || 0 }})
+      </button>
+      <button [class.active]="activeTab === 'transactions'" (click)="switchTab('transactions')" class="tab-btn">
+        <i class="fas fa-exchange-alt"></i> Nhập/Xuất
+      </button>
+      <button [class.active]="activeTab === 'search'" (click)="switchTab('search')" class="tab-btn">
+        <i class="fas fa-search"></i> Tìm Kiếm
+      </button>
+    </div>
 
-  <!-- Inventory Tab -->
-  <div class="tab-content" *ngIf="activeTab === 'inventory'">
-    <table class="inventory-table" *ngIf="inventories.length > 0">
-      <thead>
-        <tr>
-          <th>Sản Phẩm</th>
-          <th>Chi Nhánh</th>
-          <th>Số Lượng</th>
-          <th>Giá</th>
-          <th>Tổng Giá Trị</th>
-          <th>Trạng Thái</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let inv of inventories" [class.low-stock]="inv.Status === 'Low Stock'" [class.out-of-stock]="inv.Status === 'Out of Stock'">
-          <td class="product-name">{{ inv.TenSanPham }}</td>
-          <td>{{ inv.TenChiNhanh }}</td>
-          <td class="quantity">{{ inv.SoLuong }}</td>
-          <td>{{ formatCurrency(inv.GiaThanh) }}</td>
-          <td class="total-value">{{ formatCurrency(inv.TotalValue) }}</td>
-          <td>
-            <span class="status-badge" [ngClass]="inv.Status.toLowerCase().replace(' ', '-')">
-              {{ getStatusBadge(inv.Status) }} {{ inv.Status }}
-            </span>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- Alerts Tab -->
-  <div class="tab-content" *ngIf="activeTab === 'alerts'">
-    <div class="alerts-list">
-      <div class="alert-item" *ngFor="let alert of lowStockAlerts">
-        <div class="alert-icon">⚠️</div>
-        <div class="alert-content">
-          <p class="alert-product">{{ alert.TenSanPham }}</p>
-          <p class="alert-info">{{ alert.TenChiNhanh }} - Còn {{ alert.CurrentStock }}/{{ alert.ThresholdLevel }}</p>
+    <!-- Filter Bar -->
+    <div class="filter-bar" *ngIf="activeTab === 'overview'">
+      <div class="filter-wrapper">
+        <!-- Branch Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-building"></i> Chi Nhánh
+          </label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="filterBranch" class="filter-select">
+              <option value="">Tất Cả Chi Nhánh</option>
+              <option *ngFor="let branch of branches" [value]="branch.MaChiNhanh">
+                {{ branch.TenChiNhanh }}
+              </option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
         </div>
-        <div class="alert-deficit">Thiếu: {{ alert.DeficitCount }}</div>
+
+        <!-- Status Filter -->
+        <div class="filter-group">
+          <label class="filter-label">
+            <i class="fas fa-circle-notch"></i> Trạng Thái
+          </label>
+          <div class="select-wrapper">
+            <select [(ngModel)]="filterStatus" class="filter-select">
+              <option value="">Tất Cả Trạng Thái</option>
+              <option value="in-stock">✓ Có Hàng</option>
+              <option value="low-stock">⚠ Sắp Hết</option>
+              <option value="out-of-stock">✗ Hết Hàng</option>
+            </select>
+            <i class="fas fa-chevron-down select-icon"></i>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="filter-actions">
+          <button (click)="applyFilters()" class="btn btn-filter-search">
+            <i class="fas fa-search"></i> Tìm Kiếm
+          </button>
+          <button (click)="resetFilters()" class="btn btn-filter-reset">
+            <i class="fas fa-redo"></i> Đặt Lại
+          </button>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- Import/Export Tab -->
-  <div class="tab-content" *ngIf="activeTab === 'import-export'">
-    <div class="transaction-forms">
-      <div class="form-card">
-        <h3>📥 Nhập Kho</h3>
-        <input [(ngModel)]="importData.MaChiNhanh" placeholder="Chi nhánh" />
-        <input [(ngModel)]="importData.MaSanPham" type="number" placeholder="Mã sản phẩm" />
-        <input [(ngModel)]="importData.SoLuong" type="number" placeholder="Số lượng" />
-        <textarea [(ngModel)]="importData.GhiChu" placeholder="Ghi chú"></textarea>
-        <button (click)="onImport()" class="btn-submit">✓ Nhập</button>
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu kho hàng...</p>
+  </div>
+
+  <!-- Tab Content -->
+  <ng-container *ngIf="!loading">
+    <!-- Overview Tab - Inventory List -->
+    <div *ngIf="activeTab === 'overview'" class="tab-content">
+      <div class="inventory-list-container" *ngIf="inventories.length > 0">
+        <div class="list-header">
+          <div class="header-info">
+            <h3><i class="fas fa-list"></i> Danh Sách Tồn Kho</h3>
+            <span class="result-badge">{{ totalItems }} sản phẩm</span>
+          </div>
+          <div class="pagination-info">
+            Trang <span class="page-number">{{ currentPage }}</span> / <span class="page-total">{{ Math.ceil(totalItems
+              / itemsPerPage) }}</span>
+          </div>
+        </div>
+
+        <!-- Inventory Cards Grid -->
+        <div class="inventory-cards-grid">
+          <div *ngFor="let inv of getPagedInventories()" class="inventory-card"
+            [ngClass]="'status-' + inv.Status.toLowerCase().replace(' ', '-')">
+
+            <!-- Card Header with Status Badge -->
+            <div class="card-header">
+              <div class="status-indicator"
+                [ngClass]="'status-indicator-' + inv.Status.toLowerCase().replace(' ', '-')"></div>
+              <span class="status-badge-small" [ngClass]="'status-' + inv.Status.toLowerCase().replace(' ', '-')">
+                <i
+                  [ngClass]="inv.Status === 'Out of Stock' ? 'fas fa-times' : inv.Status === 'Low Stock' ? 'fas fa-exclamation' : 'fas fa-check'"></i>
+                {{ inv.Status === 'Out of Stock' ? 'Hết Hàng' : inv.Status === 'Low Stock' ? 'Sắp Hết' : 'Có Hàng' }}
+              </span>
+            </div>
+
+            <!-- Product Info -->
+            <div class="card-body">
+              <div class="product-section">
+                <div class="product-info">
+                  <h4 class="product-name">{{ inv.TenSanPham }}</h4>
+                  <p class="product-type">{{ inv.LoaiSanPham || 'Hàng Hóa' }}</p>
+                </div>
+              </div>
+
+              <!-- Stats Grid -->
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-icon"><i class="fas fa-shopping-cart"></i></span>
+                  <div class="stat-content">
+                    <p class="stat-label">Số Lượng</p>
+                    <p class="stat-value" [ngClass]="{ 'critical': inv.SoLuong === 0, 'warning': inv.SoLuong < 20 }">{{
+                      inv.SoLuong }}</p>
+                  </div>
+                </div>
+
+                <div class="stat-item">
+                  <span class="stat-icon"><i class="fas fa-tag"></i></span>
+                  <div class="stat-content">
+                    <p class="stat-label">Đơn Giá</p>
+                    <p class="stat-value">{{ formatCurrency(inv.GiaThanh) }}</p>
+                  </div>
+                </div>
+
+                <div class="stat-item">
+                  <span class="stat-icon"><i class="fas fa-calculator"></i></span>
+                  <div class="stat-content">
+                    <p class="stat-label">Tổng Giá</p>
+                    <p class="stat-value price">{{ formatCurrency(inv.TotalValue) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Card Footer with Actions -->
+            <div class="card-footer">
+              <button class="action-btn edit-btn" title="Xem chi tiết">
+                <i class="fas fa-eye"></i> Xem
+              </button>
+              <button class="action-btn adjust-btn" title="Điều chỉnh kho">
+                <i class="fas fa-edit"></i> Điều Chỉnh
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="form-card">
-        <h3>📤 Xuất Kho</h3>
-        <input [(ngModel)]="exportData.MaChiNhanh" placeholder="Chi nhánh" />
-        <input [(ngModel)]="exportData.MaSanPham" type="number" placeholder="Mã sản phẩm" />
-        <input [(ngModel)]="exportData.SoLuong" type="number" placeholder="Số lượng" />
-        <textarea [(ngModel)]="exportData.GhiChu" placeholder="Ghi chú"></textarea>
-        <button (click)="onExport()" class="btn-submit">✓ Xuất</button>
+      <!-- Empty State -->
+      <div *ngIf="inventories.length === 0" class="empty-state">
+        <div class="empty-icon"><i class="fas fa-inbox"></i></div>
+        <h3>Không Có Dữ Liệu Kho Hàng</h3>
+        <p>Hệ thống chưa có thông tin tồn kho</p>
+      </div>
+
+      <!-- Pagination -->
+      <div *ngIf="inventories.length > 0" class="pagination-section">
+        <button class="btn-page" [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)">
+          <i class="fas fa-chevron-left"></i> Trước
+        </button>
+        <span class="page-info">Trang {{ currentPage }} / {{ Math.ceil(totalItems / itemsPerPage) }}</span>
+        <button class="btn-page" [disabled]="currentPage >= Math.ceil(totalItems / itemsPerPage)"
+          (click)="onPageChange(currentPage + 1)">
+          Sau <i class="fas fa-chevron-right"></i>
+        </button>
       </div>
     </div>
-  </div>
 
-  <!-- Pagination -->
-  <div class="pagination-section" *ngIf="inventories.length > 0 && activeTab === 'inventory'">
-    <button [disabled]="currentPage === 1" (click)="onPageChange(1)" class="pagination-btn">⏮️</button>
-    <button [disabled]="currentPage === 1" (click)="onPageChange(currentPage - 1)" class="pagination-btn">◀️</button>
-    <span class="page-indicator">{{ currentPage }}</span>
-    <button (click)="onPageChange(currentPage + 1)" class="pagination-btn">▶️</button>
-  </div>
+    <!-- Alerts Tab -->
+    <div *ngIf="activeTab === 'alerts'" class="tab-content alerts-tab">
+      <div class="alerts-grid" *ngIf="lowStockAlerts && lowStockAlerts.length > 0">
+        <div *ngFor="let alert of lowStockAlerts" class="alert-card" [ngClass]="'urgency-' + alert.UrgencyLevel">
+          <div class="alert-header">
+            <i class="fas fa-exclamation-triangle"></i>
+            <span class="urgency-badge">{{ alert.UrgencyLevel }}</span>
+          </div>
+          <div class="alert-body">
+            <h4>{{ alert.TenSanPham }}</h4>
+            <p class="alert-branch"><i class="fas fa-map-marker-alt"></i> {{ alert.TenChiNhanh }}</p>
+            <div class="alert-stats">
+              <div class="stat">
+                <span class="stat-label">Tồn Kho</span>
+                <span class="stat-value">{{ alert.CurrentStock }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Thiếu</span>
+                <span class="stat-value negative">{{ alert.DeficitCount }}</span>
+              </div>
+              <div class="stat">
+                <span class="stat-label">Đề Xuất</span>
+                <span class="stat-value">{{ alert.ReorderQuantity }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- No Alerts -->
+      <div *ngIf="!lowStockAlerts || lowStockAlerts.length === 0" class="empty-state">
+        <div class="empty-icon"><i class="fas fa-check-circle"></i></div>
+        <h3>Không Có Cảnh Báo</h3>
+        <p>Tất cả sản phẩm đều có đủ hàng</p>
+      </div>
+    </div>
+
+    <!-- Transactions Tab -->
+    <div *ngIf="activeTab === 'transactions'" class="tab-content transactions-tab">
+      <div class="transaction-forms">
+        <!-- Import Form -->
+        <div class="form-card import-card">
+          <div class="form-header import-header">
+            <div class="header-icon import-icon">
+              <i class="fas fa-arrow-down"></i>
+            </div>
+            <div class="header-content">
+              <h3>Nhập Kho</h3>
+              <p>Nhập hàng hóa vào kho</p>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <!-- Branch Select -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-building"></i> Chi Nhánh
+              </label>
+              <div class="input-wrapper">
+                <select [(ngModel)]="importData.MaChiNhanh" class="form-input form-select">
+                  <option value="">-- Chọn Chi Nhánh --</option>
+                  <option *ngFor="let b of branches" [value]="b.MaChiNhanh">
+                    {{ b.TenChiNhanh }}
+                  </option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
+            </div>
+
+            <!-- Product Code Input -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-barcode"></i> Mã Sản Phẩm
+              </label>
+              <input [(ngModel)]="importData.MaSanPham" type="number" placeholder="VD: 12345" class="form-input" />
+            </div>
+
+            <!-- Quantity Input -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-cubes"></i> Số Lượng
+              </label>
+              <input [(ngModel)]="importData.SoLuong" type="number" placeholder="VD: 50" class="form-input" />
+            </div>
+
+            <!-- Notes Textarea -->
+            <div class="form-group full-width">
+              <label class="form-label">
+                <i class="fas fa-sticky-note"></i> Ghi Chú
+              </label>
+              <textarea [(ngModel)]="importData.GhiChu" placeholder="Nhập ghi chú nhập kho (tùy chọn)"
+                class="form-input form-textarea" rows="4"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button (click)="onImport()" class="btn-submit btn-import">
+              <i class="fas fa-check"></i> Nhập Kho
+            </button>
+          </div>
+        </div>
+
+        <!-- Export Form -->
+        <div class="form-card export-card">
+          <div class="form-header export-header">
+            <div class="header-icon export-icon">
+              <i class="fas fa-arrow-up"></i>
+            </div>
+            <div class="header-content">
+              <h3>Xuất Kho</h3>
+              <p>Xuất hàng hóa từ kho</p>
+            </div>
+          </div>
+
+          <div class="form-body">
+            <!-- Branch Select -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-building"></i> Chi Nhánh
+              </label>
+              <div class="input-wrapper">
+                <select [(ngModel)]="exportData.MaChiNhanh" class="form-input form-select">
+                  <option value="">-- Chọn Chi Nhánh --</option>
+                  <option *ngFor="let b of branches" [value]="b.MaChiNhanh">
+                    {{ b.TenChiNhanh }}
+                  </option>
+                </select>
+                <i class="fas fa-chevron-down select-icon"></i>
+              </div>
+            </div>
+
+            <!-- Product Code Input -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-barcode"></i> Mã Sản Phẩm
+              </label>
+              <input [(ngModel)]="exportData.MaSanPham" type="number" placeholder="VD: 12345" class="form-input" />
+            </div>
+
+            <!-- Quantity Input -->
+            <div class="form-group">
+              <label class="form-label">
+                <i class="fas fa-cubes"></i> Số Lượng
+              </label>
+              <input [(ngModel)]="exportData.SoLuong" type="number" placeholder="VD: 25" class="form-input" />
+            </div>
+
+            <!-- Notes Textarea -->
+            <div class="form-group full-width">
+              <label class="form-label">
+                <i class="fas fa-sticky-note"></i> Ghi Chú
+              </label>
+              <textarea [(ngModel)]="exportData.GhiChu" placeholder="Nhập ghi chú xuất kho (tùy chọn)"
+                class="form-input form-textarea" rows="4"></textarea>
+            </div>
+
+            <!-- Submit Button -->
+            <button (click)="onExport()" class="btn-submit btn-export">
+              <i class="fas fa-check"></i> Xuất Kho
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Tab -->
+    <div *ngIf="activeTab === 'search'" class="tab-content search-tab">
+      <div class="search-section">
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input [(ngModel)]="searchTerm" placeholder="Tìm sản phẩm theo tên hoặc mã..." class="search-input"
+            (keyup.enter)="performSearch()" />
+          <button (click)="performSearch()" class="btn btn-primary">
+            <i class="fas fa-search"></i> Tìm Kiếm
+          </button>
+        </div>
+      </div>
+
+      <!-- Search Results -->
+      <div *ngIf="searchResults && searchResults.length > 0" class="search-results">
+        <div class="results-header">
+          <h3>Kết Quả Tìm Kiếm ({{ searchResults.length }} kết quả)</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="results-table">
+            <thead>
+              <tr>
+                <th>Sản Phẩm</th>
+                <th>Chi Nhánh</th>
+                <th class="text-right">Số Lượng</th>
+                <th class="text-right">Giá</th>
+                <th>Trạng Thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of searchResults">
+                <td><strong>{{ item.TenSanPham }}</strong></td>
+                <td>{{ item.TenChiNhanh }}</td>
+                <td class="text-right">{{ item.SoLuong }}</td>
+                <td class="text-right">{{ formatCurrency(item.GiaThanh) }}</td>
+                <td>
+                  <span [ngClass]="'status-badge status-' + item.Status.toLowerCase().replace(' ', '-')">
+                    {{ item.Status }}
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </ng-container>
 </div>

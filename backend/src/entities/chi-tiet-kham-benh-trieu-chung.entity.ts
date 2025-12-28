@@ -24,3 +24,4 @@ export class ChiTietKhamBenhTrieuChung {
   @Column({ name: 'TRIEUZHUNG', type: 'text' })
   TrieuChung: string;
 }
+

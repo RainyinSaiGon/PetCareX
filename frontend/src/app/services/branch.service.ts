@@ -9,7 +9,7 @@ import { environment } from '../../environments/environment';
 export class BranchService {
   private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Employee Management (FB-01)
   getAllEmployees(page: number = 1, limit: number = 10): Observable<any> {
@@ -111,7 +111,12 @@ export class BranchService {
     return this.http.get(`${this.apiUrl}/branch/revenue/total-system`, { params });
   }
 
-  // Inventory Management (FB-03)
+  // Inventory Management - Full suite
+  // Inventory Management - Get Branches
+  getBranches(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/branch/inventory/branches`);
+  }
+
   createInventoryImport(importData: any): Observable<any> {
     return this.http.post(`${this.apiUrl}/branch/inventory/import`, importData);
   }
@@ -143,6 +148,21 @@ export class BranchService {
     return this.http.get(`${this.apiUrl}/branch/inventory/summary/all`);
   }
 
+  getInventoryByWarehouse(warehouseId: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/branch/inventory/warehouse/${warehouseId}`);
+  }
+
+  searchInventory(query: string, page: number = 1, limit: number = 10): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+    return this.http.get(`${this.apiUrl}/branch/inventory/search/${query}`, { params });
+  }
+
+  updateInventoryQuantity(khoId: string, maSanPham: string, newQuantity: number): Observable<any> {
+    return this.http.put(`${this.apiUrl}/branch/inventory/update/${khoId}/${maSanPham}`, { newQuantity });
+  }
+
   // Service Offering Management (FB-07)
   getAllServiceOfferings(page: number = 1, limit: number = 10): Observable<any> {
     const params = new HttpParams()
@@ -166,12 +186,12 @@ export class BranchService {
     return this.http.post(`${this.apiUrl}/branch/services`, serviceData);
   }
 
-  updateServiceOffering(maCungCap: number, serviceData: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/branch/services/${maCungCap}`, serviceData);
+  updateServiceOffering(maChiNhanh: string, maDichVu: string, serviceData: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/branch/services/${maChiNhanh}/${maDichVu}`, serviceData);
   }
 
-  deleteServiceOffering(maCungCap: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/branch/services/${maCungCap}`);
+  deleteServiceOffering(maChiNhanh: string, maDichVu: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/branch/services/${maChiNhanh}/${maDichVu}`);
   }
 
   getServicePopularity(limit: number = 10): Observable<any> {

@@ -17,3 +17,4 @@ export class Kho {
   @OneToMany(() => KhoVaccine, kv => kv.Kho)
   KhoVaccines: KhoVaccine[];
 }
+

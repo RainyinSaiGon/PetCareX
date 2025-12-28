@@ -24,3 +24,4 @@ export class ChiTietKhamBenhChuanDoan {
   @Column({ name: 'CHUANDOAN', type: 'text' })
   ChuanDoan: string;
 }
+

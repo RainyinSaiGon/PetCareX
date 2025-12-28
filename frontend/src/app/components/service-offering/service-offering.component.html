@@ -3,7 +3,6 @@
   <div class="page-header">
     <div class="header-content">
       <h1 class="page-title"><i class="fas fa-hospital"></i> Quản Lý Dịch Vụ Chi Nhánh</h1>
-      <p class="page-subtitle">Quản lý các dịch vụ y tế được cung cấp tại các chi nhánh</p>
     </div>
     <button class="btn btn-primary btn-lg" (click)="openCreateForm()">
       <i class="fas fa-plus-circle"></i> Thêm Dịch Vụ Mới
@@ -31,7 +30,7 @@
           </h2>
           <button class="close-btn" (click)="closeForm()">&times;</button>
         </div>
-        
+
         <div class="modal-body">
           <form [formGroup]="form" (ngSubmit)="submitForm()" class="service-form">
             <!-- Branch Selection -->
@@ -46,7 +45,10 @@
                   <option value="">-- Chọn Chi Nhánh --</option>
                   <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
                 </select>
-                <small class="form-hint">Chọn chi nhánh cung cấp dịch vụ này</small>
+                <small class="form-hint" *ngIf="!isEditMode">Chọn chi nhánh cung cấp dịch vụ này</small>
+                <small class="form-hint" *ngIf="isEditMode" style="color: #666;">
+                  <i class="fas fa-info-circle"></i> Đang chỉnh sửa: <strong>{{ selectedOffering?.branchName }}</strong>
+                </small>
               </div>
             </div>
 
@@ -63,6 +65,10 @@
                     <option value="">-- Chọn Dịch Vụ --</option>
                     <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
                   </select>
+                  <small class="form-hint" *ngIf="isEditMode" style="color: #666;">
+                    <i class="fas fa-info-circle"></i> Đang chỉnh sửa: <strong>{{ selectedOffering?.serviceName
+                      }}</strong>
+                  </small>
                 </div>
                 <div class="form-group">
                   <label class="form-label">
@@ -77,7 +83,8 @@
                 <label class="form-label">
                   <span>Mô Tả Chi Tiết</span>
                 </label>
-                <textarea formControlName="description" class="form-control" rows="4" placeholder="Nhập mô tả dịch vụ..."></textarea>
+                <textarea formControlName="description" class="form-control" rows="4"
+                  placeholder="Nhập mô tả dịch vụ..."></textarea>
                 <small class="form-hint">Mô tả những đặc điểm, lợi ích của dịch vụ này</small>
               </div>
             </div>
@@ -118,20 +125,21 @@
   <div class="filter-section">
     <div class="search-box">
       <i class="fas fa-search"></i>
-      <input type="text" [(ngModel)]="searchTerm" placeholder="Tìm kiếm dịch vụ, chi nhánh..." class="search-input" />
+      <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="currentPage = 1"
+        placeholder="Tìm kiếm dịch vụ, chi nhánh..." class="search-input" />
     </div>
 
     <div class="filter-group">
       <div class="filter-item">
         <label>Chi Nhánh</label>
-        <select [(ngModel)]="filterBranch" class="form-control">
+        <select [(ngModel)]="filterBranch" (ngModelChange)="currentPage = 1" class="form-control">
           <option value="">Tất Cả</option>
           <option *ngFor="let b of branches" [value]="b.id">{{ b.name }}</option>
         </select>
       </div>
       <div class="filter-item">
         <label>Loại Dịch Vụ</label>
-        <select [(ngModel)]="filterService" class="form-control">
+        <select [(ngModel)]="filterService" (ngModelChange)="currentPage = 1" class="form-control">
           <option value="">Tất Cả</option>
           <option *ngFor="let s of services" [value]="s.id">{{ s.name }}</option>
         </select>
@@ -177,7 +185,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let o of getFilteredOfferings()" class="table-row">
+          <tr *ngFor="let o of getPagedOfferings()" class="table-row">
             <td class="col-branch">
               <span class="badge badge-branch">{{ o.branchName }}</span>
             </td>
@@ -228,7 +236,8 @@
       <i class="fas fa-inbox"></i>
     </div>
     <h3>Không Có Dịch Vụ Nào</h3>
-    <p>{{ searchTerm || filterBranch || filterService ? 'Không tìm thấy dịch vụ phù hợp với tiêu chí tìm kiếm' : 'Hãy thêm dịch vụ mới để bắt đầu' }}</p>
+    <p>{{ searchTerm || filterBranch || filterService ? 'Không tìm thấy dịch vụ phù hợp với tiêu chí tìm kiếm' : 'Hãy
+      thêm dịch vụ mới để bắt đầu' }}</p>
     <button class="btn btn-primary" (click)="openCreateForm()">
       <i class="fas fa-plus"></i> Thêm Dịch Vụ Mới
     </button>

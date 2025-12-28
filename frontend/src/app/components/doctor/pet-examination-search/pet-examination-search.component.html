@@ -1,0 +1,359 @@
+<div class="container">
+  <div class="header-section">
+    <div class="header-title">
+      <i class="fa-solid fa-stethoscope"></i>
+      <h1>Tra cứu hồ sơ khám</h1>
+      <span class="badge">{{ totalResults }}</span>
+    </div>
+  </div>
+
+  <div class="search-section">
+    <div class="search-input-group">
+      <input type="text" [(ngModel)]="searchParams.tenThuCung"
+        placeholder="Tìm kiếm theo tên hoặc chứng loại thú cưng..." class="search-input" />
+      <button (click)="searchExaminations()" class="btn btn-search" [disabled]="isLoading">
+        <i class="fa-solid fa-search"></i> Tìm Kiếm
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-section">
+    <h3>Bộ lọc nâng cao</h3>
+    <div class="filter-row">
+      <div class="filter-item">
+        <label>Mã Thú Cưng</label>
+        <input type="number" [(ngModel)]="searchParams.maThuCung" placeholder="Nhập mã thú cưng" class="form-control" />
+      </div>
+      <div class="filter-item">
+        <label>Mã Khách Hàng</label>
+        <input type="number" [(ngModel)]="searchParams.maKhachHang" placeholder="Nhập mã khách hàng"
+          class="form-control" />
+      </div>
+    </div>
+    <button (click)="resetSearch()" class="btn btn-reset">Đặt lại</button>
+  </div>
+
+  <div class="stats-section">
+    <div class="stat-item">
+      <i class="fa-solid fa-file-medical"></i>
+      <span>Tổng: {{ totalResults }}</span>
+    </div>
+    <div class="stat-item">
+      <i class="fa-solid fa-eye"></i>
+      <span>Đang xem: {{ examinations.length }}</span>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="examination-table" *ngIf="examinations.length > 0 && hasSearched; else noResults">
+      <thead>
+        <tr>
+          <th>MÃ KHÁM</th>
+          <th>THÚ CƯNG</th>
+          <th>CHỦNG LOẠI</th>
+          <th>KHÁCH HÀNG</th>
+          <th>NHIỆT ĐỘ</th>
+          <th>MÔ TẢ</th>
+          <th>HÀNH ĐỘNG</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let exam of examinations">
+          <td class="id-cell">{{ exam.MaGiayKhamTongQuat }}</td>
+          <td>{{ exam.ThuCung?.TenThuCung }}</td>
+          <td>
+            <span class="breed-badge">{{ exam.ThuCung?.ChungLoai?.TenChungLoaiThuCung }}</span>
+          </td>
+          <td>{{ exam.ThuCung?.KhachHang?.HoTen }}</td>
+          <td>{{ exam.NhietDo }}°C</td>
+          <td>{{ exam.MoTa || '-' }}</td>
+          <td class="actions">
+            <button class="btn-icon" title="Xem chi tiết" (click)="viewExaminationDetails(exam)">
+              <i class="fa-solid fa-eye"></i>
+            </button>
+            <button class="btn-icon" title="Chỉnh sửa" (click)="openEditModal(exam)">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="btn-icon btn-danger" title="Xóa" (click)="openDeleteConfirmation(exam)">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <ng-template #noResults>
+    </ng-template>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button *ngFor="let page of pages" (click)="onPageChange(page)" class="btn" [class.active]="currentPage === page">
+      {{ page }}
+    </button>
+  </div>
+</div>
+
+<!-- Examination Details Modal -->
+<div class="modal-overlay" *ngIf="selectedExamination" (click)="closeDetails()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-file-medical"></i>
+        <h2>Chi Tiết Hồ Sơ Khám #{{ selectedExamination.maGiayKhamTongQuat }}</h2>
+      </div>
+      <button class="close-btn" (click)="closeDetails()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Pet & Customer Info -->
+      <div class="info-section">
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="fa-solid fa-paw"></i>
+            <h3>Thông tin thú cưng</h3>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Mã thú cưng:</span>
+              <span class="value">{{ selectedExamination.thuCung?.maThuCung }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Tên:</span>
+              <span class="value highlight">{{ selectedExamination.thuCung?.tenThuCung }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">Chủng loại:</span>
+              <span class="value">
+                <span class="breed-tag">{{ selectedExamination.thuCung?.chungLoai }}</span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <div class="info-card-header">
+            <i class="fa-solid fa-user"></i>
+            <h3>Thông tin chủ</h3>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="label">Họ tên:</span>
+              <span class="value">{{ selectedExamination.khachHang?.hoTen || '-' }}</span>
+            </div>
+            <div class="info-item">
+              <span class="label">SĐT:</span>
+              <span class="value">{{ selectedExamination.khachHang?.sdt || '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Examination Details -->
+      <div class="detail-section">
+        <div class="detail-card">
+          <div class="detail-header">
+            <i class="fa-solid fa-stethoscope"></i>
+            <h3>Thông tin khám</h3>
+          </div>
+          <div class="detail-grid">
+            <div class="detail-item">
+              <span class="label">Ngày khám:</span>
+              <span class="value">{{ formatDate(selectedExamination.ngayKham) }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">Nhiệt độ:</span>
+              <span class="value temp">{{ selectedExamination.nhietDo }}°C</span>
+            </div>
+            <div class="detail-item full-width">
+              <span class="label">Mô tả:</span>
+              <span class="value">{{ selectedExamination.moTa || '-' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Symptoms & Diagnoses -->
+      <div class="medical-section">
+        <div class="medical-card">
+          <div class="medical-header symptoms">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <h4>Triệu chứng</h4>
+          </div>
+          <div class="tags-container" *ngIf="selectedExamination.trieuChung?.length > 0; else noSymptoms">
+            <span class="tag symptom" *ngFor="let symptom of selectedExamination.trieuChung">{{ symptom }}</span>
+          </div>
+          <ng-template #noSymptoms>
+            <p class="no-data">Chưa có triệu chứng</p>
+          </ng-template>
+        </div>
+
+        <div class="medical-card">
+          <div class="medical-header diagnoses">
+            <i class="fa-solid fa-clipboard-check"></i>
+            <h4>Chuẩn đoán</h4>
+          </div>
+          <div class="tags-container" *ngIf="selectedExamination.chuanDoan?.length > 0; else noDiagnoses">
+            <span class="tag diagnosis" *ngFor="let diagnosis of selectedExamination.chuanDoan">{{ diagnosis }}</span>
+          </div>
+          <ng-template #noDiagnoses>
+            <p class="no-data">Chưa có chuẩn đoán</p>
+          </ng-template>
+        </div>
+      </div>
+
+      <!-- Prescriptions -->
+      <div class="prescription-section">
+        <div class="section-header">
+          <i class="fa-solid fa-prescription-bottle-medical"></i>
+          <h3>Toa thuốc</h3>
+          <span class="count-badge">{{ selectedExamination.toaThuocs?.length || 0 }}</span>
+        </div>
+
+        <div *ngIf="selectedExamination.toaThuocs?.length > 0; else noPrescriptions">
+          <div class="prescription-card" *ngFor="let toa of selectedExamination.toaThuocs">
+            <div class="prescription-header">
+              <span class="prescription-id">Toa #{{ toa.maToaThuoc }}</span>
+              <span class="prescription-date">{{ formatDate(toa.ngayKham) }}</span>
+              <span class="prescription-total">{{ formatCurrency(toa.tongTien) }}</span>
+            </div>
+            <table class="medicine-table">
+              <thead>
+                <tr>
+                  <th>Mã thuốc</th>
+                  <th>Tên thuốc</th>
+                  <th>Số lượng</th>
+                  <th>Ghi chú</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let item of toa.chiTiets">
+                  <td class="code">{{ item.maThuoc }}</td>
+                  <td class="name">{{ item.tenSanPham }}</td>
+                  <td class="qty">{{ item.soLuong }}</td>
+                  <td class="note">{{ item.ghiChu || '-' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <ng-template #noPrescriptions>
+          <div class="empty-prescriptions">
+            <i class="fa-solid fa-prescription-bottle"></i>
+            <p>Chưa có toa thuốc nào</p>
+          </div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-close" (click)="closeDetails()">
+        <i class="fa-solid fa-times"></i> Đóng
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Examination Modal -->
+<div class="modal-overlay" *ngIf="editingExamination" (click)="closeEditModal()">
+  <div class="modal-container edit-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header edit-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-pen-to-square"></i>
+        <h2>Chỉnh sửa Hồ Sơ Khám #{{ editingExamination.MaGiayKhamTongQuat }}</h2>
+      </div>
+      <button class="close-btn" (click)="closeEditModal()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div class="edit-form">
+        <div class="form-group">
+          <label><i class="fa-solid fa-paw"></i> Thú cưng</label>
+          <input type="text" [value]="editingExamination.ThuCung?.TenThuCung" readonly class="form-control-readonly" />
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label><i class="fa-solid fa-thermometer-half"></i> Nhiệt độ (°C)</label>
+            <input type="number" [(ngModel)]="editForm.nhietDo" class="form-control" step="0.1" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-file-alt"></i> Mô tả</label>
+          <textarea [(ngModel)]="editForm.moTa" class="form-control" rows="3" placeholder="Nhập mô tả..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-heart-pulse"></i> Triệu chứng (cách nhau bằng dấu phẩy)</label>
+          <input type="text" [(ngModel)]="editForm.trieuChung" class="form-control"
+            placeholder="VD: Sốt, Ho, Chảy nước mũi" />
+          <small class="form-hint">Để trống nếu không muốn thay đổi triệu chứng hiện có</small>
+        </div>
+
+        <div class="form-group">
+          <label><i class="fa-solid fa-clipboard-check"></i> Chuẩn đoán (cách nhau bằng dấu phẩy)</label>
+          <input type="text" [(ngModel)]="editForm.chuanDoan" class="form-control"
+            placeholder="VD: Cảm cúm, Viêm phổi" />
+          <small class="form-hint">Để trống nếu không muốn thay đổi chuẩn đoán hiện có</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeEditModal()">
+        <i class="fa-solid fa-times"></i> Hủy
+      </button>
+      <button class="btn-save" (click)="saveExamination()" [disabled]="isUpdating">
+        <i class="fa-solid" [ngClass]="isUpdating ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+        {{ isUpdating ? 'Đang lưu...' : 'Lưu thay đổi' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="examinationToDelete" (click)="closeDeleteConfirmation()">
+  <div class="modal-container delete-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header delete-header">
+      <div class="modal-title">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <h2>Xác nhận xóa</h2>
+      </div>
+      <button class="close-btn" (click)="closeDeleteConfirmation()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+
+    <div class="modal-body delete-body">
+      <div class="delete-warning">
+        <div class="warning-icon">
+          <i class="fa-solid fa-trash"></i>
+        </div>
+        <div class="warning-content">
+          <h3>Bạn có chắc chắn muốn xóa hồ sơ khám #{{ examinationToDelete.MaGiayKhamTongQuat }}?</h3>
+          <div class="warning-details">
+            <p><strong>Thú cưng:</strong> {{ examinationToDelete.ThuCung?.TenThuCung }}</p>
+            <p><strong>Ngày khám:</strong> {{ formatDate(examinationToDelete.NgayKham) }}</p>
+          </div>
+          <div class="warning-alert">
+            <i class="fa-solid fa-exclamation-circle"></i>
+            <span>Lưu ý: Tất cả toa thuốc liên quan cũng sẽ bị xóa. Hành động này không thể hoàn tác!</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="closeDeleteConfirmation()">
+        <i class="fa-solid fa-times"></i> Hủy
+      </button>
+      <button class="btn-delete" (click)="confirmDeleteExamination()" [disabled]="isDeleting">
+        <i class="fa-solid" [ngClass]="isDeleting ? 'fa-spinner fa-spin' : 'fa-trash'"></i>
+        {{ isDeleting ? 'Đang xóa...' : 'Xác nhận xóa' }}
+      </button>
+    </div>
+  </div>
+</div>

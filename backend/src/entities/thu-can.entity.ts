@@ -7,25 +7,26 @@ export class ThuCan {
   @PrimaryGeneratedColumn({ name: 'MATHUCAN' })
   MaThuCan: number;
 
-  @Column({ name: 'MASANPHAM' })
-  MaSanPham: number;
+  @Column({ name: 'MASANPHAM', type: 'char', length: 5 })
+  MaSanPham: string;
 
   @ManyToOne(() => SanPham, sanpham => sanpham.ThuCans)
   @JoinColumn({ name: 'MASANPHAM' })
   SanPham: SanPham;
 
-  @Column({ name: 'THUONGHIEU', type: 'varchar', length: 100 })
+  @Column({ name: 'THUONGHIEU', type: 'nvarchar', length: 100 })
   ThuongHieu: string;
 
-  @Column({ name: 'DOITUONGTHUCUNG', type: 'varchar', length: 100 })
+  @Column({ name: 'DOITUONGTHUCUNG', type: 'nvarchar', length: 100 })
   DoiTuongThuCung: string;
 
   @Column({ name: 'TRONGLUONG', type: 'decimal', precision: 10, scale: 2 })
   TrongLuong: number;
 
-  @Column({ name: 'DONVITINH', type: 'varchar', length: 20 })
+  @Column({ name: 'DONVITINH', type: 'nvarchar', length: 20 })
   DonViTinh: string;
 
   @OneToMany(() => ThanhPhanThuCan, tptc => tptc.ThuCan)
   ThanhPhans: ThanhPhanThuCan[];
 }
+

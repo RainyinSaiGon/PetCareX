@@ -16,13 +16,8 @@
     <!-- Search and Filters -->
     <div class="filters-section">
       <div class="search-box">
-        <input
-          type="text"
-          placeholder="Tìm kiếm theo tên, số điện thoại hoặc mã nhân viên..."
-          [(ngModel)]="filter.search"
-          (input)="onSearch()"
-          class="search-input"
-        />
+        <input type="text" placeholder="Tìm kiếm theo tên, số điện thoại hoặc mã nhân viên..."
+          [(ngModel)]="filter.search" (input)="onSearch()" class="search-input" />
         <button class="search-btn" (click)="onSearch()">
           <i class="fas fa-search"></i>
         </button>
@@ -43,8 +38,8 @@
           <label>Loại nhân viên:</label>
           <select [(ngModel)]="filter.loaiNhanVien" (change)="onFilterChange()" class="filter-select">
             <option value="">Tất cả loại</option>
-            <option *ngFor="let type of employeeTypes" [value]="type.LoaiNhanVien">
-              {{ type.LoaiNhanVien }}
+            <option *ngFor="let type of employeeTypes" [value]="type.value">
+              {{ type.label }}
             </option>
           </select>
         </div>
@@ -100,35 +95,32 @@
       <thead>
         <tr>
           <th class="checkbox-col">
-            <input
-              type="checkbox"
-              (change)="toggleSelectAll($event)"
-              [checked]="selectedEmployees.size === employees.length && employees.length > 0"
-            />
+            <input type="checkbox" (change)="toggleSelectAll($event)"
+              [checked]="selectedEmployees.size === employees.length && employees.length > 0" />
           </th>
-          <th class="sortable" (click)="onSortChange('MaNhanVien')">
+          <th class="sortable center-col" (click)="onSortChange('MaNhanVien')">
             Mã NV
             <span class="sort-icon">{{ getSortIcon('MaNhanVien') }}</span>
           </th>
-          <th class="sortable" (click)="onSortChange('HoTen')">
+          <th class="sortable center-col" (click)="onSortChange('HoTen')">
             Họ Tên
             <span class="sort-icon">{{ getSortIcon('HoTen') }}</span>
           </th>
-          <th class="sortable" (click)="onSortChange('SDT')">
+          <th class="sortable center-col" (click)="onSortChange('SDT')">
             Số Điện Thoại
             <span class="sort-icon">{{ getSortIcon('SDT') }}</span>
           </th>
-          <th>Loại Nhân viên</th>
-          <th class="sortable" (click)="onSortChange('MaChiNhanh')">
+          <th class="center-col">Loại Nhân viên</th>
+          <th class="sortable center-col" (click)="onSortChange('MaChiNhanh')">
             Chi Nhánh
             <span class="sort-icon">{{ getSortIcon('MaChiNhanh') }}</span>
           </th>
-          <th>Khoa</th>
-          <th class="sortable" (click)="onSortChange('LuongCoBan')">
+
+          <th class="sortable center-col" (click)="onSortChange('LuongCoBan')">
             Lương
             <span class="sort-icon">{{ getSortIcon('LuongCoBan') }}</span>
           </th>
-          <th class="sortable" (click)="onSortChange('NgayVaoLam')">
+          <th class="sortable date-col" (click)="onSortChange('NgayVaoLam')">
             Ngày Vào Làm
             <span class="sort-icon">{{ getSortIcon('NgayVaoLam') }}</span>
           </th>
@@ -138,46 +130,31 @@
       <tbody>
         <tr *ngFor="let employee of employees" [class.selected]="isSelected(employee.MaNhanVien)">
           <td class="checkbox-col">
-            <input
-              type="checkbox"
-              [checked]="isSelected(employee.MaNhanVien)"
-              (change)="toggleSelection(employee.MaNhanVien)"
-            />
+            <input type="checkbox" [checked]="isSelected(employee.MaNhanVien)"
+              (change)="toggleSelection(employee.MaNhanVien)" />
           </td>
-          <td><strong>{{ employee.MaNhanVien }}</strong></td>
-          <td>{{ employee.HoTen }}</td>
-          <td>{{ employee.SDT }}</td>
-          <td>
+          <td class="center-cell"><strong>{{ employee.MaNhanVien }}</strong></td>
+          <td class="center-cell">{{ employee.HoTen }}</td>
+          <td class="center-cell">{{ employee.SDT }}</td>
+          <td class="center-cell">
             <span class="badge" [ngClass]="'badge-' + employee.LoaiNhanVien?.toLowerCase()?.replace(' ', '-')">
               {{ employee.LoaiNhanVien }}
             </span>
           </td>
-          <td>{{ employee.MaChiNhanh }}</td>
-          <td>{{ employee.MaKhoa }}</td>
-          <td class="salary" title="{{ employee.LuongCoBan }}">
+          <td class="center-cell">{{ employee.MaChiNhanh }}</td>
+
+          <td class="salary center-cell" title="{{ employee.LuongCoBan }}">
             {{ formatCurrency(employee.LuongCoBan || 0) }}
           </td>
-          <td>{{ formatDate(employee.NgayVaoLam) }}</td>
+          <td class="center-cell">{{ formatDate(employee.NgayVaoLam) }}</td>
           <td class="actions">
-            <button
-              class="btn btn-sm btn-info"
-              (click)="viewEmployee(employee.MaNhanVien)"
-              title="Xem chi tiết"
-            >
+            <button class="btn btn-sm btn-info" (click)="viewEmployee(employee.MaNhanVien)" title="Xem chi tiết">
               <i class="fas fa-eye"></i>
             </button>
-            <button
-              class="btn btn-sm btn-warning"
-              (click)="editEmployee(employee.MaNhanVien)"
-              title="Chỉnh sửa"
-            >
+            <button class="btn btn-sm btn-warning" (click)="editEmployee(employee.MaNhanVien)" title="Chỉnh sửa">
               <i class="fas fa-edit"></i>
             </button>
-            <button
-              class="btn btn-sm btn-danger"
-              (click)="deleteEmployee(employee)"
-              title="Xóa"
-            >
+            <button class="btn btn-sm btn-danger" (click)="deleteEmployee(employee)" title="Xóa">
               <i class="fas fa-trash"></i>
             </button>
           </td>
@@ -206,52 +183,31 @@
 
       <div class="pagination-buttons">
         <!-- First Page -->
-        <button
-          class="pagination-btn"
-          (click)="onPageChange(1)"
-          [disabled]="filter.page === 1"
-          title="Trang đầu tiên"
-        >
+        <button class="pagination-btn" (click)="onPageChange(1)" [disabled]="filter.page === 1" title="Trang đầu tiên">
           <i class="fas fa-step-backward"></i>
         </button>
 
         <!-- Previous Page -->
-        <button
-          class="pagination-btn"
-          (click)="onPageChange(filter.page - 1)"
-          [disabled]="filter.page === 1"
-          title="Trang trước"
-        >
+        <button class="pagination-btn" (click)="onPageChange(filter.page - 1)" [disabled]="filter.page === 1"
+          title="Trang trước">
           <i class="fas fa-chevron-left"></i>
         </button>
 
         <!-- Page Numbers -->
-        <button
-          *ngFor="let page of getPageNumbers()"
-          class="pagination-btn page-number"
-          [class.active]="page === filter.page"
-          (click)="onPageChange(page)"
-        >
+        <button *ngFor="let page of getPageNumbers()" class="pagination-btn page-number"
+          [class.active]="page === filter.page" (click)="onPageChange(page)">
           {{ page }}
         </button>
 
         <!-- Next Page -->
-        <button
-          class="pagination-btn"
-          (click)="onPageChange(filter.page + 1)"
-          [disabled]="filter.page === totalPages"
-          title="Trang sau"
-        >
+        <button class="pagination-btn" (click)="onPageChange(filter.page + 1)" [disabled]="filter.page === totalPages"
+          title="Trang sau">
           <i class="fas fa-chevron-right"></i>
         </button>
 
         <!-- Last Page -->
-        <button
-          class="pagination-btn"
-          (click)="onPageChange(totalPages)"
-          [disabled]="filter.page === totalPages"
-          title="Trang cuối cùng"
-        >
+        <button class="pagination-btn" (click)="onPageChange(totalPages)" [disabled]="filter.page === totalPages"
+          title="Trang cuối cùng">
           <i class="fas fa-step-forward"></i>
         </button>
       </div>

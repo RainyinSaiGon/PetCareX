@@ -1,0 +1,131 @@
+<div class="appointments-page">
+    <div class="page-header">
+        <div>
+            <h1><i class="fa-solid fa-calendar-check"></i> Lịch Hẹn Khám</h1>
+            <p>Đặt lịch và quản lý các cuộc hẹn khám bệnh cho thú cưng</p>
+        </div>
+        <button class="book-btn" (click)="openBookingForm()">
+            <i class="fa-solid fa-plus"></i> Đặt Lịch Mới
+        </button>
+    </div>
+
+    <!-- Upcoming Appointments -->
+    <section class="section">
+        <h2><i class="fa-solid fa-clock"></i> Lịch hẹn sắp tới</h2>
+        <div class="appointments-list" *ngIf="getUpcoming().length > 0">
+            <div class="appointment-card" *ngFor="let apt of getUpcoming()">
+                <div class="apt-datetime">
+                    <span class="time">{{ formatTimeRange(apt) }}</span>
+                    <span class="date">{{ formatDate(apt.ngayHen) }}</span>
+                </div>
+                <div class="apt-info">
+                    <div class="pet-name"><i class="fa-solid fa-paw"></i> {{ apt.thuCung?.tenThuCung }}</div>
+                    <div class="doctor" *ngIf="apt.bacSi"><i class="fa-solid fa-user-doctor"></i> BS. {{ apt.bacSi.hoTen
+                        }}</div>
+                    <div class="note" *ngIf="apt.ghiChu"><i class="fa-solid fa-sticky-note"></i> {{ apt.ghiChu }}</div>
+                </div>
+                <span class="status" [ngClass]="getStatusClass(apt.trangThai)">{{ apt.trangThai }}</span>
+                <button class="cancel-btn" (click)="cancelAppointment(apt)" *ngIf="apt.trangThai !== 'Đã hủy'">
+                    <i class="fa-solid fa-times"></i> Hủy
+                </button>
+            </div>
+        </div>
+        <div class="empty" *ngIf="getUpcoming().length === 0">
+            <i class="fa-solid fa-calendar-xmark"></i>
+            <p>Không có lịch hẹn sắp tới</p>
+        </div>
+    </section>
+
+    <!-- Past Appointments -->
+    <section class="section" *ngIf="getPast().length > 0">
+        <h2><i class="fa-solid fa-history"></i> Lịch sử khám</h2>
+        <div class="appointments-list past">
+            <div class="appointment-card" *ngFor="let apt of getPast()">
+                <div class="apt-datetime">
+                    <span class="time">{{ formatTimeRange(apt) }}</span>
+                    <span class="date">{{ formatDate(apt.ngayHen) }}</span>
+                </div>
+                <div class="apt-info">
+                    <div class="pet-name"><i class="fa-solid fa-paw"></i> {{ apt.thuCung?.tenThuCung }}</div>
+                    <div class="doctor" *ngIf="apt.bacSi"><i class="fa-solid fa-user-doctor"></i> BS. {{ apt.bacSi.hoTen
+                        }}</div>
+                </div>
+                <span class="status" [ngClass]="getStatusClass(apt.trangThai)">{{ apt.trangThai }}</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Booking Modal -->
+<div class="modal-overlay" *ngIf="showBookingForm" (click)="closeBookingForm()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-calendar-plus"></i> Đặt Lịch Khám</h2>
+            <button class="close-btn" (click)="closeBookingForm()"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="form-group">
+                <label><i class="fa-solid fa-paw"></i> Chọn thú cưng *</label>
+                <select [(ngModel)]="bookingForm.maThuCung">
+                    <option value="" disabled>-- Chọn thú cưng --</option>
+                    <option *ngFor="let pet of pets" [value]="pet.maThuCung">{{ pet.tenThuCung }} ({{ pet.chungLoai }})
+                    </option>
+                </select>
+                <small class="helper-text" *ngIf="pets.length === 0">Bạn chưa có thú cưng nào. Vui lòng thêm thú cưng
+                    trước.</small>
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-building"></i> Chọn chi nhánh *</label>
+                <select [(ngModel)]="bookingForm.maChiNhanh" (change)="onBranchChange()">
+                    <option *ngFor="let branch of branches" [value]="branch.maChiNhanh">{{ branch.tenChiNhanh }}
+                    </option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-stethoscope"></i> Chọn dịch vụ *</label>
+                <select [(ngModel)]="bookingForm.maDichVu"
+                    [disabled]="!bookingForm.maChiNhanh || services.length === 0">
+                    <option value="" disabled>-- Chọn dịch vụ --</option>
+                    <option *ngFor="let service of services" [value]="service.maDichVu">{{ service.tenDichVu }}</option>
+                </select>
+                <small class="helper-text" *ngIf="!bookingForm.maChiNhanh">Vui lòng chọn chi nhánh trước</small>
+                <small class="helper-text" *ngIf="bookingForm.maChiNhanh && services.length === 0">Không có dịch vụ tại
+                    chi nhánh này</small>
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-user-doctor"></i> Chọn bác sĩ</label>
+                <select [(ngModel)]="bookingForm.maBacSi" (change)="onDateOrDoctorChange()">
+                    <option value="">-- Tùy chọn --</option>
+                    <option *ngFor="let doc of doctors" [value]="doc.maNhanVien">{{ doc.hoTen }}</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="fa-solid fa-calendar"></i> Ngày khám *</label>
+                    <input type="date" [(ngModel)]="bookingForm.ngayHen" (change)="onDateOrDoctorChange()" />
+                </div>
+                <div class="form-group">
+                    <label><i class="fa-solid fa-clock"></i> Giờ bắt đầu *</label>
+                    <input type="time" [(ngModel)]="bookingForm.gioBatDau" (change)="onStartTimeChange()" />
+                </div>
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-clock"></i> Giờ kết thúc (tùy chọn)</label>
+                <input type="time" [(ngModel)]="bookingForm.gioKetThuc" />
+                <small class="helper-text">Nếu không nhập, mặc định sẽ là 20 phút sau giờ bắt đầu</small>
+            </div>
+            <div class="form-group">
+                <label><i class="fa-solid fa-sticky-note"></i> Lý do khám / Ghi chú</label>
+                <textarea [(ngModel)]="bookingForm.ghiChu"
+                    placeholder="Mô tả triệu chứng hoặc lý do khám..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-cancel" (click)="closeBookingForm()">Hủy</button>
+            <button class="btn-book" (click)="bookAppointment()" [disabled]="isBooking">
+                <i class="fa-solid" [ngClass]="isBooking ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+                {{ isBooking ? 'Đang đặt...' : 'Xác nhận đặt lịch' }}
+            </button>
+        </div>
+    </div>
+</div>

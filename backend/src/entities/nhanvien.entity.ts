@@ -14,7 +14,7 @@ export class NhanVien {
   @PrimaryColumn({ type: 'char', length: 5 })
   MaNhanVien: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   HoTen: string;
 
   @Column({ type: 'date', nullable: true })
@@ -32,7 +32,7 @@ export class NhanVien {
   @Column({ type: 'char', length: 4, nullable: true })
   MaChiNhanh: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: 'nvarchar', length: 20, nullable: true })
   LoaiNhanVien: string;
 
   @Column({ type: 'char', length: 2, nullable: true })
@@ -68,3 +68,4 @@ export class NhanVien {
   @OneToMany(() => ToaThuoc, toathuoc => toathuoc.BacSi)
   ToaThuocs: ToaThuoc[];
 }
+

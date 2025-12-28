@@ -12,11 +12,11 @@ export class ServiceOfferingService {
     @InjectRepository(CungCapDichVu) private serviceOfferingRepo: Repository<CungCapDichVu>,
     @InjectRepository(DichVuYTe) private serviceRepo: Repository<DichVuYTe>,
     @InjectRepository(ChiNhanh) private branchRepo: Repository<ChiNhanh>,
-  ) {}
+  ) { }
 
   // FB-07: Create new service offering
   async createServiceOffering(createDto: CreateServiceOfferingDto): Promise<ServiceOfferingDto> {
-    const { MaChiNhanh, MaDichVu } = createDto;
+    const { MaChiNhanh, MaDichVu, GiaThanhLe } = createDto;
 
     // Check if offering already exists
     const existing = await this.serviceOfferingRepo.findOne({
@@ -30,6 +30,7 @@ export class ServiceOfferingService {
     const offering = this.serviceOfferingRepo.create({
       MaChiNhanh,
       MaDichVu,
+      GiaThanhLe: GiaThanhLe || 0,
     });
 
     const saved = await this.serviceOfferingRepo.save(offering);
@@ -103,15 +104,20 @@ export class ServiceOfferingService {
     maDichVu: string,
     updateDto: UpdateServiceOfferingDto,
   ): Promise<ServiceOfferingDto> {
-    // Since the entity only has MaChiNhanh and MaDichVu (no other updateable fields),
-    // we just need to ensure the record exists and return it
     const existing = await this.serviceOfferingRepo.findOne({
       where: { MaChiNhanh: maChiNhanh, MaDichVu: maDichVu },
       relations: ['ChiNhanh', 'DichVu'],
     });
 
     if (!existing) throw new Error('Service offering not found');
-    return this.mapToDto(existing);
+
+    // Update the price if provided
+    if (updateDto.GiaThanhLe !== undefined) {
+      existing.GiaThanhLe = updateDto.GiaThanhLe;
+    }
+
+    const updated = await this.serviceOfferingRepo.save(existing);
+    return this.mapToDto(updated);
   }
 
   // FB-07: Delete service offering
@@ -167,14 +173,30 @@ export class ServiceOfferingService {
     };
   }
 
+  // Get all available services
+  async getAllServices(): Promise<any> {
+    const services = await this.serviceRepo.find({
+      order: { TenDichVu: 'ASC' },
+    });
+
+    return services.map(service => ({
+      maDichVu: service.MaDichVu,
+      tenDichVu: service.TenDichVu,
+      loaiDichVu: service.LoaiDichVu,
+    }));
+  }
+
   // Helper method
+  // Note: Seed data doesn't populate GiaThanhLe, so use default price (200k) when not set
+  private readonly DEFAULT_SERVICE_PRICE = 200000;
+
   private mapToDto(offering: CungCapDichVu): ServiceOfferingDto {
     return {
       MaChiNhanh: offering.MaChiNhanh,
       TenChiNhanh: offering.ChiNhanh?.TenChiNhanh || 'Unknown',
       MaDichVu: offering.MaDichVu,
       TenDichVu: offering.DichVu?.TenDichVu || 'Unknown',
-      GiaThanhLe: 0,
+      GiaThanhLe: offering.GiaThanhLe || this.DEFAULT_SERVICE_PRICE,
       GhiChu: '',
       NgayTao: new Date(),
       IsActive: true,

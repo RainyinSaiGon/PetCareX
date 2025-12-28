@@ -14,9 +14,10 @@ import { Router } from '@angular/router';
 export class NavComponent implements AfterViewInit {
   isOpen = false;
   dropdownOpen = false;
+  doctorDropdownOpen = false;
   accountDropdownOpen = false;
 
-  constructor(private host: ElementRef<HTMLElement>, private auth: AuthService, private router: Router) {}
+  constructor(private host: ElementRef<HTMLElement>, private auth: AuthService, private router: Router) { }
 
   ngAfterViewInit() {
     // nothing for now
@@ -24,6 +25,14 @@ export class NavComponent implements AfterViewInit {
 
   get isAuthenticated() {
     return this.auth.isAuthenticated();
+  }
+
+  get isCustomer() {
+    return this.auth.isCustomer();
+  }
+
+  get isStaff() {
+    return this.auth.isStaff();
   }
 
   logout() {
@@ -47,6 +56,10 @@ export class NavComponent implements AfterViewInit {
     this.dropdownOpen = !this.dropdownOpen;
   }
 
+  toggleDoctorDropdown() {
+    this.doctorDropdownOpen = !this.doctorDropdownOpen;
+  }
+
   toggleAccountDropdown() {
     this.accountDropdownOpen = !this.accountDropdownOpen;
   }
@@ -54,6 +67,7 @@ export class NavComponent implements AfterViewInit {
   close() {
     this.isOpen = false;
     this.dropdownOpen = false;
+    this.doctorDropdownOpen = false;
     this.accountDropdownOpen = false;
   }
 

@@ -1,7 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { BranchService } from '../../services/branch.service';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-service-offering',
@@ -33,7 +35,13 @@ export class ServiceOfferingComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
 
-  constructor(private branchService: BranchService, private formBuilder: FormBuilder) {
+  private apiUrl = environment.apiUrl;
+
+  constructor(
+    private branchService: BranchService,
+    private formBuilder: FormBuilder,
+    private http: HttpClient
+  ) {
     this.form = this.formBuilder.group({
       branchId: ['', Validators.required],
       serviceId: ['', Validators.required],
@@ -45,54 +53,69 @@ export class ServiceOfferingComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadBranches();
-    this.loadOfferings();
     this.loadServices();
+    this.loadOfferings();
   }
 
   loadBranches(): void {
-    this.branches = [
-      { id: 'CN01', name: 'Chi nhánh Hà Nội' },
-      { id: 'CN02', name: 'Chi nhánh TP HCM' },
-      { id: 'CN03', name: 'Chi nhánh Đà Nẵng' },
-    ];
+    this.branchService.getBranches().subscribe({
+      next: (response) => {
+        // API returns { success: true, data: branches[] }
+        // Branch properties use PascalCase: MaChiNhanh, TenChiNhanh
+        const branches = response.data || response;
+        this.branches = branches.map((b: any) => ({
+          id: (b.MaChiNhanh || b.maChiNhanh || '').trim(),
+          name: b.TenChiNhanh || b.tenChiNhanh
+        }));
+      },
+      error: (err) => {
+        console.error('Error loading branches:', err);
+        this.errorMessage = 'Không thể tải danh sách chi nhánh';
+      }
+    });
   }
 
   loadServices(): void {
-    this.services = [
-      { id: 1, name: 'Khám tổng quát' },
-      { id: 2, name: 'Tiêm phòng' },
-      { id: 3, name: 'Khám chuyên khoa' },
-      { id: 4, name: 'Phẫu thuật' },
-      { id: 5, name: 'Tắm groom' },
-    ];
+    // Call admin API to get all services
+    this.http.get(`${this.apiUrl}/branch/services/all`).subscribe({
+      next: (data: any) => {
+        this.services = data.map((s: any) => ({
+          id: s.maDichVu.trim(),
+          name: s.tenDichVu
+        }));
+      },
+      error: (err) => {
+        console.error('Error loading services:', err);
+        this.errorMessage = 'Không thể tải danh sách dịch vụ';
+      }
+    });
   }
 
   loadOfferings(): void {
     this.loading = true;
-    this.offerings = [
-      {
-        id: 1,
-        branchId: 'CN01',
-        branchName: 'Chi nhánh Hà Nội',
-        serviceId: 1,
-        serviceName: 'Khám tổng quát',
-        price: 500000,
-        description: 'Khám sức khỏe tổng quát',
-        status: 'active',
+    // Fetch all offerings for client-side filtering (use large limit)
+    // This ensures branch/service filters work correctly
+    this.branchService.getAllServiceOfferings(1, 1000).subscribe({
+      next: (response) => {
+        this.offerings = response.data.map((o: any) => ({
+          id: o.MaChiNhanh.trim() + '-' + o.MaDichVu.trim(),
+          branchId: o.MaChiNhanh.trim(),
+          branchName: o.TenChiNhanh,
+          serviceId: o.MaDichVu.trim(),
+          serviceName: o.TenDichVu,
+          price: o.GiaThanhLe || 0,
+          description: o.GhiChu || '',
+          status: o.IsActive ? 'active' : 'inactive'
+        }));
+        this.totalItems = this.offerings.length;
+        this.loading = false;
       },
-      {
-        id: 2,
-        branchId: 'CN02',
-        branchName: 'Chi nhánh TP HCM',
-        serviceId: 2,
-        serviceName: 'Tiêm phòng',
-        price: 300000,
-        description: 'Tiêm phòng dịch bệnh',
-        status: 'active',
-      },
-    ];
-    this.totalItems = this.offerings.length;
-    this.loading = false;
+      error: (err) => {
+        console.error('Error loading offerings:', err);
+        this.errorMessage = 'Không thể tải danh sách dịch vụ chi nhánh';
+        this.loading = false;
+      }
+    });
   }
 
   openCreateForm(): void {
@@ -130,29 +153,54 @@ export class ServiceOfferingComponent implements OnInit {
     const formValue = this.form.value;
 
     if (this.isEditMode && this.selectedOffering) {
-      this.selectedOffering.price = formValue.price;
-      this.selectedOffering.description = formValue.description;
-      this.selectedOffering.status = formValue.status;
-      this.successMessage = 'Cập nhật dịch vụ thành công';
-    } else {
-      const newOffering = {
-        id: this.offerings.length + 1,
-        branchId: formValue.branchId,
-        branchName: this.branches.find((b) => b.id === formValue.branchId)?.name || '',
-        serviceId: formValue.serviceId,
-        serviceName: this.services.find((s) => s.id === formValue.serviceId)?.name || '',
-        price: formValue.price,
-        description: formValue.description,
-        status: formValue.status,
+      // Update existing service offering
+      const updateData = {
+        GiaThanhLe: formValue.price,
+        GhiChu: formValue.description
       };
-      this.offerings.unshift(newOffering);
-      this.totalItems = this.offerings.length;
-      this.successMessage = 'Tạo dịch vụ thành công';
-    }
 
-    this.closeForm();
-    this.submitting = false;
-    setTimeout(() => (this.successMessage = ''), 3000);
+      this.branchService.updateServiceOffering(
+        this.selectedOffering.branchId,
+        this.selectedOffering.serviceId,
+        updateData
+      ).subscribe({
+        next: () => {
+          this.successMessage = 'Cập nhật dịch vụ thành công';
+          this.loadOfferings();
+          this.closeForm();
+          this.submitting = false;
+          setTimeout(() => (this.successMessage = ''), 3000);
+        },
+        error: (err) => {
+          console.error('Error updating service offering:', err);
+          this.errorMessage = 'Không thể cập nhật dịch vụ';
+          this.submitting = false;
+        }
+      });
+    } else {
+      // Create new service offering
+      const createData = {
+        MaChiNhanh: formValue.branchId,
+        MaDichVu: formValue.serviceId,
+        GiaThanhLe: formValue.price,
+        GhiChu: formValue.description
+      };
+
+      this.branchService.createServiceOffering(createData).subscribe({
+        next: () => {
+          this.successMessage = 'Tạo dịch vụ thành công';
+          this.loadOfferings();
+          this.closeForm();
+          this.submitting = false;
+          setTimeout(() => (this.successMessage = ''), 3000);
+        },
+        error: (err) => {
+          console.error('Error creating service offering:', err);
+          this.errorMessage = err.error?.message || 'Không thể tạo dịch vụ';
+          this.submitting = false;
+        }
+      });
+    }
   }
 
   deleteOffering(offering: any): void {
@@ -170,14 +218,25 @@ export class ServiceOfferingComponent implements OnInit {
     return this.offerings.filter((offering) => {
       const matchSearch =
         !this.searchTerm ||
-        offering.serviceName.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-        offering.branchName.toLowerCase().includes(this.searchTerm.toLowerCase());
+        offering.serviceName?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+        offering.branchName?.toLowerCase().includes(this.searchTerm.toLowerCase());
 
-      const matchBranch = !this.filterBranch || offering.branchId === this.filterBranch;
-      const matchService = !this.filterService || offering.serviceId === parseInt(this.filterService);
+      // Compare as trimmed strings for proper matching
+      const matchBranch = !this.filterBranch ||
+        offering.branchId?.trim() === this.filterBranch?.trim();
+      const matchService = !this.filterService ||
+        offering.serviceId?.trim() === this.filterService?.trim();
 
       return matchSearch && matchBranch && matchService;
     });
+  }
+
+  // Returns only the current page's items
+  getPagedOfferings(): any[] {
+    const filtered = this.getFilteredOfferings();
+    const startIndex = (this.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return filtered.slice(startIndex, endIndex);
   }
 
   onPageChange(newPage: number): void {
@@ -187,7 +246,9 @@ export class ServiceOfferingComponent implements OnInit {
   }
 
   get totalPages(): number {
-    return Math.ceil(this.totalItems / this.pageSize);
+    // Use filtered count for pagination when filters are active
+    const filteredCount = this.getFilteredOfferings().length;
+    return Math.ceil(filteredCount / this.pageSize) || 1;
   }
 
   formatCurrency(value: number): string {

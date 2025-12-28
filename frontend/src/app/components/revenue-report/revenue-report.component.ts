@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-revenue-report',
@@ -24,36 +26,88 @@ export class RevenueReportComponent implements OnInit {
 
   selectedBranch = '';
   selectedYear = new Date().getFullYear();
-  startDate = new Date(new Date().getFullYear(), 0, 1);
-  endDate = new Date();
+  startDate = '';
+  endDate = '';
 
   dateRangeForm!: FormGroup;
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private formBuilder: FormBuilder,
+    private http: HttpClient,
   ) {
     this.dateRangeForm = this.formBuilder.group({
-      startDate: [this.startDate],
-      endDate: [this.endDate],
+      startDate: [''],
+      endDate: [''],
     });
   }
 
   ngOnInit() {
+    this.loadBranches();
     this.loadData();
+  }
+
+  loadBranches(): void {
+    this.http.get<any>(`${this.apiUrl}/branch/inventory/branches`).subscribe({
+      next: (response) => {
+        this.branches = response.data || response;
+      },
+      error: (err) => console.error('Error loading branches:', err)
+    });
   }
 
   loadData() {
     this.loading = true;
-    // Mock data for demo
-    this.revenueReports = [
-      { TenChiNhanh: 'Chi nhánh 1', TotalRevenue: 100000000, TransactionCount: 50, AverageTransactionValue: 2000000 },
-      { TenChiNhanh: 'Chi nhánh 2', TotalRevenue: 80000000, TransactionCount: 40, AverageTransactionValue: 2000000 },
-    ];
-    this.topServices = [
-      { TenDichVu: 'Dịch vụ 1', TotalRevenue: 50000000 },
-      { TenDichVu: 'Dịch vụ 2', TotalRevenue: 30000000 },
-    ];
-    this.loading = false;
+
+    // Build query params
+    let params: any = {};
+    if (this.startDate) params.startDate = this.startDate;
+    if (this.endDate) params.endDate = this.endDate;
+
+    // Call admin analytics API for revenue report
+    this.http.get<any>(`${this.apiUrl}/admin/analytics/revenue`, { params }).subscribe({
+      next: (response) => {
+        // Map the revenueByBranch data to the format we need
+        if (response.revenueByBranch) {
+          let reports = response.revenueByBranch.map((b: any) => ({
+            MaChiNhanh: b.maChiNhanh?.trim(),
+            TenChiNhanh: b.tenChiNhanh,
+            TotalRevenue: b.revenue || 0,
+            TransactionCount: Math.round(b.revenue / 200000) || 0, // Estimate based on avg transaction
+            AverageTransactionValue: b.revenue > 0 ? 200000 : 0
+          }));
+
+          // Filter by selected branch if one is selected
+          if (this.selectedBranch) {
+            reports = reports.filter((r: any) => r.MaChiNhanh === this.selectedBranch?.trim());
+          }
+
+          this.revenueReports = reports;
+        }
+        this.loading = false;
+      },
+      error: (err) => {
+        console.error('Error loading revenue data:', err);
+        this.loading = false;
+      }
+    });
+
+    // Load top services with same filters
+    let serviceParams: any = {};
+    if (this.startDate) serviceParams.startDate = this.startDate;
+    if (this.endDate) serviceParams.endDate = this.endDate;
+    if (this.selectedBranch) serviceParams.maChiNhanh = this.selectedBranch;
+
+    this.http.get<any>(`${this.apiUrl}/admin/analytics/top-services`, { params: serviceParams }).subscribe({
+      next: (response) => {
+        this.topServices = (response || []).map((s: any) => ({
+          TenDichVu: s.tenDichVu,
+          TotalRevenue: s.tongDoanhThu,
+          SoLanSuDung: s.soLanSuDung
+        }));
+      },
+      error: (err) => console.error('Error loading top services:', err)
+    });
   }
 
   switchTab(tab: 'overview' | 'details' | 'monthly' | 'services') {
@@ -95,8 +149,8 @@ export class RevenueReportComponent implements OnInit {
   }
 
   get averageTransaction(): number {
-    if (this.revenueReports.length === 0) return 0;
-    return this.revenueReports.reduce((sum, r) => sum + (r.AverageTransactionValue || 0), 0) / this.revenueReports.length;
+    if (this.totalTransactions === 0) return 0;
+    return this.totalRevenue / this.totalTransactions;
   }
 
   // Helper method to calculate percentage for a branch
@@ -111,3 +165,4 @@ export class RevenueReportComponent implements OnInit {
     return Math.max(...this.revenueReports.map(r => r.TotalRevenue || 0));
   }
 }
+

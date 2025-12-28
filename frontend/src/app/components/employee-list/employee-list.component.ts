@@ -46,7 +46,7 @@ export class EmployeeListComponent implements OnInit {
   constructor(
     private branchService: BranchService,
     private router: Router,
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loadReferenceData();
@@ -68,10 +68,10 @@ export class EmployeeListComponent implements OnInit {
     ];
 
     this.employeeTypes = [
-      { LoaiNhanVien: 'Bác sĩ' },
-      { LoaiNhanVien: 'Tiếp tân' },
-      { LoaiNhanVien: 'Nhân viên kho' },
-      { LoaiNhanVien: 'Quản lý' },
+      { value: 'BacSi', label: 'Bác sĩ' },
+      { value: 'TiepTan', label: 'Tiếp tân' },
+      { value: 'Kho', label: 'Nhân viên kho' },
+      { value: 'QuanLy', label: 'Quản lý' },
     ];
   }
 
@@ -80,7 +80,9 @@ export class EmployeeListComponent implements OnInit {
     this.loading = true;
     this.error = null;
 
-    this.branchService.getAllEmployees(this.filter.page, this.filter.limit).subscribe({
+    // Fetch all employees for client-side filtering (use large limit to get all)
+    // This ensures filters work correctly across all employees
+    this.branchService.getAllEmployees(1, 1000).subscribe({
       next: (response) => {
         // Filter and sort locally if needed
         let filteredEmployees = response.data || [];
@@ -118,9 +120,15 @@ export class EmployeeListComponent implements OnInit {
           return this.filter.sortOrder === 'ASC' ? comparison : -comparison;
         });
 
-        this.employees = filteredEmployees;
-        this.totalItems = response.total || 0;
-        this.totalPages = response.totalPages || 1;
+        // Update total counts based on filtered data
+        this.totalItems = filteredEmployees.length;
+        this.totalPages = Math.ceil(this.totalItems / this.filter.limit) || 1;
+
+        // Apply client-side pagination
+        const startIndex = (this.filter.page - 1) * this.filter.limit;
+        const endIndex = startIndex + this.filter.limit;
+        this.employees = filteredEmployees.slice(startIndex, endIndex);
+
         this.loading = false;
       },
       error: (err) => {

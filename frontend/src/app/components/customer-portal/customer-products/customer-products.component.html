@@ -1,0 +1,72 @@
+<div class="products-page">
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-text">
+            <h1><i class="fa-solid fa-shopping-bag"></i> Sản Phẩm</h1>
+            <p>Khám phá các sản phẩm chăm sóc thú cưng chất lượng cao</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                placeholder="Tìm kiếm sản phẩm..." />
+            <button class="search-btn" (click)="onSearch()">Tìm</button>
+        </div>
+
+        <div class="category-filter">
+            <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
+                <option value="">Tất cả danh mục</option>
+                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" *ngIf="isLoading">
+        <i class="fa-solid fa-spinner fa-spin"></i>
+        <span>Đang tải sản phẩm...</span>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="products-grid" *ngIf="!isLoading">
+        <div class="product-card" *ngFor="let product of products">
+            <div class="product-info">
+                <div class="product-header">
+                    <span class="category-badge">{{ product.loaiSanPham }}</span>
+                </div>
+                <h3 class="product-name">{{ product.tenSanPham }}</h3>
+                <p class="product-desc" *ngIf="product.moTa">{{ product.moTa }}</p>
+
+                <div class="product-meta">
+                    <span class="stock" [class.low]="product.tonKho < 10">
+                        <i class="fa-solid fa-box"></i> Còn {{ product.tonKho }}
+                    </span>
+                </div>
+
+                <div class="product-footer">
+                    <span class="price">{{ formatPrice(product.giaTien) }}</span>
+                    <button class="add-btn" (click)="addToCart(product)" [disabled]="product.tonKho === 0">
+                        <i class="fa-solid fa-cart-plus"></i>
+                        {{ product.tonKho === 0 ? 'Hết hàng' : 'Thêm' }}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && products.length === 0">
+        <i class="fa-solid fa-box-open"></i>
+        <h3>Không tìm thấy sản phẩm</h3>
+        <p>Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+    </div>
+</div>
+
+<!-- Added to Cart Notification -->
+<div class="notification" [class.show]="showAddedNotification">
+    <i class="fa-solid fa-check-circle"></i>
+    <span>Đã thêm "{{ addedProductName }}" vào giỏ hàng!</span>
+</div>

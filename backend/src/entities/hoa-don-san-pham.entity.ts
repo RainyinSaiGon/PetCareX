@@ -27,3 +27,4 @@ export class HoaDonSanPham {
   @JoinColumn({ name: 'MaSanPham' })
   SanPham: SanPham;
 }
+

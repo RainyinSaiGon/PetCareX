@@ -81,6 +81,59 @@
   </div>
 
   <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form" *ngIf="!loading || !isEditMode">
+    <!-- Top profile row: avatar + quick meta -->
+    <div class="profile-row">
+      <div class="avatar-section">
+        <div class="avatar-preview">
+          <img *ngIf="imagePreview; else placeholder" [src]="imagePreview" alt="Ảnh thú cưng" />
+          <ng-template #placeholder>
+            <div class="avatar-placeholder">
+              <i class="fas fa-paw"></i>
+            </div>
+          </ng-template>
+        </div>
+
+        <div class="avatar-actions">
+          <label class="btn btn-secondary btn-upload">
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" hidden />
+            <i class="fas fa-upload"></i> Tải ảnh
+          </label>
+          <button *ngIf="imagePreview" type="button" class="btn btn-secondary" (click)="removeImage()">
+            <i class="fas fa-trash"></i> Xóa
+          </button>
+        </div>
+        <p class="muted">Ảnh giúp nhận diện nhanh thú cưng của bạn. (Không bắt buộc)</p>
+      </div>
+
+      <div class="quick-meta">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="GioiTinh">Giới Tính</label>
+            <div class="input-wrapper">
+              <select id="GioiTinh" formControlName="GioiTinh">
+                <option value="">Không rõ</option>
+                <option value="male">Đực</option>
+                <option value="female">Cái</option>
+              </select>
+              <i class="fas fa-venus-mars"></i>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="DaTiem">Đã Tiêm Phòng</label>
+            <div class="input-wrapper">
+              <select id="DaTiem" formControlName="DaTiem">
+                <option value="">Chọn</option>
+                <option [value]="true">Đã tiêm</option>
+                <option [value]="false">Chưa tiêm</option>
+              </select>
+              <i class="fas fa-syringe"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Customer Selection -->
     <div class="form-section">
       <div class="section-title">

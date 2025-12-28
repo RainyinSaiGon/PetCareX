@@ -4,16 +4,17 @@ import { LichLamViecBacSi } from './lich-lam-viec-bac-si.entity';
 import { CungCapDichVu } from './cung-cap-dich-vu.entity';
 import { ThanhToanDichVuYTe } from './thanh-toan-dich-vu-y-te.entity';
 import { HoaDon } from './hoa-don.entity';
+import { LichHen } from './lich-hen.entity';
 
 @Entity('CHINHANH')
 export class ChiNhanh {
   @PrimaryColumn({ type: 'char', length: 4 })
   MaChiNhanh: string;
 
-  @Column({ type: 'varchar', length: 70, nullable: true })
+  @Column({ type: 'nvarchar', length: 70, nullable: true })
   TenChiNhanh: string;
 
-  @Column({ type: 'varchar', length: 150, nullable: true })
+  @Column({ type: 'nvarchar', length: 150, nullable: true })
   DiaChi: string;
 
   @Column({ type: 'char', length: 10, nullable: true })
@@ -46,4 +47,8 @@ export class ChiNhanh {
 
   @OneToMany(() => HoaDon, hoadon => hoadon.ChiNhanh)
   HoaDons: HoaDon[];
+
+  @OneToMany(() => LichHen, lichHen => lichHen.ChiNhanh)
+  LichHens: LichHen[];
 }
+

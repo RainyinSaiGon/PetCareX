@@ -1,0 +1,39 @@
+<div class="container">
+  <div class="card">
+    <h2>Lịch sử khám bệnh - Thú cưng: {{ maThuCung }}</h2>
+
+    <div *ngIf="isLoading" class="alert alert-info">
+      Đang tải dữ liệu...
+    </div>
+
+    <div class="table-responsive" *ngIf="!isLoading">
+      <table class="table" *ngIf="histories.length > 0; else noData">
+        <thead>
+          <tr>
+            <th>Mã Giấy Khám</th>
+            <th>Tên Thú Cưng</th>
+            <th>Ngày Khám</th>
+            <th>Nhiệt Độ (°C)</th>
+            <th>Mô Tả</th>
+            <th>Triệu Chứng</th>
+            <th>Chẩn Đoán</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let history of histories">
+            <td>{{ history.maGiayKhamTongQuat }}</td>
+            <td>{{ history.tenThuCung }}</td>
+            <td>{{ history.ngayKham | date : 'dd/MM/yyyy HH:mm' }}</td>
+            <td>{{ history.nhietDo }}</td>
+            <td>{{ history.moTa }}</td>
+            <td>{{ getSymptomsList(history.trieuChung) }}</td>
+            <td>{{ getDiagnosisList(history.chuanDoan) }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <ng-template #noData>
+        <div class="alert alert-warning">Không có lịch sử khám bệnh cho thú cưng này</div>
+      </ng-template>
+    </div>
+  </div>
+</div>

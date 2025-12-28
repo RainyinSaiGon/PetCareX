@@ -10,10 +10,10 @@ export class Vaccine {
   @PrimaryColumn({ type: 'char', length: 5 })
   MaVaccine: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: 'nvarchar', length: 20, nullable: true })
   TenVaccine: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   LoaiVaccine: string;
 
   @Column({ type: 'int', nullable: true })
@@ -34,3 +34,4 @@ export class Vaccine {
   @OneToMany(() => KhoVaccine, kv => kv.Vaccine)
   KhoVaccines: KhoVaccine[];
 }
+

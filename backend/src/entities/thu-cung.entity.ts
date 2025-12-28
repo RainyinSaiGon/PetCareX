@@ -12,11 +12,20 @@ export class ThuCung {
   @PrimaryGeneratedColumn()
   MaThuCung: number;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: 'nvarchar', length: 20, nullable: true })
   TenThuCung: string;
 
   @Column({ type: 'date', nullable: true })
   NgaySinhThuCung: Date;
+
+  @Column({ type: 'nvarchar', length: 10, nullable: true })
+  GioiTinh: string;
+
+  @Column({ type: 'float', nullable: true })
+  CanNang: number;
+
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
+  MauSac: string;
 
   @Column({ type: 'int', nullable: true })
   MaKhachHang: number;
@@ -47,3 +56,4 @@ export class ThuCung {
   @OneToMany(() => PhieuDangKyTiemPhong, pdktp => pdktp.ThuCung)
   PhieuDangKys: PhieuDangKyTiemPhong[];
 }
+

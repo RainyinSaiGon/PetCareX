@@ -10,10 +10,10 @@ export class DichVuYTe {
   @PrimaryColumn({ type: 'char', length: 5 })
   MaDichVu: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   TenDichVu: string;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'nvarchar', length: 10, nullable: true })
   LoaiDichVu: string;
 
   @OneToMany(() => ThanhToanDichVuYTe, ttdv => ttdv.DichVu)
@@ -31,3 +31,4 @@ export class DichVuYTe {
   @OneToMany(() => CungCapDichVu, ccdv => ccdv.DichVu)
   CungCaps: CungCapDichVu[];
 }
+

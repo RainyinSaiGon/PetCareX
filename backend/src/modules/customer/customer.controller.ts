@@ -39,8 +39,9 @@ export class CustomerController {
   async findAllKhachHang(
     @Query('page', ParseIntPipe) page: number = 1,
     @Query('limit', ParseIntPipe) limit: number = 10,
+    @Query('search') search?: string,
   ) {
-    return await this.customerService.findAllKhachHang(page, limit);
+    return await this.customerService.findAllKhachHang(page, limit, search);
   }
 
   @Get('khach-hang/search')

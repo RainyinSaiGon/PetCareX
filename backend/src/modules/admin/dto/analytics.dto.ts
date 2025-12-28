@@ -35,6 +35,17 @@ export class TopServicesDto {
   @Type(() => Number)
   @IsNumber()
   limit?: number;
+
+  @IsOptional()
+  @IsDateString()
+  startDate?: string;
+
+  @IsOptional()
+  @IsDateString()
+  endDate?: string;
+
+  @IsOptional()
+  maChiNhanh?: string;
 }
 
 export class RevenueReportResponse {

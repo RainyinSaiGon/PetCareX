@@ -1,0 +1,107 @@
+<div class="doctors-page">
+    <div class="page-header">
+        <h1><i class="fa-solid fa-user-doctor"></i> Đội Ngũ Bác Sĩ</h1>
+        <p>Xem thông tin và lịch làm việc của các bác sĩ</p>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading" *ngIf="isLoading">
+        <i class="fa-solid fa-spinner fa-spin"></i> Đang tải...
+    </div>
+
+    <!-- Doctors Grid -->
+    <div class="doctors-grid" *ngIf="!isLoading">
+        <div class="doctor-card" *ngFor="let doc of doctors" (click)="selectDoctor(doc)">
+            <div class="doctor-avatar">
+                <i class="fa-solid fa-user-doctor"></i>
+            </div>
+            <div class="doctor-info">
+                <h3>BS. {{ doc.hoTen }}</h3>
+                <p class="contact" *ngIf="doc.soDienThoai">
+                    <i class="fa-solid fa-phone"></i> {{ doc.soDienThoai }}
+                </p>
+                <p class="email" *ngIf="doc.email">
+                    <i class="fa-solid fa-envelope"></i> {{ doc.email }}
+                </p>
+            </div>
+            <button class="view-schedule-btn">
+                <i class="fa-solid fa-calendar"></i> Xem lịch
+            </button>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty" *ngIf="!isLoading && doctors.length === 0">
+        <i class="fa-solid fa-user-slash"></i>
+        <p>Không có thông tin bác sĩ</p>
+    </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal-overlay" *ngIf="selectedDoctor" (click)="closeSchedule()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-calendar-check"></i> Lịch Làm Việc - BS. {{ selectedDoctor.hoTen }}</h2>
+            <button class="close-btn" (click)="closeSchedule()"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="modal-body">
+            <div class="date-filter">
+                <label>Xem lịch ngày:</label>
+                <input type="date" [(ngModel)]="selectedDate" (change)="onDateChange()" />
+            </div>
+
+            <div class="schedules-list" *ngIf="schedules.length > 0">
+                <div class="schedule-item" *ngFor="let sch of schedules"
+                    [class.appointment-item]="sch.type === 'appointment'">
+                    <div class="schedule-header">
+                        <div class="schedule-date">{{ formatDate(sch.ngayLamViec) }}</div>
+                        <div class="badges">
+                            <span class="schedule-badge" *ngIf="sch.type === 'appointment'">
+                                <i class="fa-solid fa-calendar-check"></i> Lịch hẹn
+                            </span>
+                            <span class="busy-badge" *ngIf="sch.type === 'appointment'">
+                                <i class="fa-solid fa-circle"></i> Bận
+                            </span>
+                        </div>
+                    </div>
+                    <div class="schedule-time">
+                        <i class="fa-solid fa-clock"></i>
+                        {{ sch.gioBatDau }} - {{ sch.gioKetThuc }}
+                        <span class="availability-note" *ngIf="sch.type === 'appointment'">
+                            (Bác sĩ không có sẵn)
+                        </span>
+                    </div>
+                    <!-- Work schedule info -->
+                    <div class="schedule-branch" *ngIf="sch.type === 'schedule' && sch.chiNhanh">
+                        <i class="fa-solid fa-hospital"></i>
+                        {{ sch.chiNhanh }}
+                    </div>
+                    <div class="availability-info" *ngIf="sch.type === 'schedule'">
+                        <i class="fa-solid fa-circle-check"></i>
+                        <span>Bác sĩ có sẵn trong khung giờ này</span>
+                    </div>
+                    <!-- Appointment info -->
+                    <div class="appointment-details" *ngIf="sch.type === 'appointment'">
+                        <div class="detail-row" *ngIf="sch.petName">
+                            <i class="fa-solid fa-paw"></i>
+                            <span>{{ sch.petName }}</span>
+                        </div>
+                        <div class="detail-row" *ngIf="sch.customerName">
+                            <i class="fa-solid fa-user"></i>
+                            <span>{{ sch.customerName }}</span>
+                        </div>
+                        <div class="detail-row" *ngIf="sch.ghiChu">
+                            <i class="fa-solid fa-sticky-note"></i>
+                            <span>{{ sch.ghiChu }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="no-schedule" *ngIf="schedules.length === 0">
+                <i class="fa-solid fa-calendar-xmark"></i>
+                <p>Không có lịch làm việc trong khoảng thời gian này</p>
+            </div>
+        </div>
+    </div>
+</div>

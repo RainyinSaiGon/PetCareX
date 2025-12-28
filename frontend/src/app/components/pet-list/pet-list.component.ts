@@ -19,13 +19,13 @@ export class PetListComponent implements OnInit {
   customerName?: string;
   loading = false;
   error = '';
-  
+
   // Pagination
   currentPage = 1;
   pageSize = 10;
   totalItems = 0;
   totalPages = 0;
-  
+
   // Search
   searchKeyword = '';
 
@@ -33,19 +33,21 @@ export class PetListComponent implements OnInit {
     private customerService: CustomerService,
     private router: Router,
     private route: ActivatedRoute
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    this.customerId = Number(this.route.snapshot.paramMap.get('id'));
-    if (this.customerId) {
-      this.loadPets();
+    const idParam = this.route.snapshot.paramMap.get('id');
+    if (idParam) {
+      this.customerId = Number(idParam);
       this.loadCustomerInfo();
     }
+    // Load pets regardless of whether we have a customer ID or not
+    this.loadPets();
   }
 
   loadCustomerInfo(): void {
     if (!this.customerId) return;
-    
+
     this.customerService.getCustomerById(this.customerId)
       .subscribe({
         next: (customer) => {
@@ -58,25 +60,28 @@ export class PetListComponent implements OnInit {
   }
 
   loadPets(): void {
-    if (!this.customerId) return;
-    
     this.loading = true;
     this.error = '';
-    
-    this.customerService.getPets(this.customerId, this.currentPage, this.pageSize)
-      .subscribe({
-        next: (response: PaginatedResponse<ThuCung>) => {
-          this.pets = response.data;
-          this.totalItems = response.total;
-          this.totalPages = response.totalPages;
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = 'Không thể tải danh sách thú cưng. Vui lòng thử lại.';
-          this.loading = false;
-          console.error('Error loading pets:', err);
-        }
-      });
+
+    // If we have a customer ID, load pets for that customer
+    // Otherwise, load all pets
+    const petsObservable = this.customerId
+      ? this.customerService.getPets(this.customerId, this.currentPage, this.pageSize, this.searchKeyword)
+      : this.customerService.getAllPets(this.currentPage, this.pageSize, this.searchKeyword);
+
+    petsObservable.subscribe({
+      next: (response: PaginatedResponse<ThuCung>) => {
+        this.pets = response.data;
+        this.totalItems = response.total;
+        this.totalPages = response.totalPages;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Không thể tải danh sách thú cưng. Vui lòng thử lại.';
+        this.loading = false;
+        console.error('Error loading pets:', err);
+      }
+    });
   }
 
   onSearch(): void {
@@ -92,18 +97,29 @@ export class PetListComponent implements OnInit {
   }
 
   viewPet(petId: number): void {
-    this.router.navigate(['/customers', this.customerId, 'pets', petId, 'edit']);
+    // Find the pet to get its customer ID
+    const pet = this.pets.find(p => p.MaThuCung === petId);
+    const customerId = this.customerId || pet?.MaKhachHang;
+    if (customerId) {
+      this.router.navigate(['/customers', customerId, 'pets', petId, 'edit']);
+    }
   }
 
   editPet(petId: number): void {
-    this.router.navigate(['/customers', this.customerId, 'pets', petId, 'edit']);
+    // Find the pet to get its customer ID
+    const pet = this.pets.find(p => p.MaThuCung === petId);
+    const customerId = this.customerId || pet?.MaKhachHang;
+    if (customerId) {
+      this.router.navigate(['/customers', customerId, 'pets', petId, 'edit']);
+    }
   }
 
   deletePet(pet: ThuCung): void {
-    if (!this.customerId) return;
-    
+    const customerId = this.customerId || pet.MaKhachHang;
+    if (!customerId) return;
+
     if (confirm(`Bạn có chắc chắn muốn xóa thú cưng "${pet.TenThuCung}"?`)) {
-      this.customerService.deletePet(this.customerId, pet.MaThuCung)
+      this.customerService.deletePet(customerId, pet.MaThuCung)
         .subscribe({
           next: () => {
             this.loadPets();
@@ -117,6 +133,13 @@ export class PetListComponent implements OnInit {
   }
 
   createPet(): void {
+    // When viewing all pets, we can't create a new pet without a customer
+    // Navigate to customer list instead
+    if (!this.customerId) {
+      alert('Vui lòng chọn khách hàng trước khi thêm thú cưng.');
+      this.router.navigate(['/customers']);
+      return;
+    }
     this.router.navigate(['/customers', this.customerId, 'pets', 'new']);
   }
 
@@ -129,54 +152,54 @@ export class PetListComponent implements OnInit {
     const maxPagesToShow = 5;
     let startPage = Math.max(1, this.currentPage - Math.floor(maxPagesToShow / 2));
     let endPage = Math.min(this.totalPages, startPage + maxPagesToShow - 1);
-    
+
     if (endPage - startPage < maxPagesToShow - 1) {
       startPage = Math.max(1, endPage - maxPagesToShow + 1);
     }
-    
+
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    
+
     return pages;
   }
 
   getPetIcon(breedName?: string): string {
     if (!breedName) return 'fas fa-paw';
-    
+
     const breed = breedName.toLowerCase();
-    
+
     // Dog breeds
-    if (breed.includes('husky') || breed.includes('poodle') || breed.includes('bulldog') || 
-        breed.includes('beagle') || breed.includes('corgi') || breed.includes('chó') || 
-        breed.includes('dog') || breed.includes('retriever') || breed.includes('shepherd')) {
+    if (breed.includes('husky') || breed.includes('poodle') || breed.includes('bulldog') ||
+      breed.includes('beagle') || breed.includes('corgi') || breed.includes('chó') ||
+      breed.includes('dog') || breed.includes('retriever') || breed.includes('shepherd')) {
       return 'fas fa-dog';
     }
-    
+
     // Cat breeds
-    if (breed.includes('persian') || breed.includes('siamese') || breed.includes('bengal') || 
-        breed.includes('ragdoll') || breed.includes('mèo') || breed.includes('cat')) {
+    if (breed.includes('persian') || breed.includes('siamese') || breed.includes('bengal') ||
+      breed.includes('ragdoll') || breed.includes('mèo') || breed.includes('cat')) {
       return 'fas fa-cat';
     }
-    
+
     // Birds
-    if (breed.includes('chicken') || breed.includes('gà') || breed.includes('parrot') || 
-        breed.includes('canary') || breed.includes('cockatiel') || breed.includes('bird') || 
-        breed.includes('chim')) {
+    if (breed.includes('chicken') || breed.includes('gà') || breed.includes('parrot') ||
+      breed.includes('canary') || breed.includes('cockatiel') || breed.includes('bird') ||
+      breed.includes('chim')) {
       return 'fas fa-dove';
     }
-    
+
     // Fish
-    if (breed.includes('cá') || breed.includes('fish') || breed.includes('goldfish') || 
-        breed.includes('koi')) {
+    if (breed.includes('cá') || breed.includes('fish') || breed.includes('goldfish') ||
+      breed.includes('koi')) {
       return 'fas fa-fish';
     }
-    
+
     // Rabbit
     if (breed.includes('rabbit') || breed.includes('thỏ') || breed.includes('bunny')) {
       return 'fas fa-rabbit';
     }
-    
+
     // Default
     return 'fas fa-paw';
   }

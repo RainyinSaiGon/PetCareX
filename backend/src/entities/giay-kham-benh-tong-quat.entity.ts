@@ -13,8 +13,11 @@ export class GiayKhamBenhTongQuat {
   @Column({ type: 'float', nullable: true })
   NhietDo: number;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'nvarchar', length: 100, nullable: true })
   MoTa: string;
+
+  @Column({ type: 'datetime2', nullable: true, default: () => 'GETDATE()' })
+  NgayKham: Date;
 
   @Column({ type: 'int', nullable: true })
   MaThuCung: number;
@@ -39,3 +42,4 @@ export class GiayKhamBenhTongQuat {
   @OneToMany(() => ChiTietKhamBenhTrieuChung, ctct => ctct.GiayKhamBenhTongQuat)
   ChiTietTrieuChungs: ChiTietKhamBenhTrieuChung[];
 }
+

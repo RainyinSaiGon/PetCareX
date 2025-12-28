@@ -86,6 +86,67 @@
   border: 2px solid #E8EEF5;
 }
 
+/* Profile row (avatar + quick fields) */
+.profile-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 28px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.avatar-section {
+  text-align: center;
+}
+
+.avatar-preview {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 12px auto;
+  border-radius: 999px;
+  overflow: hidden;
+  background: radial-gradient(circle at 30% 20%, rgba(255,167,64,0.08), rgba(255,167,64,0.02));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed #E8EEF5;
+}
+
+.avatar-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-placeholder {
+  font-size: 40px;
+  color: #ff9f43;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.avatar-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.muted {
+  color: #8b98a6;
+  font-size: 13px;
+  margin-top: 6px;
+}
+
+.quick-meta .form-row {
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
 .form-section {
   margin-bottom: 45px;
   padding: 30px;
@@ -180,6 +241,11 @@
 @media (max-width: 768px) {
   .pet-form {
     padding: 35px 20px;
+  }
+
+  .profile-row {
+    grid-template-columns: 1fr;
+    text-align: left;
   }
 
   .form-row {

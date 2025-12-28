@@ -14,10 +14,10 @@ export class ThanhToanDichVuYTe {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
   SoTien: number;
 
-  @Column({ type: 'timestamp', nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'datetime2', nullable: true, default: () => 'GETDATE()' })
   NgayThanhToan: Date;
 
-  @Column({ type: 'char', length: 5, nullable: true })
+  @Column({ type: 'char', length: 4, nullable: true })
   MaChiNhanh: string;
 
   @ManyToOne(() => HoaDon, hoaDon => hoaDon.DichVus)
@@ -32,3 +32,4 @@ export class ThanhToanDichVuYTe {
   @JoinColumn({ name: 'MaChiNhanh' })
   ChiNhanh: ChiNhanh;
 }
+

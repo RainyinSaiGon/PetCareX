@@ -7,15 +7,15 @@ export class KhoVaccine {
   @PrimaryGeneratedColumn({ name: 'MAKHOVACCINE' })
   MaKhoVaccine: number;
 
-  @Column({ name: 'MAVACCINE' })
-  MaVaccine: number;
+  @Column({ name: 'MAVACCINE', type: 'char', length: 5 })
+  MaVaccine: string;
 
   @ManyToOne(() => Vaccine, vaccine => vaccine.KhoVaccines)
   @JoinColumn({ name: 'MAVACCINE' })
   Vaccine: Vaccine;
 
-  @Column({ name: 'MAKHO' })
-  MaKho: number;
+  @Column({ name: 'MAKHO', type: 'char', length: 4 })
+  MaKho: string;
 
   @ManyToOne(() => Kho, kho => kho.KhoVaccines)
   @JoinColumn({ name: 'MAKHO' })
@@ -27,9 +27,10 @@ export class KhoVaccine {
   @Column({ name: 'HANSUDUNG', type: 'date' })
   HanSuDung: Date;
 
-  @Column({ name: 'NGAYNHAP', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'NGAYNHAP', type: 'datetime2', default: () => 'GETDATE()' })
   NgayNhap: Date;
 
   @Column({ name: 'GHICHU', type: 'text', nullable: true })
   GhiChu: string;
 }
+

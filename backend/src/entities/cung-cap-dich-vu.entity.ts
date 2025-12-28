@@ -10,6 +10,9 @@ export class CungCapDichVu {
   @PrimaryColumn({ type: 'char', length: 5 })
   MaDichVu: string;
 
+  @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
+  GiaThanhLe: number;
+
   @ManyToOne(() => ChiNhanh, chiNhanh => chiNhanh.CungCapDichVus)
   @JoinColumn({ name: 'MaChiNhanh' })
   ChiNhanh: ChiNhanh;
@@ -18,3 +21,4 @@ export class CungCapDichVu {
   @JoinColumn({ name: 'MaDichVu' })
   DichVu: DichVuYTe;
 }
+

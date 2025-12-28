@@ -6,9 +6,10 @@ export class LoaiThuCung {
   @PrimaryColumn({ type: 'char', length: 2 })
   MaLoaiThuCung: string;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'nvarchar', length: 10, nullable: true })
   TenLoaiThuCung: string;
 
   @OneToMany(() => ChungLoaiThuCung, cltc => cltc.LoaiThuCung)
   ChungLoaiThuCungs: ChungLoaiThuCung[];
 }
+

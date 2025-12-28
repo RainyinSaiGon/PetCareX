@@ -10,7 +10,7 @@ import { environment } from '../../environments/environment';
 export class PetService {
   private apiUrl = `${environment.apiUrl}/api/pets`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Pet endpoints
   getPetsByCustomer(customerId: number): Observable<ThuCung[]> {
@@ -43,7 +43,7 @@ export class PetService {
   }
 
   searchPets(query: string): Observable<ThuCung[]> {
-    const params = new HttpParams().set('query', query);
-    return this.http.get<ThuCung[]>(`${this.apiUrl}/search`, { params });
+    const params = new HttpParams().set('q', query);
+    return this.http.get<ThuCung[]>(`${this.apiUrl}/search/query`, { params });
   }
 }

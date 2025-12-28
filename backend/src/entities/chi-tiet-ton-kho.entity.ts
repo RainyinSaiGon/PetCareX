@@ -2,7 +2,7 @@ import { Entity, Column, PrimaryColumn, ManyToOne, JoinColumn } from 'typeorm';
 import { Kho } from './kho.entity';
 import { SanPham } from './san-pham.entity';
 
-@Entity('CHITIETTONKHO')
+@Entity('CHI_TIET_TON_KHO')
 export class ChiTietTonKho {
   @PrimaryColumn({ type: 'char', length: 4 })
   MaKho: string;
@@ -21,3 +21,4 @@ export class ChiTietTonKho {
   @JoinColumn({ name: 'MaSanPham' })
   SanPham: SanPham;
 }
+

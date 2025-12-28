@@ -1,0 +1,130 @@
+<div class="customer-container">
+    <div class="page-header">
+        <div>
+            <h1>Thú Cưng Của Tôi</h1>
+            <p>Quản lý hồ sơ sức khỏe và lịch trình cho các bé</p>
+        </div>
+        <button class="btn btn-primary" [routerLink]="['/customer/pets/new']">
+            <i class="fa-solid fa-plus"></i> Thêm Thú Cưng
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-spinner" *ngIf="isLoading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" *ngIf="!isLoading && pets.length === 0">
+        <div class="empty-state-icon">
+            <i class="fa-solid fa-paw"></i>
+        </div>
+        <h3>Chào bạn mới!</h3>
+        <p>Bạn chưa có thú cưng nào được liên kết. Hãy thêm hồ sơ cho bé để bắt đầu theo dõi sức khỏe và đặt lịch khám
+            dễ dàng hơn.</p>
+        <button class="btn btn-primary" [routerLink]="['/customer/pets/new']">Thêm Hồ Sơ Ngay</button>
+    </div>
+
+    <!-- Pet Grid -->
+    <div class="pet-grid" *ngIf="!isLoading && pets.length > 0">
+        <div class="pet-card" *ngFor="let pet of pets">
+            <div class="pet-header">
+                <div class="pet-avatar"
+                    [ngClass]="{'dog': pet.loaiThuCung === 'Chó' || !pet.loaiThuCung, 'cat': pet.loaiThuCung === 'Mèo'}">
+                    <i class="fa-solid fa-dog" *ngIf="pet.loaiThuCung === 'Chó' || !pet.loaiThuCung"></i>
+                    <i class="fa-solid fa-cat" *ngIf="pet.loaiThuCung === 'Mèo'"></i>
+                </div>
+                <div class="pet-info">
+                    <h3>{{ pet.tenThuCung }}</h3>
+                    <div class="breed-badge">{{ pet.chungLoai || 'Không rõ giống' }}</div>
+                </div>
+            </div>
+
+            <div class="pet-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Giới tính</span>
+                    <span class="stat-value">
+                        <i class="fa-solid fa-mars gender-male" *ngIf="pet.gioiTinh === 'Đực'"></i>
+                        <i class="fa-solid fa-venus gender-female" *ngIf="pet.gioiTinh === 'Cái'"></i>
+                        {{ pet.gioiTinh }}
+                    </span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tuổi</span>
+                    <span class="stat-value">{{ getAge(pet.ngaySinh) }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Cân nặng</span>
+                    <span class="stat-value">{{ pet.canNang }}kg</span>
+                </div>
+            </div>
+
+            <div class="pet-actions">
+                <a [routerLink]="['/customer/history']" [queryParams]="{petId: pet.maThuCung}" class="btn btn-outline">
+                    <i class="fa-solid fa-file-medical-alt"></i> Xem Hồ Sơ Sức Khỏe
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Pet Modal -->
+<div class="modal-overlay" *ngIf="showAddModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm Thú Cưng Mới</h3>
+            <button class="close-btn" (click)="closeAddModal()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="modal-body">
+            <form (ngSubmit)="onSubmit()" #petForm="ngForm">
+                <div class="form-group">
+                    <label>Tên Thú Cưng <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="newPet.tenThuCung" name="tenThuCung" required class="form-control"
+                        placeholder="Nhập tên bé">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Giống Loài <span class="required">*</span></label>
+                        <select [(ngModel)]="newPet.maChungLoai" name="maChungLoai" required class="form-control">
+                            <option value="" disabled>Chọn giống</option>
+                            <option *ngFor="let type of petTypes" [value]="type.MaChungLoaiThuCung">
+                                {{ type.TenChungLoaiThuCung }}
+                            </option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Giới Tính</label>
+                        <select [(ngModel)]="newPet.gioiTinh" name="gioiTinh" class="form-control">
+                            <option value="Đực">Đực</option>
+                            <option value="Cái">Cái</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Cân Nặng (kg)</label>
+                        <input type="number" [(ngModel)]="newPet.canNang" name="canNang" class="form-control"
+                            placeholder="0.0">
+                    </div>
+                    <div class="form-group">
+                        <label>Màu Sắc</label>
+                        <input type="text" [(ngModel)]="newPet.mauSac" name="mauSac" class="form-control"
+                            placeholder="Vàng, Trắng...">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Ngày Sinh</label>
+                    <input type="date" [(ngModel)]="newPet.ngaySinh" name="ngaySinh" class="form-control">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" (click)="closeAddModal()">Hủy</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="!petForm.valid">Lưu Thông Tin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
