@@ -7,10 +7,10 @@ export class KhachHangThanhVien {
   @PrimaryColumn({ type: 'int' })
   MaKhachHang: number;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   Email: string;
 
-  @Column({ type: 'varchar', length: 3, nullable: true })
+  @Column({ type: 'nvarchar', length: 3, nullable: true })
   GioiTinh: string;
 
   @Column({ type: 'date', nullable: true })
@@ -22,13 +22,13 @@ export class KhachHangThanhVien {
   @Column({ type: 'decimal', precision: 12, scale: 2, nullable: true, default: 0 })
   TongChiTieu: number;
 
-  @Column({ type: 'varchar', length: 150, nullable: true })
+  @Column({ type: 'nvarchar', length: 150, nullable: true })
   DiaChi: string;
 
   @Column({ type: 'date', nullable: true })
   NgayNangHang: Date;
 
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'nvarchar', length: 10, nullable: true })
   HangCu: string;
 
   @ManyToOne(() => KhachHang, khachHang => khachHang.ThanhVien)
@@ -40,6 +40,7 @@ export class KhachHangThanhVien {
   Hang: HangThanhVien;
   
   // TenHang is the foreign key column
-  @Column({ type: 'varchar', length: 10, nullable: true })
+  @Column({ type: 'nvarchar', length: 10, nullable: true })
   TenHang: string;
 }
+

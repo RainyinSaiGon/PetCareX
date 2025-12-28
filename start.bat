@@ -6,6 +6,7 @@ cd /d "%~dp0"
 
 echo ====================================
 echo    Starting PetCareX Application
+echo    (SQL Server Edition)
 echo ====================================
 echo.
 
@@ -106,17 +107,23 @@ if not exist "node_modules\" (
 )
 cd ..
 
-echo.
-echo [3/4] Starting Backend (NestJS)...
-cd backend
-start "PetCareX Backend" cmd /k "npm run start:dev"
-cd ..
+
 
 echo.
-echo [4/4] Starting Frontend (Angular)...
+echo [3/4] Starting Backend - NestJS...
+echo Starting backend (connecting to SQL Server)...
+cd backend
+start "PetCareX Backend" cmd /k "npm run start:dev"
+cd..
+
+echo Waiting 15 seconds for backend to start...
+timeout /t 10 /nobreak
+
+echo.
+echo [4/4] Starting Frontend - Angular...
 cd frontend  
 start "PetCareX Frontend" cmd /k "npm start"
-cd ..
+cd..
 
 echo.
 echo ====================================
@@ -125,6 +132,7 @@ echo ====================================
 echo.
 echo - Backend API: http://localhost:3000
 echo - Frontend App: http://localhost:4200
+echo - SQL Server: localhost\PetCare_X
 echo.
 echo Press any key to exit this window...
 pause > nul

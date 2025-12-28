@@ -1,0 +1,156 @@
+<div class="container">
+  <div class="header-section">
+    <div class="header-title">
+      <i class="fa-solid fa-stethoscope"></i>
+      <h1>Tạo Bệnh Án Mới</h1>
+    </div>
+  </div>
+
+  <!-- Medical Record Status Info -->
+  <div class="status-info" *ngIf="!isLoadingMedicalRecord && examinationForm.maThuCung">
+    <div class="status-card" [ngClass]="{ 'status-new': !hasMedicalRecord, 'status-existing': hasMedicalRecord }">
+      <i class="fa-solid" [ngClass]="{ 'fa-plus-circle': !hasMedicalRecord, 'fa-check-circle': hasMedicalRecord }"></i>
+      <div class="status-text">
+        <span class="status-label">
+          {{ hasMedicalRecord ? 'Hồ Sơ Bệnh Án Hiện Có' : 'Tạo Hồ Sơ Bệnh Án Mới' }}
+        </span>
+        <span class="status-description">
+          {{ hasMedicalRecord
+          ? 'Thêm giấy khám bệnh mới vào hồ sơ hiện có'
+          : 'Lần đầu tiên tạo hồ sơ cho thú cưng này' }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <form (ngSubmit)="submitForm()" class="examination-form">
+    <!-- Pet Selection Section -->
+    <div class="form-section">
+      <h3><i class="fa-solid fa-paw"></i> Thông Tin Thú Cưng</h3>
+
+      <div class="form-row">
+        <div class="form-group pet-search-container">
+          <label>Tìm Kiếm Thú Cưng *</label>
+          <div class="search-wrapper">
+            <input type="text" [(ngModel)]="petSearchQuery" (input)="searchPets()" name="petSearch"
+              placeholder="Nhập tên thú cưng để tìm kiếm..." class="form-control" [readonly]="selectedPet"
+              autocomplete="off" />
+            <button *ngIf="selectedPet" type="button" class="btn-clear-pet" (click)="clearPetSelection()"
+              title="Chọn thú cưng khác">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+
+          <!-- Pet search results dropdown -->
+          <div class="pet-dropdown" *ngIf="searchedPets.length > 0 && !selectedPet">
+            <div *ngFor="let pet of searchedPets" class="pet-dropdown-item" (click)="selectPet(pet)">
+              <div class="pet-info">
+                <i class="fa-solid fa-paw"></i>
+                <div class="pet-details">
+                  <span class="pet-name">{{ pet.TenThuCung }}</span>
+                  <span class="pet-breed">{{ pet.ChungLoai?.TenChungLoaiThuCung || 'Không xác định' }}</span>
+                </div>
+              </div>
+              <span class="pet-id">ID: {{ pet.MaThuCung }}</span>
+            </div>
+          </div>
+
+          <!-- No results message -->
+          <div class="no-results"
+            *ngIf="petSearchQuery && searchedPets.length === 0 && !selectedPet && !isSearchingPets">
+            <i class="fa-solid fa-search"></i>
+            <span>Không tìm thấy thú cưng. Vui lòng kiểm tra lại tên.</span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nhiệt Độ (°C)</label>
+          <input type="number" [(ngModel)]="examinationForm.nhietDo" name="nhietDo" placeholder="37.5"
+            class="form-control" step="0.1" />
+        </div>
+      </div>
+
+      <!-- Selected Pet Card -->
+      <div class="selected-pet-card" *ngIf="selectedPet">
+        <div class="selected-pet-icon">
+          <i class="fa-solid fa-paw"></i>
+        </div>
+        <div class="selected-pet-info">
+          <span class="selected-pet-name">{{ selectedPet.TenThuCung }}</span>
+          <span class="selected-pet-details">
+            {{ selectedPet.ChungLoai?.TenChungLoaiThuCung || 'Không xác định' }} |
+            Chủ: {{ selectedPet.KhachHang?.HoTen || 'N/A' }}
+          </span>
+        </div>
+        <span class="selected-pet-id">ID: {{ selectedPet.MaThuCung }}</span>
+      </div>
+    </div>
+
+    <!-- Clinical Description Section -->
+    <div class="form-section">
+      <h3><i class="fa-solid fa-file-alt"></i> Mô Tả Lâm Sàng</h3>
+
+      <div class="form-group">
+        <label>Mô Tả Chi Tiết</label>
+        <textarea [(ngModel)]="examinationForm.moTa" name="moTa" placeholder="Nhập mô tả lâm sàng chi tiết..."
+          class="form-control textarea" rows="4"></textarea>
+      </div>
+    </div>
+
+    <!-- Symptoms Section -->
+    <div class="form-section">
+      <h3><i class="fa-solid fa-triangle-exclamation"></i> Triệu Chứng</h3>
+
+      <div class="symptom-input">
+        <input type="text" [(ngModel)]="newSymptom" (keyup.enter)="addSymptom()" placeholder="Nhập triệu chứng..."
+          class="form-control" [ngModelOptions]="{ standalone: true }" />
+        <button type="button" (click)="addSymptom()" class="btn btn-add">
+          <i class="fa-solid fa-plus"></i> Thêm
+        </button>
+      </div>
+
+      <div class="tags-container" *ngIf="symptoms.length > 0">
+        <span *ngFor="let symptom of symptoms; let i = index" class="tag">
+          <i class="fa-solid fa-check-circle"></i>
+          {{ symptom }}
+          <button type="button" (click)="removeSymptom(i)" class="remove-tag" title="Xóa">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </span>
+      </div>
+    </div>
+
+    <!-- Diagnosis Section -->
+    <div class="form-section">
+      <h3><i class="fa-solid fa-clipboard"></i> Chẩn Đoán</h3>
+
+      <div class="diagnosis-input">
+        <input type="text" [(ngModel)]="newDiagnosis" (keyup.enter)="addDiagnosis()" placeholder="Nhập chẩn đoán..."
+          class="form-control" [ngModelOptions]="{ standalone: true }" />
+        <button type="button" (click)="addDiagnosis()" class="btn btn-add">
+          <i class="fa-solid fa-plus"></i> Thêm
+        </button>
+      </div>
+
+      <div class="tags-container" *ngIf="diagnoses.length > 0">
+        <span *ngFor="let diagnosis of diagnoses; let i = index" class="tag tag-diagnosis">
+          <i class="fa-solid fa-circle-check"></i>
+          {{ diagnosis }}
+          <button type="button" (click)="removeDiagnosis(i)" class="remove-tag" title="Xóa">
+            <i class="fa-solid fa-times"></i>
+          </button>
+        </span>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="form-actions">
+      <button type="submit" class="btn btn-submit" [disabled]="isSubmitting">
+        <i class="fa-solid fa-save"></i> {{ isSubmitting ? 'Đang lưu...' : 'Lưu Bệnh Án' }}
+      </button>
+      <button type="button" (click)="resetForm()" class="btn btn-reset">
+        <i class="fa-solid fa-redo"></i> Đặt lại
+      </button>
+    </div>
+  </form>
+</div>

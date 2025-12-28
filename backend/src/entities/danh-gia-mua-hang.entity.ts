@@ -14,8 +14,8 @@ export class DanhGiaMuaHang {
   @JoinColumn({ name: 'MAHOADON' })
   HoaDon: HoaDon;
 
-  @Column({ name: 'MASANPHAM' })
-  MaSanPham: number;
+  @Column({ name: 'MASANPHAM', type: 'char', length: 5 })
+  MaSanPham: string;
 
   @ManyToOne(() => SanPham, sanpham => sanpham.DanhGias)
   @JoinColumn({ name: 'MASANPHAM' })
@@ -27,6 +27,7 @@ export class DanhGiaMuaHang {
   @Column({ name: 'NHANXET', type: 'text', nullable: true })
   NhanXet: string;
 
-  @Column({ name: 'NGAYDANHGIA', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ name: 'NGAYDANHGIA', type: 'datetime2', default: () => 'GETDATE()' })
   NgayDanhGia: Date;
 }
+

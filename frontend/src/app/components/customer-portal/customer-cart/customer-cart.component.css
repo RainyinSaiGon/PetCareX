@@ -1,0 +1,254 @@
+.cart-page {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.page-header h1 {
+    font-size: 28px;
+    color: #fff;
+    margin: 0 0 30px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-header h1 i {
+    color: #f5a623;
+}
+
+.order-success {
+    text-align: center;
+    padding: 60px;
+    background: rgba(76, 175, 80, 0.1);
+    border-radius: 20px;
+    border: 1px solid rgba(76, 175, 80, 0.3);
+}
+
+.success-icon {
+    font-size: 80px;
+    color: #4caf50;
+    margin-bottom: 20px;
+}
+
+.order-success h2 {
+    color: #fff;
+    margin: 0 0 10px;
+}
+
+.order-success p {
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0 0 30px;
+}
+
+.success-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+.empty-cart {
+    text-align: center;
+    padding: 60px;
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.empty-cart i {
+    font-size: 60px;
+    margin-bottom: 20px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.empty-cart h3 {
+    color: #fff;
+    margin: 0 0 10px;
+}
+
+.empty-cart p {
+    margin: 0 0 25px;
+}
+
+.cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.cart-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.item-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.item-image i {
+    font-size: 30px;
+    color: rgba(255, 255, 255, 0.2);
+}
+
+.item-info {
+    flex: 1;
+}
+
+.item-info h4 {
+    color: #fff;
+    margin: 0 0 5px;
+    font-size: 16px;
+}
+
+.item-info .category {
+    color: #f5a623;
+    font-size: 12px;
+}
+
+.item-price {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 14px;
+    min-width: 100px;
+}
+
+.item-quantity {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.item-quantity button {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background: none;
+    color: #fff;
+    cursor: pointer;
+}
+
+.item-quantity button:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.item-quantity span {
+    color: #fff;
+    font-weight: 600;
+    min-width: 30px;
+    text-align: center;
+}
+
+.item-total {
+    color: #f5a623;
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 120px;
+    text-align: right;
+}
+
+.remove-btn {
+    background: rgba(231, 76, 60, 0.2);
+    border: none;
+    color: #e74c3c;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.remove-btn:hover {
+    background: #e74c3c;
+    color: #fff;
+}
+
+.cart-summary {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 25px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.summary-row.total {
+    font-size: 18px;
+    color: #fff;
+}
+
+.total-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: #f5a623;
+}
+
+.checkout-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.checkout-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.checkout-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #f5a623 0%, #ff6b35 100%);
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 12px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+}

@@ -21,6 +21,8 @@ export class PetFormComponent implements OnInit, OnDestroy {
   customerId!: number;
   petId?: number;
   customerName?: string;
+  imagePreview: string | null = null;
+  selectedImageFile?: File;
   
   // Pet type and breed data
   petTypes: LoaiThuCung[] = [];
@@ -44,7 +46,9 @@ export class PetFormComponent implements OnInit, OnDestroy {
       TenThuCung: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       MaLoaiThuCung: ['', [Validators.required]],
       MaChungLoai: ['', [Validators.required]],
-      NgaySinhThuCung: ['']
+      NgaySinhThuCung: [''],
+      GioiTinh: [''],
+      DaTiem: ['']
     });
   }
 
@@ -279,6 +283,30 @@ export class PetFormComponent implements OnInit, OnDestroy {
         // Fallback for older browsers
         element.click();
       }
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+    const file = input.files[0];
+    this.selectedImageFile = file;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.imagePreview = reader.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeImage(): void {
+    this.imagePreview = null;
+    this.selectedImageFile = undefined;
+    // If you later add an Avatar control, clear it here
+    if (this.petForm.get('Avatar')) {
+      this.petForm.get('Avatar')?.setValue(null);
     }
   }
 

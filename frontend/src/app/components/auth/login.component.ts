@@ -36,9 +36,14 @@ export class LoginComponent {
     this.loading = true; this.error = null;
     const { username, password } = this.form.value;
     this.auth.login(username!, password!).subscribe({
-      next: () => { this.loading = false; this.router.navigate(['/customers']); },
-      error: (err) => { 
-        this.loading = false; 
+      next: () => {
+        this.loading = false;
+        // Role-based redirect: customers go to customer portal, staff goes to admin
+        const redirectPath = this.auth.getDefaultRoute();
+        this.router.navigate([redirectPath]);
+      },
+      error: (err) => {
+        this.loading = false;
         if (err.status === 401) {
           this.error = 'Tên đăng nhập hoặc mật khẩu không đúng';
         } else if (err.status === 0) {

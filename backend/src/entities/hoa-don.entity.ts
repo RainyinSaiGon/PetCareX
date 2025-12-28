@@ -10,7 +10,7 @@ export class HoaDon {
   @PrimaryGeneratedColumn()
   MaHoaDon: number;
 
-  @Column({ type: 'timestamp', nullable: true, default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'datetime2', nullable: true, default: () => 'GETDATE()' })
   NgayLap: Date;
 
   @Column({ type: 'decimal', precision: 3, scale: 2, nullable: true, default: 0 })
@@ -25,8 +25,11 @@ export class HoaDon {
   @Column({ type: 'int', nullable: true })
   MaKhachHang: number;
 
-  @Column({ type: 'char', length: 5, nullable: true })
+  @Column({ type: 'char', length: 4, nullable: true })
   MaChiNhanh: string;
+
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
+  TrangThai: string;
 
   @ManyToOne(() => NhanVien, nhanVien => nhanVien.HoaDons)
   @JoinColumn({ name: 'MaNhanVien' })
@@ -46,3 +49,4 @@ export class HoaDon {
   @OneToMany(() => ThanhToanDichVuYTe, tt => tt.HoaDon)
   DichVus: ThanhToanDichVuYTe[];
 }
+

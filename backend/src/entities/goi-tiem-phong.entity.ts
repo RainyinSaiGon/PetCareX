@@ -6,10 +6,10 @@ export class GoiTiemPhong {
   @PrimaryGeneratedColumn({ name: 'MAGOITIEMPHONG' })
   MaGoiTiemPhong: number;
 
-  @Column({ name: 'TENGOI', type: 'varchar', length: 200 })
+  @Column({ name: 'TENGOI', type: 'nvarchar', length: 200 })
   TenGoi: string;
 
-  @Column({ name: 'DOITUONG', type: 'varchar', length: 100 })
+  @Column({ name: 'DOITUONG', type: 'nvarchar', length: 100 })
   DoiTuong: string;
 
   @Column({ name: 'MOTA', type: 'text', nullable: true })
@@ -21,9 +21,10 @@ export class GoiTiemPhong {
   @Column({ name: 'THOIHAN', type: 'int' })
   ThoiHan: number; // số tháng
 
-  @Column({ name: 'TRANGTHAI', type: 'boolean', default: true })
+  @Column({ name: 'TRANGTHAI', type: 'bit', default: 1 })
   TrangThai: boolean;
 
   @OneToMany(() => ChiTietGoiTiemPhong, chiTiet => chiTiet.GoiTiemPhong)
   ChiTiets: ChiTietGoiTiemPhong[];
 }
+

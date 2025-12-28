@@ -19,3 +19,4 @@ export class LichSuGiaSanPham {
   @JoinColumn({ name: 'MaSanPham' })
   SanPham: SanPham;
 }
+

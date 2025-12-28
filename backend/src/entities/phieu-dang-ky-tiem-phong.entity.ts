@@ -17,7 +17,7 @@ export class PhieuDangKyTiemPhong {
   @Column({ type: 'int', nullable: true })
   MaThuCung: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime2', nullable: true })
   NgayDangKy: Date;
 
   @Column({ type: 'char', length: 5, nullable: true })
@@ -44,3 +44,4 @@ export class PhieuDangKyTiemPhong {
   @OneToMany(() => GiayKhamBenhTongQuat, giay => giay.PhieuDangKy)
   GiayKhamBenhs: GiayKhamBenhTongQuat[];
 }
+

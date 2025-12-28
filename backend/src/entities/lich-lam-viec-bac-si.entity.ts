@@ -13,7 +13,7 @@ export class LichLamViecBacSi {
   @PrimaryColumn({ type: 'date' })
   Ngay: Date;
 
-  @Column({ type: 'varchar', length: 5, nullable: true })
+  @Column({ type: 'nvarchar', length: 5, nullable: true })
   TrangThai: string;
 
   @ManyToOne(() => NhanVien, nhanVien => nhanVien.LichLamViecs)
@@ -24,3 +24,4 @@ export class LichLamViecBacSi {
   @JoinColumn({ name: 'MaChiNhanh' })
   ChiNhanh: ChiNhanh;
 }
+

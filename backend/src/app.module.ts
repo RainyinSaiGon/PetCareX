@@ -8,6 +8,9 @@ import { CustomerModule } from './modules/customer/customer.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { SalesModule } from './modules/sales/sales.module';
 import { BranchModule } from './modules/branch/branch.module';
+import { DoctorModule } from './modules/doctor/doctor.module';
+import { AppointmentModule } from './modules/appointment/appointment.module';
+import { CustomerPortalModule } from './modules/customer-portal/customer-portal.module';
 
 // Import entities
 import { User } from './entities/user.entity';
@@ -61,72 +64,68 @@ import { DanhGiaMuaHang } from './entities/danh-gia-mua-hang.entity';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-     useFactory: (configService: ConfigService) => ({
-    type: 'postgres',
-    host: configService.get('DATABASE_HOST'),
-    port: parseInt(configService.get('DATABASE_PORT', '5432')),
-    username: configService.get('DATABASE_USERNAME'),
-    password: configService.get('DATABASE_PASSWORD'),
-    database: configService.get('DATABASE_NAME', 'postgres'),
+      useFactory: (configService: ConfigService) => ({
+        type: 'mssql' as const,
+        host: configService.get<string>('DATABASE_HOST') || 'localhost',
+        port: parseInt(configService.get<string>('DATABASE_PORT') || '1433'),
+        database: configService.get<string>('DATABASE_NAME') || 'PetCare_X',
+        username: configService.get<string>('DATABASE_USERNAME'),
+        password: configService.get<string>('DATABASE_PASSWORD'),
 
-    entities: [
-      User,
-      ChiNhanh,
-      Khoa,
-      LoaiNhanVienLuong,
-      NhanVien,
-      LichLamViecBacSi,
-      KhachHang,
-      HangThanhVien,
-      KhachHangThanhVien,
-      LoaiThuCung,
-      ChungLoaiThuCung,
-      ThuCung,
-      LichHen,
-      SanPham,
-      LichSuGiaSanPham,
-      Thuoc,
-      Kho,
-      ChiTietTonKho,
-      Vaccine,
-      DichVuYTe,
-      CungCapDichVu,
-      PhieuDangKyTiemPhong,
-      GiayKhamBenhTongQuat,
-      GiayKhamBenhChuyenKhoa,
-      ToaThuoc,
-      ChiTietToaThuoc,
-      GiayTiemPhong,
-      HoaDon,
-      HoaDonSanPham,
-      ThanhToanDichVuYTe,
-      ThuCan,
-      ThanhPhanThuCan,
-      PhuKien,
-      KhoVaccine,
-      GoiTiemPhong,
-      ChiTietGoiTiemPhong,
-      PhieuDangKyGoi,
-      PhieuDangKyLe,
-      ChiTietKhamBenhTrieuChung,
-      ChiTietKhamBenhChuanDoan,
-      DanhGiaYTe,
-      DanhGiaMuaHang,
-    ],
+        // SQL Server Authentication
+        options: {
+          trustServerCertificate: true,
+          encrypt: false,
+        },
 
-    synchronize: configService.get('NODE_ENV') === 'development',
-    logging: configService.get('NODE_ENV') === 'development',
+        entities: [
+          User,
+          ChiNhanh,
+          Khoa,
+          LoaiNhanVienLuong,
+          NhanVien,
+          LichLamViecBacSi,
+          KhachHang,
+          HangThanhVien,
+          KhachHangThanhVien,
+          LoaiThuCung,
+          ChungLoaiThuCung,
+          ThuCung,
+          LichHen,
+          SanPham,
+          LichSuGiaSanPham,
+          Thuoc,
+          Kho,
+          ChiTietTonKho,
+          Vaccine,
+          DichVuYTe,
+          CungCapDichVu,
+          PhieuDangKyTiemPhong,
+          GiayKhamBenhTongQuat,
+          GiayKhamBenhChuyenKhoa,
+          ToaThuoc,
+          ChiTietToaThuoc,
+          GiayTiemPhong,
+          HoaDon,
+          HoaDonSanPham,
+          ThanhToanDichVuYTe,
+          ThuCan,
+          ThanhPhanThuCan,
+          PhuKien,
+          KhoVaccine,
+          GoiTiemPhong,
+          ChiTietGoiTiemPhong,
+          PhieuDangKyGoi,
+          PhieuDangKyLe,
+          ChiTietKhamBenhTrieuChung,
+          ChiTietKhamBenhChuanDoan,
+          DanhGiaYTe,
+          DanhGiaMuaHang,
+        ],
 
-    ssl:
-      configService.get('DATABASE_SSL') === 'true'
-        ? { rejectUnauthorized: false }
-        : false,
-
-    // REQUIRED for Supabase Pooler stability
-    extra: {
-      keepAlive: true,
-    },
-  }),
+        synchronize: configService.get('NODE_ENV') === 'development',
+        logging: configService.get('NODE_ENV') === 'development',
+      }),
 
       inject: [ConfigService],
     }),
@@ -135,8 +134,11 @@ import { DanhGiaMuaHang } from './entities/danh-gia-mua-hang.entity';
     AdminModule,
     SalesModule,
     BranchModule,
+    DoctorModule,
+    AppointmentModule,
+    CustomerPortalModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

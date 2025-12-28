@@ -1,0 +1,146 @@
+<div class="container">
+    <div class="breadcrumb">
+        <span class="link" (click)="router.navigate(['/customer/pets'])">
+            <i class="fa-solid fa-paw"></i> Thú Cưng Của Tôi
+        </span>
+        <span class="separator">/</span>
+        <span>{{ isEditMode ? 'Chỉnh Sửa' : 'Thêm Mới' }}</span>
+    </div>
+
+    <div class="header">
+        <div class="header-content">
+            <div>
+                <h1>{{ isEditMode ? 'Chỉnh Sửa Hồ Sơ' : 'Thêm Thú Cưng Mới' }}</h1>
+                <p class="subtitle">Điền thông tin chi tiết cho người bạn nhỏ của bạn</p>
+            </div>
+        </div>
+    </div>
+
+    <div *ngIf="error" class="alert alert-error">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ error }}
+    </div>
+
+    <div *ngIf="success" class="alert alert-success">
+        <i class="fa-solid fa-circle-check"></i> {{ success }}
+    </div>
+
+    <form [formGroup]="petForm" (ngSubmit)="onSubmit()" class="pet-form" *ngIf="!loading || !isEditMode">
+
+        <!-- Basic Pet Information -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="fa-solid fa-circle-info"></i> Thông Tin Cơ Bản
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="TenThuCung" class="required">Tên Thú Cưng</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="TenThuCung" formControlName="TenThuCung"
+                            [class.invalid]="isFieldInvalid('TenThuCung')" placeholder="Vd: Bông, Miu Miu..." />
+                        <i class="fa-solid fa-paw"></i>
+                    </div>
+                    <span class="error-message" *ngIf="isFieldInvalid('TenThuCung')">
+                        {{ getErrorMessage('TenThuCung') }}
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="NgaySinhThuCung">Ngày Sinh</label>
+                    <div class="input-wrapper">
+                        <input type="date" id="NgaySinhThuCung" formControlName="NgaySinhThuCung"
+                            [class.invalid]="isFieldInvalid('NgaySinhThuCung')" />
+                        <i class="fa-solid fa-calendar"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pet Classification -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="fa-solid fa-shapes"></i> Phân Loại
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="MaLoaiThuCung" class="required">Loại Thú Cưng</label>
+                    <div class="input-wrapper">
+                        <select id="MaLoaiThuCung" formControlName="MaLoaiThuCung"
+                            [class.invalid]="isFieldInvalid('MaLoaiThuCung')">
+                            <option value="">-- Chọn loại --</option>
+                            <option *ngFor="let cat of petCategories" [value]="cat.MaLoaiThuCung">
+                                {{ cat.TenLoaiThuCung }}
+                            </option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <span class="error-message" *ngIf="isFieldInvalid('MaLoaiThuCung')">
+                        {{ getErrorMessage('MaLoaiThuCung') }}
+                    </span>
+                </div>
+
+                <div class="form-group">
+                    <label for="MaChungLoai" class="required">Giống Loài (Breed)</label>
+                    <div class="input-wrapper">
+                        <select id="MaChungLoai" formControlName="MaChungLoai"
+                            [class.invalid]="isFieldInvalid('MaChungLoai')"
+                            [disabled]="!petForm.get('MaLoaiThuCung')?.value">
+                            <option value="">-- Chọn giống --</option>
+                            <option *ngFor="let breed of filteredBreeds" [value]="breed.MaChungLoaiThuCung">
+                                {{ breed.TenChungLoaiThuCung }}
+                            </option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down"></i>
+                    </div>
+                    <span class="error-message" *ngIf="isFieldInvalid('MaChungLoai')">
+                        {{ getErrorMessage('MaChungLoai') }}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Physical Traits -->
+        <div class="form-section">
+            <div class="section-title">
+                <i class="fa-solid fa-weight-scale"></i> Đặc Điểm
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="GioiTinh" class="required">Giới Tính</label>
+                    <div class="input-wrapper">
+                        <select id="GioiTinh" formControlName="GioiTinh" [class.invalid]="isFieldInvalid('GioiTinh')">
+                            <option value="Đực">Đực</option>
+                            <option value="Cái">Cái</option>
+                        </select>
+                        <i class="fa-solid fa-venus-mars"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="CanNang">Cân Nặng (kg)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="CanNang" formControlName="CanNang" placeholder="0.0">
+                        <i class="fa-solid fa-weight-hanging"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="MauSac">Màu Sắc</label>
+                    <div class="input-wrapper">
+                        <input type="text" id="MauSac" formControlName="MauSac" placeholder="Vàng, đen...">
+                        <i class="fa-solid fa-palette"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+                <i class="fa-solid fa-xmark"></i> Hủy
+            </button>
+            <button type="submit" class="btn btn-primary" [disabled]="loading">
+                <i class="fa-solid fa-floppy-disk"></i> {{ loading ? 'Đang xử lý...' : (isEditMode ? 'Cập Nhật' : 'Lưu
+                Hồ Sơ') }}
+            </button>
+        </div>
+    </form>
+</div>

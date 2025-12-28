@@ -14,8 +14,8 @@ export class PhieuDangKyLe {
   @JoinColumn({ name: 'MADANGKYTIEMPHONG' })
   PhieuDangKy: PhieuDangKyTiemPhong;
 
-  @Column({ name: 'MAVACCINE' })
-  MaVaccine: number;
+  @Column({ name: 'MAVACCINE', type: 'char', length: 5 })
+  MaVaccine: string;
 
   @ManyToOne(() => Vaccine, vaccine => vaccine.PhieuDangKyLes)
   @JoinColumn({ name: 'MAVACCINE' })
@@ -30,3 +30,4 @@ export class PhieuDangKyLe {
   @Column({ name: 'THANHTIEN', type: 'decimal', precision: 15, scale: 2 })
   ThanhTien: number;
 }
+

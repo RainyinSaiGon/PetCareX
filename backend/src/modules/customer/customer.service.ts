@@ -39,13 +39,21 @@ export class CustomerService {
     return await this.khachHangRepository.save(khachHang);
   }
 
-  async findAllKhachHang(page: number = 1, limit: number = 10): Promise<{ data: KhachHang[]; total: number; page: number; limit: number }> {
-    const [data, total] = await this.khachHangRepository.findAndCount({
-      relations: ['ThanhVien'],
-      skip: (page - 1) * limit,
-      take: limit,
-      order: { MaKhachHang: 'DESC' },
-    });
+  async findAllKhachHang(page: number = 1, limit: number = 10, search?: string): Promise<{ data: KhachHang[]; total: number; page: number; limit: number }> {
+    let query = this.khachHangRepository.createQueryBuilder('kh')
+      .leftJoinAndSelect('kh.ThanhVien', 'thanhVien')
+      .orderBy('kh.MaKhachHang', 'DESC');
+
+    if (search) {
+      query = query.where('kh.HoTen ILIKE :search OR kh.SoDienThoai LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    const [data, total] = await query
+      .skip((page - 1) * limit)
+      .take(limit)
+      .getManyAndCount();
 
     return { data, total, page, limit };
   }

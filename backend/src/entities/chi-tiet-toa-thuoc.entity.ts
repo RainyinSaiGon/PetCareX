@@ -13,7 +13,7 @@ export class ChiTietToaThuoc {
   @Column({ type: 'int', nullable: true })
   SoLuong: number;
 
-  @Column({ type: 'varchar', length: 100, nullable: true })
+  @Column({ type: 'nvarchar', length: 100, nullable: true })
   GhiChu: string;
 
   @ManyToOne(() => ToaThuoc, toaThuoc => toaThuoc.ChiTiets)
@@ -24,3 +24,4 @@ export class ChiTietToaThuoc {
   @JoinColumn({ name: 'MaThuoc' })
   Thuoc: Thuoc;
 }
+

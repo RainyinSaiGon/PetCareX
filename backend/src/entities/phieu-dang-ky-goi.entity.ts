@@ -27,6 +27,7 @@ export class PhieuDangKyGoi {
   @Column({ name: 'NGAYHOANTHANH', type: 'date', nullable: true })
   NgayHoanThanh: Date;
 
-  @Column({ name: 'TRANGTHAI', type: 'varchar', length: 50 })
+  @Column({ name: 'TRANGTHAI', type: 'nvarchar', length: 50 })
   TrangThai: string;
 }
+

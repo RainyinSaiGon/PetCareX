@@ -3,7 +3,7 @@ import { NhanVien } from './nhanvien.entity';
 
 @Entity('LOAINHANVIEN_LUONG')
 export class LoaiNhanVienLuong {
-  @PrimaryColumn({ type: 'varchar', length: 20 })
+  @PrimaryColumn({ type: 'nvarchar', length: 20 })
   LoaiNhanVien: string;
 
   @Column({ type: 'decimal', precision: 9, scale: 0, nullable: true })
@@ -12,3 +12,4 @@ export class LoaiNhanVienLuong {
   @OneToMany(() => NhanVien, nhanvien => nhanvien.LoaiNV)
   NhanViens: NhanVien[];
 }
+

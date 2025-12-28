@@ -17,7 +17,7 @@ export class GiayTiemPhong {
   @Column({ type: 'int', nullable: true })
   LieuLuong: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime2', nullable: true })
   NgayTiem: Date;
 
   @Column({ type: 'int', nullable: true })
@@ -35,3 +35,4 @@ export class GiayTiemPhong {
   @JoinColumn({ name: 'MaGiayKhamTongQuat' })
   GiayKhamTongQuat: GiayKhamBenhTongQuat;
 }
+

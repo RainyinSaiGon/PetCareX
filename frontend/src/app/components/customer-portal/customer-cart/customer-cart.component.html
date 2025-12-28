@@ -1,0 +1,65 @@
+<div class="cart-page">
+    <div class="page-header">
+        <h1><i class="fa-solid fa-shopping-cart"></i> Giỏ Hàng</h1>
+    </div>
+
+    <!-- Order Success -->
+    <div class="order-success" *ngIf="orderSuccess">
+        <div class="success-icon">
+            <i class="fa-solid fa-check-circle"></i>
+        </div>
+        <h2>Đặt hàng thành công!</h2>
+        <p>Mã đơn hàng: #{{ orderId }}</p>
+        <div class="success-actions">
+            <a routerLink="/customer/history" class="btn-primary">Xem đơn hàng</a>
+            <a routerLink="/customer/products" class="btn-secondary">Tiếp tục mua sắm</a>
+        </div>
+    </div>
+
+    <!-- Cart Content -->
+    <div class="cart-content" *ngIf="!orderSuccess">
+        <!-- Empty Cart -->
+        <div class="empty-cart" *ngIf="cartItems.length === 0">
+            <i class="fa-solid fa-cart-arrow-down"></i>
+            <h3>Giỏ hàng trống</h3>
+            <p>Bạn chưa thêm sản phẩm nào vào giỏ hàng</p>
+            <a routerLink="/customer/products" class="btn-primary">Khám phá sản phẩm</a>
+        </div>
+
+        <!-- Cart Items -->
+        <div class="cart-items" *ngIf="cartItems.length > 0">
+            <div class="cart-item" *ngFor="let item of cartItems">
+                <div class="item-image">
+                    <img *ngIf="item.product.hinhAnh" [src]="item.product.hinhAnh" [alt]="item.product.tenSanPham" />
+                    <i *ngIf="!item.product.hinhAnh" class="fa-solid fa-box"></i>
+                </div>
+                <div class="item-info">
+                    <h4>{{ item.product.tenSanPham }}</h4>
+                    <span class="category">{{ item.product.loaiSanPham }}</span>
+                </div>
+                <div class="item-price">{{ formatPrice(item.product.giaTien) }}</div>
+                <div class="item-quantity">
+                    <button (click)="updateQuantity(item, -1)"><i class="fa-solid fa-minus"></i></button>
+                    <span>{{ item.quantity }}</span>
+                    <button (click)="updateQuantity(item, 1)"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="item-total">{{ formatPrice(item.product.giaTien * item.quantity) }}</div>
+                <button class="remove-btn" (click)="removeItem(item)">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Cart Summary -->
+        <div class="cart-summary" *ngIf="cartItems.length > 0">
+            <div class="summary-row total">
+                <span>Tổng cộng:</span>
+                <span class="total-price">{{ formatPrice(getTotal()) }}</span>
+            </div>
+            <button class="checkout-btn" (click)="placeOrder()" [disabled]="isPlacingOrder">
+                <i class="fa-solid" [ngClass]="isPlacingOrder ? 'fa-spinner fa-spin' : 'fa-credit-card'"></i>
+                {{ isPlacingOrder ? 'Đang xử lý...' : 'Đặt hàng' }}
+            </button>
+        </div>
+    </div>
+</div>

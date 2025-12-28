@@ -14,3 +14,4 @@ export class Thuoc {
   @OneToMany(() => ChiTietToaThuoc, chitiet => chitiet.Thuoc)
   ChiTiets: ChiTietToaThuoc[];
 }
+

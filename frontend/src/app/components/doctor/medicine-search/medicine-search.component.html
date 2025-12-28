@@ -1,0 +1,130 @@
+<div class="medicine-search-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="header-content">
+      <h1><i class="fas fa-pills"></i> Tra Cứu Thuốc</h1>
+      <p class="subtitle">Danh sách tất cả thuốc và sản phẩm y tế</p>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="content-wrapper">
+    <!-- Search Section -->
+    <div class="search-card">
+      <div class="search-header">
+        <h2><i class="fas fa-search"></i> Tìm Kiếm</h2>
+      </div>
+      
+      <div class="search-form">
+        <div class="search-input-group">
+          <input
+            type="text"
+            [(ngModel)]="searchParams.tenSanPham"
+            placeholder="Nhập tên thuốc, sản phẩm hoặc mã sản phẩm..."
+            class="search-input"
+            (keyup.enter)="searchMedicines()"
+          />
+          <button (click)="searchMedicines()" class="btn-search" [disabled]="isLoading">
+            <i class="fas fa-search"></i>
+            {{ isLoading ? 'Đang tìm...' : 'Tìm kiếm' }}
+          </button>
+        </div>
+
+        <div class="form-actions">
+          <button (click)="resetSearch()" class="btn-reset">
+            <i class="fas fa-redo"></i> Đặt lại
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="results-section">
+      <!-- Results Info Card -->
+      <div class="results-info-card">
+        <div class="info-content">
+          <p><i class="fas fa-database"></i> Tổng kết quả: <span class="result-count">{{ totalResults }}</span></p>
+          <p *ngIf="medicines.length > 0" class="current-page-info">
+            Hiển thị <span class="highlight">{{ (currentPage - 1) * searchParams.take + 1 }}</span> - 
+            <span class="highlight">{{ Math.min(currentPage * searchParams.take, totalResults) }}</span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Results Table -->
+      <div class="medicines-table-wrapper">
+        <div class="table-responsive" *ngIf="medicines.length > 0; else noResults">
+          <table class="medicines-table">
+            <thead>
+              <tr>
+                <th><i class="fas fa-barcode"></i> Mã SP</th>
+                <th><i class="fas fa-pill"></i> Tên Sản Phẩm</th>
+                <th><i class="fas fa-money-bill"></i> Giá</th>
+                <th><i class="fas fa-layer-group"></i> Tồn Kho</th>
+                <th><i class="fas fa-ruler"></i> Đơn Vị</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let medicine of medicines" class="medicine-row">
+                <td class="code-cell">
+                  <span class="code-badge">{{ medicine.MaSanPham }}</span>
+                </td>
+                <td class="name-cell">{{ medicine.TenSanPham }}</td>
+                <td class="price-cell">
+                  <span class="price-value">{{ medicine.GiaSanPham | currency : 'VND' : 'symbol' : '0.0' }}</span>
+                </td>
+                <td class="stock-cell">
+                  <span class="stock-badge" [class.low-stock]="medicine.SoLuongTon <= 10">
+                    {{ medicine.SoLuongTon || 0 }}
+                  </span>
+                </td>
+                <td class="unit-cell">{{ medicine.DonVi }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        
+        <ng-template #noResults>
+          <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <p>Không tìm thấy thuốc nào</p>
+            <small>Thử thay đổi từ khóa tìm kiếm</small>
+          </div>
+        </ng-template>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination-section" *ngIf="totalPages > 1">
+        <div class="pagination">
+          <button 
+            (click)="onPageChange(currentPage - 1)" 
+            [disabled]="currentPage === 1"
+            class="btn-pagination"
+            title="Trang trước"
+          >
+            <i class="fas fa-chevron-left"></i>
+          </button>
+
+          <button
+            *ngFor="let page of pages"
+            (click)="onPageChange(page)"
+            class="btn-page"
+            [class.active]="currentPage === page"
+          >
+            {{ page }}
+          </button>
+
+          <button 
+            (click)="onPageChange(currentPage + 1)" 
+            [disabled]="currentPage === totalPages"
+            class="btn-pagination"
+            title="Trang sau"
+          >
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+        <p class="pagination-info">Trang {{ currentPage }} / {{ totalPages }}</p>
+      </div>
+    </div>
+  </div>
+</div>

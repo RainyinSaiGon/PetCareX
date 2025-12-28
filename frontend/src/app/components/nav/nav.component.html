@@ -1,11 +1,12 @@
 <nav class="nav" role="navigation" aria-label="Main navigation">
   <div class="nav-container">
-    <a class="brand" routerLink="/">
+    <a class="brand" [routerLink]="isCustomer ? '/customer/products' : '/customers'">
       <i class="fa-solid fa-paw"></i>
       <span class="brand-text">PetCareX</span>
     </a>
 
-    <button class="nav-toggle" (click)="toggle()" [attr.aria-expanded]="isOpen" aria-controls="main-menu" aria-label="Toggle navigation">
+    <button class="nav-toggle" (click)="toggle()" [attr.aria-expanded]="isOpen" aria-controls="main-menu"
+      aria-label="Toggle navigation">
       <i class="fa-solid" [ngClass]="isOpen ? 'fa-xmark' : 'fa-bars'"></i>
     </button>
 
@@ -13,32 +14,74 @@
       <!-- If we're on an auth page, show a minimal nav with just Login -->
       <ng-container *ngIf="isAuthRoute; else fullMenu">
         <ul class="nav-list">
-          <li><a routerLink="/auth/login" (click)="close()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a></li>
+          <li><a routerLink="/auth/login" (click)="close()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a>
+          </li>
         </ul>
       </ng-container>
 
       <ng-template #fullMenu>
-        <ul class="nav-list">
-          <li><a routerLink="/customers" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-users"></i> Khách Hàng</a></li>
-          <li><a routerLink="/customers/1/pets" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-dog"></i> Thú Cưng</a></li>
-          <li><a routerLink="/admin/staff" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-user-tie"></i> Nhân Viên</a></li>
+        <!-- STAFF/ADMIN MENU -->
+        <ul class="nav-list" *ngIf="isStaff">
+          <li><a routerLink="/customers" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-users"></i>
+              Khách Hàng</a></li>
+          <li><a routerLink="/pets" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-dog"></i> Thú
+              Cưng</a></li>
+          <li><a routerLink="/admin/staff" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-user-tie"></i> Nhân Viên</a></li>
           <li class="dropdown" [class.open]="dropdownOpen">
-            <button class="dropdown-toggle" (click)="toggleDropdown()" type="button"><i class="fa-solid fa-chart-line"></i> Báo Cáo</button>
+            <button class="dropdown-toggle" (click)="toggleDropdown()" type="button"><i
+                class="fa-solid fa-chart-line"></i> Báo Cáo</button>
             <ul class="dropdown-menu">
               <li><a routerLink="/admin/analytics" routerLinkActive="active" (click)="close()">Tổng Quát</a></li>
-              <li><a routerLink="/branch/revenue-reports" routerLinkActive="active" (click)="close()">Doanh Thu Chi Nhánh</a></li>
-              <li><a routerLink="/branch/service-offerings" routerLinkActive="active" (click)="close()">Dịch Vụ Chi Nhánh</a></li>
+              <li><a routerLink="/branch/revenue-reports" routerLinkActive="active" (click)="close()">Doanh Thu Chi
+                  Nhánh</a></li>
+              <li><a routerLink="/branch/service-offerings" routerLinkActive="active" (click)="close()">Dịch Vụ Chi
+                  Nhánh</a></li>
+              <li><a routerLink="/branch/inventory" routerLinkActive="active" (click)="close()">Quản Lý Kho</a></li>
             </ul>
           </li>
-          <li><a routerLink="/appointments" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-calendar-check"></i> Lịch</a></li>
+          <li class="dropdown" [class.open]="doctorDropdownOpen">
+            <button class="dropdown-toggle" (click)="toggleDoctorDropdown()" type="button"><i
+                class="fa-solid fa-stethoscope"></i> Bác Sĩ</button>
+            <ul class="dropdown-menu">
+              <li><a routerLink="/doctor/examinations/search" routerLinkActive="active" (click)="close()">Tra cứu hồ sơ
+                  khám</a></li>
+              <li><a routerLink="/doctor/medicines/search" routerLinkActive="active" (click)="close()">Tra cứu thuốc</a>
+              </li>
+              <li><a routerLink="/doctor/examinations/new" routerLinkActive="active" (click)="close()">Tạo bệnh án
+                  mới</a></li>
+              <li><a routerLink="/doctor/prescriptions/new" routerLinkActive="active" (click)="close()">Kê toa</a></li>
+            </ul>
+          </li>
+          <li><a routerLink="/appointments" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-calendar-check"></i> Lịch</a></li>
+        </ul>
+
+        <!-- CUSTOMER MENU -->
+        <ul class="nav-list" *ngIf="isCustomer">
+          <li><a routerLink="/customer/products" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-shopping-bag"></i> Sản Phẩm</a></li>
+          <li><a routerLink="/customer/pets" routerLinkActive="active" (click)="close()"><i class="fa-solid fa-paw"></i>
+              Thú Cưng</a></li>
+          <li><a routerLink="/customer/appointments" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-calendar-check"></i> Đặt Lịch</a></li>
+          <li><a routerLink="/customer/doctors" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-user-doctor"></i> Bác Sĩ</a></li>
+          <li><a routerLink="/customer/history" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-clock-rotate-left"></i> Lịch Sử</a></li>
+          <li><a routerLink="/customer/cart" routerLinkActive="active" (click)="close()"><i
+                class="fa-solid fa-shopping-cart"></i> Giỏ Hàng</a></li>
         </ul>
 
         <ul class="nav-list nav-right">
-          <li *ngIf="!isAuthenticated"><a routerLink="/auth/login" (click)="close()"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a></li>
-          <li *ngIf="!isAuthenticated"><a routerLink="/auth/register" (click)="close()"><i class="fa-solid fa-user-plus"></i> Đăng ký</a></li>
+          <li *ngIf="!isAuthenticated"><a routerLink="/auth/login" (click)="close()"><i
+                class="fa-solid fa-right-to-bracket"></i> Đăng nhập</a></li>
+          <li *ngIf="!isAuthenticated"><a routerLink="/auth/register" (click)="close()"><i
+                class="fa-solid fa-user-plus"></i> Đăng ký</a></li>
 
           <li *ngIf="isAuthenticated" class="dropdown" [class.open]="accountDropdownOpen">
-            <button class="dropdown-toggle" (click)="toggleAccountDropdown()" type="button"><i class="fa-solid fa-user"></i> Tài khoản</button>
+            <button class="dropdown-toggle" (click)="toggleAccountDropdown()" type="button"><i
+                class="fa-solid fa-user"></i> Tài khoản</button>
             <ul class="dropdown-menu">
               <li><a routerLink="/auth/profile" (click)="close()">Hồ sơ</a></li>
               <li><a (click)="logout()">Đăng xuất</a></li>

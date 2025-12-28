@@ -24,22 +24,22 @@ export class User {
   phone: string;
 
   @Column({
-    type: 'enum',
-    enum: UserRole,
+    type: 'nvarchar',
+    length: 20,
     default: UserRole.CUSTOMER,
   })
   role: UserRole;
 
   @Column({
-    type: 'enum',
-    enum: UserStatus,
+    type: 'nvarchar',
+    length: 20,
     default: UserStatus.ACTIVE,
   })
   status: UserStatus;
 
   // Link to Employee (for staff roles)
-  @Column({ nullable: true })
-  ma_nhan_vien: number;
+  @Column({ type: 'char', length: 5, nullable: true })
+  ma_nhan_vien: string;
 
   @ManyToOne(() => NhanVien, { nullable: true })
   @JoinColumn({ name: 'ma_nhan_vien' })
@@ -61,14 +61,14 @@ export class User {
   @Column({ nullable: true, type: 'text' })
   reset_token: string | null;
 
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: 'datetime2' })
   reset_token_expires: Date | null;
 
   // Last login tracking
-  @Column({ nullable: true, type: 'timestamp' })
+  @Column({ nullable: true, type: 'datetime2' })
   last_login: Date;
 
-  @Column({ default: true })
+  @Column({ type: 'bit', default: 1 })
   is_active: boolean;
 
   @CreateDateColumn()
@@ -77,3 +77,4 @@ export class User {
   @UpdateDateColumn()
   updated_at: Date;
 }
+

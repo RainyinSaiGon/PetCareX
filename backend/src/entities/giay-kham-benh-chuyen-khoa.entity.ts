@@ -10,10 +10,10 @@ export class GiayKhamBenhChuyenKhoa {
   @PrimaryGeneratedColumn()
   MaGiayKhamChuyenKhoa: number;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime2', nullable: true })
   NgayKham: Date;
 
-  @Column({ type: 'timestamp', nullable: true })
+  @Column({ type: 'datetime2', nullable: true })
   NgayTaiKham: Date;
 
   @Column({ type: 'char', length: 5, nullable: true })
@@ -43,3 +43,4 @@ export class GiayKhamBenhChuyenKhoa {
   @OneToMany(() => ChiTietKhamBenhTrieuChung, ctct => ctct.GiayKhamBenhChuyenKhoa)
   ChiTietTrieuChungs: ChiTietKhamBenhTrieuChung[];
 }
+

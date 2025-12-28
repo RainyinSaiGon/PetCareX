@@ -6,7 +6,7 @@ export class ChungLoaiThuCung {
   @PrimaryColumn({ type: 'char', length: 2 })
   MaChungLoaiThuCung: string;
 
-  @Column({ type: 'varchar', length: 20, nullable: true })
+  @Column({ type: 'nvarchar', length: 20, nullable: true })
   TenChungLoaiThuCung: string;
 
   @Column({ type: 'char', length: 2, nullable: true })
@@ -16,3 +16,4 @@ export class ChungLoaiThuCung {
   @JoinColumn({ name: 'MaLoaiThuCung' })
   LoaiThuCung: LoaiThuCung;
 }
+

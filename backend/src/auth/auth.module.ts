@@ -7,13 +7,14 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { User } from '../entities/user.entity';
+import { KhachHang } from '../entities/khach-hang.entity';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, KhachHang]),
     PassportModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -28,7 +29,7 @@ import { RolesGuard } from '../common/guards/roles.guard';
   ],
   controllers: [AuthController],
   providers: [
-    AuthService, 
+    AuthService,
     JwtStrategy,
     {
       provide: APP_GUARD,
@@ -41,4 +42,4 @@ import { RolesGuard } from '../common/guards/roles.guard';
   ],
   exports: [AuthService],
 })
-export class AuthModule {}
+export class AuthModule { }

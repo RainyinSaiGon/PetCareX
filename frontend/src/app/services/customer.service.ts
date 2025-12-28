@@ -11,16 +11,16 @@ import { environment } from '../../environments/environment';
 export class CustomerService {
   private apiUrl = `${environment.apiUrl}/customer`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Customer endpoints
   getCustomers(page: number = 1, limit: number = 10, keyword?: string): Observable<PaginatedResponse<KhachHang>> {
     let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
-    
+
     if (keyword) {
-      params = params.set('keyword', keyword);
+      params = params.set('search', keyword);
     }
 
     return this.http.get<PaginatedResponse<KhachHang>>(`${this.apiUrl}/khach-hang`, { params });
@@ -52,12 +52,28 @@ export class CustomerService {
   }
 
   // Pet endpoints
-  getPets(customerId: number, page: number = 1, limit: number = 10): Observable<PaginatedResponse<ThuCung>> {
-    const params = new HttpParams()
+  getPets(customerId: number, page: number = 1, limit: number = 10, keyword?: string): Observable<PaginatedResponse<ThuCung>> {
+    let params = new HttpParams()
       .set('page', page.toString())
       .set('limit', limit.toString());
 
+    if (keyword) {
+      params = params.set('search', keyword);
+    }
+
     return this.http.get<PaginatedResponse<ThuCung>>(`${environment.apiUrl}/api/pets/customer/${customerId}`, { params });
+  }
+
+  getAllPets(page: number = 1, limit: number = 10, keyword?: string): Observable<PaginatedResponse<ThuCung>> {
+    let params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', limit.toString());
+
+    if (keyword) {
+      params = params.set('search', keyword);
+    }
+
+    return this.http.get<PaginatedResponse<ThuCung>>(`${environment.apiUrl}/api/pets`, { params });
   }
 
   getPetById(customerId: number, petId: number): Observable<ThuCung> {

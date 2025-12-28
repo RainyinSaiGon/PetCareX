@@ -6,7 +6,7 @@ export class Khoa {
   @PrimaryColumn({ type: 'char', length: 2 })
   MaKhoa: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   TenKhoa: string;
 
   @Column({ type: 'char', length: 5, nullable: true })
@@ -19,3 +19,4 @@ export class Khoa {
   @OneToMany(() => NhanVien, nhanvien => nhanvien.Khoa)
   NhanViens: NhanVien[];
 }
+

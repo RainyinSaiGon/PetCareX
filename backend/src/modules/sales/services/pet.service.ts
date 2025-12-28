@@ -12,7 +12,7 @@ export class PetService {
     private petRepository: Repository<ThuCung>,
     @InjectRepository(LichHen)
     private appointmentRepository: Repository<LichHen>,
-  ) {}
+  ) { }
 
   /**
    * Add pet to customer
@@ -40,7 +40,7 @@ export class PetService {
     try {
       const pet = await this.petRepository.findOne({
         where: { MaThuCung: petId },
-        relations: ['ChungLoai'],
+        relations: ['ChungLoai', 'KhachHang'],
       });
 
       if (!pet) {
@@ -56,20 +56,28 @@ export class PetService {
   /**
    * Get all pets for a customer with pagination
    */
-  async getCustomerPets(customerId: number, page: number = 1, limit: number = 10): Promise<{
+  async getCustomerPets(customerId: number, page: number = 1, limit: number = 10, search?: string): Promise<{
     data: PetResponseDto[];
     total: number;
     page: number;
     totalPages: number;
   }> {
     try {
-      const [pets, total] = await this.petRepository.findAndCount({
-        where: { MaKhachHang: customerId },
-        relations: ['ChungLoai'],
-        order: { MaThuCung: 'DESC' },
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      let query = this.petRepository.createQueryBuilder('p')
+        .leftJoinAndSelect('p.ChungLoai', 'cl')
+        .where('p.MaKhachHang = :customerId', { customerId })
+        .orderBy('p.MaThuCung', 'DESC');
+
+      if (search) {
+        query = query.andWhere('p.TenThuCung LIKE :search OR cl.TenChungLoaiThuCung LIKE :search', {
+          search: `%${search}%`,
+        });
+      }
+
+      const [pets, total] = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
 
       const totalPages = Math.ceil(total / limit);
 
@@ -81,6 +89,45 @@ export class PetService {
       };
     } catch (error) {
       throw new Error(`Failed to get customer pets: ${error.message}`);
+    }
+  }
+
+  /**
+   * Get all pets with pagination (not filtered by customer)
+   */
+  async getAllPets(page: number = 1, limit: number = 10, search?: string): Promise<{
+    data: PetResponseDto[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    try {
+      let query = this.petRepository.createQueryBuilder('p')
+        .leftJoinAndSelect('p.ChungLoai', 'cl')
+        .leftJoinAndSelect('p.KhachHang', 'kh')
+        .orderBy('p.MaThuCung', 'DESC');
+
+      if (search) {
+        query = query.where('p.TenThuCung LIKE :search OR cl.TenChungLoaiThuCung LIKE :search', {
+          search: `%${search}%`,
+        });
+      }
+
+      const [pets, total] = await query
+        .skip((page - 1) * limit)
+        .take(limit)
+        .getManyAndCount();
+
+      const totalPages = Math.ceil(total / limit);
+
+      return {
+        data: pets.map(p => this.mapPetToDto(p)),
+        total,
+        page,
+        totalPages,
+      };
+    } catch (error) {
+      throw new Error(`Failed to get all pets: ${error.message}`);
     }
   }
 
@@ -202,8 +249,10 @@ export class PetService {
       const pets = await this.petRepository
         .createQueryBuilder('p')
         .leftJoinAndSelect('p.ChungLoai', 'cl')
+        .leftJoinAndSelect('p.KhachHang', 'kh')
         .where('p.TenThuCung LIKE :query', { query: `%${query}%` })
         .orderBy('p.TenThuCung', 'ASC')
+        .take(20)
         .getMany();
 
       return pets.map(p => this.mapPetToDto(p));
@@ -227,6 +276,10 @@ export class PetService {
         TenChungLoaiThuCung: pet.ChungLoai.TenChungLoaiThuCung,
         MaLoaiThuCung: pet.ChungLoai.MaLoaiThuCung,
       } : undefined,
-    };
+      KhachHang: pet.KhachHang ? {
+        MaKhachHang: pet.KhachHang.MaKhachHang,
+        HoTen: pet.KhachHang.HoTen,
+      } : undefined,
+    } as PetResponseDto;
   }
 }

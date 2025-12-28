@@ -1,0 +1,120 @@
+<div class="history-page">
+    <div class="page-header">
+        <h1><i class="fa-solid fa-clock-rotate-left"></i> Lịch Sử</h1>
+        <p>Xem lịch sử mua hàng và khám bệnh của thú cưng</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+        <button [class.active]="activeTab === 'orders'" (click)="activeTab = 'orders'">
+            <i class="fa-solid fa-shopping-bag"></i> Đơn hàng
+        </button>
+        <button [class.active]="activeTab === 'pets'" (click)="activeTab = 'pets'">
+            <i class="fa-solid fa-paw"></i> Thú cưng & Khám bệnh
+        </button>
+    </div>
+
+    <!-- Orders Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'orders'">
+        <div class="loading" *ngIf="isLoading"><i class="fa-solid fa-spinner fa-spin"></i> Đang tải...</div>
+
+        <div class="orders-list" *ngIf="!isLoading && orders.length > 0">
+            <div class="order-card" *ngFor="let order of orders">
+                <div class="order-header">
+                    <span class="order-id">#{{ order.maHoaDon }}</span>
+                    <span class="order-date">{{ formatDate(order.ngayLap) }}</span>
+                    <span class="order-status">{{ order.trangThai }}</span>
+                </div>
+                <div class="order-items" *ngIf="order.chiTiet && order.chiTiet.length > 0">
+                    <div class="order-item" *ngFor="let item of order.chiTiet">
+                        <span class="item-name">{{ item.tenSanPham }}</span>
+                        <span class="item-qty">x{{ item.soLuong }}</span>
+                        <span class="item-price">{{ formatPrice(item.thanhTien) }}</span>
+                    </div>
+                </div>
+                <div class="order-total">
+                    <span>Tổng cộng:</span>
+                    <span class="total">{{ formatPrice(order.tongTien) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="empty" *ngIf="!isLoading && orders.length === 0">
+            <i class="fa-solid fa-receipt"></i>
+            <p>Chưa có đơn hàng nào</p>
+        </div>
+    </div>
+
+    <!-- Pets Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'pets'">
+        <div class="pets-grid">
+            <div class="pet-card" *ngFor="let pet of pets" (click)="viewPetHistory(pet)">
+                <div class="pet-icon"><i class="fa-solid fa-paw"></i></div>
+                <div class="pet-info">
+                    <h4>{{ pet.tenThuCung }}</h4>
+                    <span class="breed">{{ pet.chungLoai }}</span>
+                    <span class="details" *ngIf="pet.gioiTinh">{{ pet.gioiTinh }} • {{ pet.mauSac }}</span>
+                </div>
+                <button class="view-btn"><i class="fa-solid fa-file-medical"></i> Xem hồ sơ</button>
+            </div>
+        </div>
+
+        <div class="empty" *ngIf="pets.length === 0">
+            <i class="fa-solid fa-dog"></i>
+            <p>Chưa có thú cưng nào</p>
+        </div>
+    </div>
+</div>
+
+<!-- Pet History Modal -->
+<div class="modal-overlay" *ngIf="selectedPet" (click)="closePetHistory()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2><i class="fa-solid fa-file-medical"></i> Hồ Sơ - {{ selectedPet.tenThuCung }}</h2>
+            <button class="close-btn" (click)="closePetHistory()"><i class="fa-solid fa-times"></i></button>
+        </div>
+        <div class="modal-body" *ngIf="petHistory">
+            <!-- Examinations -->
+            <section class="history-section">
+                <h3><i class="fa-solid fa-stethoscope"></i> Lịch sử khám bệnh</h3>
+                <div class="history-list" *ngIf="petHistory.examinations.length > 0">
+                    <div class="history-item" *ngFor="let exam of petHistory.examinations">
+                        <div class="history-date">{{ formatDate(exam.ngayKham) }}</div>
+                        <div class="history-content">
+                            <div class="diagnosis" *ngIf="exam.chanDoan"><strong>Chẩn đoán:</strong> {{ exam.chanDoan }}
+                            </div>
+                            <div class="symptoms" *ngIf="exam.trieuChung"><strong>Triệu chứng:</strong> {{
+                                exam.trieuChung }}</div>
+                            <div class="doctor" *ngIf="exam.bacSi"><i class="fa-solid fa-user-doctor"></i> BS. {{
+                                exam.bacSi }}</div>
+                        </div>
+                    </div>
+                </div>
+                <p class="no-data" *ngIf="petHistory.examinations.length === 0">Chưa có lịch sử khám</p>
+            </section>
+
+            <!-- Prescriptions -->
+            <section class="history-section">
+                <h3><i class="fa-solid fa-pills"></i> Đơn thuốc</h3>
+                <div class="history-list" *ngIf="petHistory.prescriptions.length > 0">
+                    <div class="history-item" *ngFor="let presc of petHistory.prescriptions">
+                        <div class="history-date">{{ formatDate(presc.ngayKeToa) }}</div>
+                        <div class="history-content">
+                            <div class="med-summary">{{ presc.soLuongThuoc }} loại thuốc • {{
+                                formatPrice(presc.tongTien) }}</div>
+                            <div class="medicine-list" *ngIf="presc.medicines && presc.medicines.length > 0">
+                                <div class="medicine-item" *ngFor="let med of presc.medicines">
+                                    <i class="fa-solid fa-capsules"></i>
+                                    <span class="med-name">{{ med.tenThuoc }}</span>
+                                    <span class="med-qty">x{{ med.soLuong }}</span>
+                                    <span class="med-note" *ngIf="med.ghiChu">- {{ med.ghiChu }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <p class="no-data" *ngIf="petHistory.prescriptions.length === 0">Chưa có đơn thuốc</p>
+            </section>
+        </div>
+    </div>
+</div>

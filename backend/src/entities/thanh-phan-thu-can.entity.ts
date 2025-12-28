@@ -13,7 +13,7 @@ export class ThanhPhanThuCan {
   @JoinColumn({ name: 'MATHUCAN' })
   ThuCan: ThuCan;
 
-  @Column({ name: 'TENTHANHPHAN', type: 'varchar', length: 100 })
+  @Column({ name: 'TENTHANHPHAN', type: 'nvarchar', length: 100 })
   TenThanhPhan: string;
 
   @Column({ name: 'PHANTRAM', type: 'decimal', precision: 5, scale: 2 })
@@ -22,3 +22,4 @@ export class ThanhPhanThuCan {
   @Column({ name: 'MOTA', type: 'text', nullable: true })
   MoTa: string;
 }
+

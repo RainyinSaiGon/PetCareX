@@ -12,14 +12,17 @@ export class SanPham {
   @PrimaryColumn({ type: 'char', length: 5 })
   MaSanPham: string;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   TenSanPham: string;
 
   @Column({ type: 'int', nullable: true })
   GiaTienSanPham: number;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   LoaiSanPham: string; // Thuốc, Thức ăn, Phụ kiện
+
+  @Column({ type: 'nvarchar', length: 500, nullable: true })
+  HinhAnh: string; // Image URL
 
   @OneToMany(() => ChiTietTonKho, chitiet => chitiet.SanPham)
   ChiTietTonKhos: ChiTietTonKho[];
@@ -42,3 +45,4 @@ export class SanPham {
   @OneToMany(() => DanhGiaMuaHang, dg => dg.SanPham)
   DanhGias: DanhGiaMuaHang[];
 }
+

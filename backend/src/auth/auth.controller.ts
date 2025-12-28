@@ -1,12 +1,12 @@
 import { Controller, Post, Get, Body, UseGuards, Request, Param, ParseIntPipe } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { 
-  RegisterDto, 
-  LoginDto, 
-  RefreshTokenDto, 
-  ForgotPasswordDto, 
-  ResetPasswordDto, 
-  ChangePasswordDto 
+import {
+  RegisterDto,
+  LoginDto,
+  RefreshTokenDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  ChangePasswordDto
 } from './dto/auth.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -17,7 +17,7 @@ import { UserRole } from '../common/enums/user-role.enum';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(private authService: AuthService) { }
 
   @Public()
   @Post('register')
@@ -75,7 +75,7 @@ export class AuthController {
   @Post('link-employee/:userId/:employeeId')
   async linkToEmployee(
     @Param('userId', ParseIntPipe) userId: number,
-    @Param('employeeId', ParseIntPipe) employeeId: number,
+    @Param('employeeId') employeeId: string,
   ) {
     return this.authService.linkToEmployee(userId, employeeId);
   }

@@ -10,7 +10,7 @@ export class KhachHang {
   @PrimaryGeneratedColumn()
   MaKhachHang: number;
 
-  @Column({ type: 'varchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true })
   HoTen: string;
 
   @Column({ type: 'char', length: 10, nullable: true, unique: true })
@@ -31,3 +31,4 @@ export class KhachHang {
   @OneToMany(() => PhieuDangKyTiemPhong, pdktp => pdktp.KhachHang)
   PhieuDangKys: PhieuDangKyTiemPhong[];
 }
+

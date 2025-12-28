@@ -4,7 +4,7 @@ import { CreateServiceOfferingDto, UpdateServiceOfferingDto } from '../dto/servi
 
 @Controller('branch/services')
 export class ServiceOfferingController {
-  constructor(private serviceOfferingService: ServiceOfferingService) {}
+  constructor(private serviceOfferingService: ServiceOfferingService) { }
 
   // FB-07: Create service offering
   @Post()
@@ -61,5 +61,11 @@ export class ServiceOfferingController {
   @Get('popularity/analysis')
   async getServicePopularity(@Query('limit') limit: number = 10) {
     return this.serviceOfferingService.getServicePopularity(limit);
+  }
+
+  // Get all available services
+  @Get('all')
+  async getAllServices() {
+    return this.serviceOfferingService.getAllServices();
   }
 }
