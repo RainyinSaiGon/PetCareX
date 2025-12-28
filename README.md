@@ -1,40 +1,69 @@
 # PetCareX - Pet Care Management System
 
-A modern full-stack application for managing pet care services, built with NestJS, Angular, and PostgreSQL (Supabase).
+A comprehensive full-stack veterinary clinic management system built with **NestJS**, **Angular 19**, and **SQL Server**.
 
 ## 🚀 Features
 
-- **Authentication System**: Secure login/register with JWT
-- **Role-Based Access Control**: Admin, Manager, Staff, and Customer roles
-- **Pet Management**: Track pets and their medical history
-- **Appointment Booking**: Schedule and manage appointments
-- **Dashboard**: Analytics and insights
-- **Supabase PostgreSQL**: Cloud-hosted database
+### Admin Portal
+- **Dashboard & Analytics**: Revenue reports, statistics, branch performance
+- **Employee Management**: Add, edit, delete employees with salary tracking
+- **Pet Management**: Track pets, breeds, and categories
+- **Customer Management**: Customer profiles and membership tiers
+- **Inventory Management**: Track products and stock across warehouses
+- **Appointment Management**: View and manage all appointments
+- **Branch Management**: Manage multiple clinic branches
+- **Service Management**: Configure medical services per branch
+
+### Customer Portal
+- **Product Catalog**: Browse and purchase pet products
+- **Appointment Booking**: Schedule appointments with doctor selection
+- **Pet Management**: Add and manage personal pets
+- **Doctor Directory**: View doctors and their schedules
+- **Order History**: Track purchases and medical history
+- **Shopping Cart**: Add products and checkout
+
+### Doctor Portal
+- **Appointment View**: See assigned appointments
+- **Medical Examinations**: Record diagnoses and symptoms
+- **Prescriptions**: Create and manage prescriptions
+- **Vaccination Records**: Track pet vaccinations
 
 ## 📋 Prerequisites
 
-Before you begin, ensure you have:
-
-- Node.js (v18+ recommended)
-- npm or yarn
-- A Supabase account (free tier available)
+- **Node.js** (v18+ recommended)
+- **npm** or **yarn**
+- **SQL Server** (Local or Azure SQL)
 
 ## 🏗️ Project Structure
 
 ```
 PetCareX/
-├── backend/          # NestJS API server
+├── backend/              # NestJS API server
 │   ├── src/
-│   │   ├── auth/     # Authentication module
-│   │   ├── entities/ # Database entities
+│   │   ├── auth/         # JWT Authentication
+│   │   ├── entities/     # TypeORM entities (42 tables)
+│   │   ├── modules/      # Feature modules
+│   │   │   ├── admin/        # Admin analytics & reports
+│   │   │   ├── appointment/  # Appointment management
+│   │   │   ├── branch/       # Branch & employee management
+│   │   │   ├── customer/     # Customer management
+│   │   │   ├── customer-portal/  # Customer-facing APIs
+│   │   │   ├── doctor/       # Doctor module
+│   │   │   └── sales/        # Products & inventory
 │   │   ├── app.module.ts
 │   │   └── main.ts
-│   └── .env          # Environment variables
-├── frontend/         # Angular application
-│   ├── src/
-│   │   ├── app/      # Components and services
-│   │   └── environments/
+│   └── .env              # Environment configuration
+├── frontend/             # Angular 19 application
+│   ├── src/app/
+│   │   ├── components/   # UI components (22 modules)
+│   │   │   ├── customer-portal/  # Customer-facing UI
+│   │   │   ├── doctor/           # Doctor dashboard
+│   │   │   └── ...               # Admin components
+│   │   └── services/     # API services
 │   └── angular.json
+├── database/             # SQL scripts
+│   └── petcarex_data.sql # Sample data
+├── start.bat             # Quick start script
 └── README.md
 ```
 
@@ -47,233 +76,130 @@ git clone https://github.com/RainyinSaiGon/PetCareX.git
 cd PetCareX
 ```
 
-### 2. Install Dependencies
+### 2. Configure Database
 
-**Option A: Automatic Installation (Recommended)**
-
-Dependencies will be automatically installed when you run `start.bat`.
-
-**Option B: Manual Installation**
-
-Run the installation script:
-```bash
-install.bat
-```
-
-Or install manually:
-```bash
-# Backend
-cd backend
-npm install
-
-# Frontend
-cd frontend
-npm install
-```
-
-### 3. Setup Supabase Database
-
-1. Go to [Supabase Dashboard](https://app.supabase.com)
-2. Click "New Project"
-3. Fill in:
-   - **Project Name**: PetCareX
-   - **Database Password**: (save this securely!)
-   - **Region**: Choose closest to you
-4. Wait for project creation (~2 minutes)
-5. Go to **Settings** → **Database**
-6. Copy the connection info:
-   - **Host**: `db.xxxxxxxxxxxxx.supabase.co`
-   - **Port**: `5432`
-   - **Database**: `postgres`
-   - **User**: `postgres`
-   - **Password**: (your database password)
-
-### 4. Configure Backend
-
-```bash
-cd backend
-cp .env.example .env
-```
-
-Edit `.env` with your Supabase credentials:
+Create a SQL Server database and update `backend/.env`:
 
 ```env
-DATABASE_HOST=db.xxxxxxxxxxxxx.supabase.co
-DATABASE_PORT=5432
-DATABASE_USERNAME=postgres
-DATABASE_PASSWORD=your-database-password-here
-DATABASE_NAME=postgres
-DATABASE_SSL=true
+DATABASE_HOST=localhost
+DATABASE_PORT=1433
+DATABASE_USERNAME=sa
+DATABASE_PASSWORD=your-password
+DATABASE_NAME=PetCareX
 
-JWT_SECRET=generate-a-random-secret-here
+JWT_SECRET=your-secret-key
+JWT_EXPIRES_IN=7d
+PORT=3000
+CORS_ORIGIN=http://localhost:4200
 ```
 
-### 5. Start the Application
+### 3. Seed Database (Optional)
 
-**Easy Start (Recommended)**
+Run the SQL script in `database/petcarex_data.sql` to populate sample data.
 
-Just double-click `start.bat` or run:
+### 4. Start the Application
+
+**Quick Start (Recommended)**
+
 ```bash
 start.bat
 ```
 
 This will automatically:
-- Check for missing dependencies
-- Install them if needed
-- Start both backend and frontend servers
+- Check and install missing dependencies
+- Start backend server (port 3000)
+- Start frontend server (port 4200)
 
 **Manual Start**
-
-If you prefer to start services separately:
-
-**Manual Start**
-
-If you prefer to start services separately:
 
 ```bash
 # Terminal 1 - Backend
 cd backend
+npm install
 npm run start:dev
 
 # Terminal 2 - Frontend
 cd frontend
+npm install
 npm start
 ```
 
-### 6. Access the Application
+### 5. Access the Application
 
-## 🧪 Testing the Application
+| Portal | URL | Description |
+|--------|-----|-------------|
+| Admin | http://localhost:4200 | Main admin dashboard |
+| Customer | http://localhost:4200/customer | Customer portal |
 
-### Register a New User
+## 👥 Default Accounts
 
-```bash
-curl -X POST http://localhost:3000/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "user@example.com",
-    "username": "testuser",
-    "password": "password123",
-    "full_name": "Test User"
-  }'
-```
-
-### Login
-
-```bash
-curl -X POST http://localhost:3000/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser",
-    "password": "password123"
-  }'
-```
-
-### Get Profile (requires token)
-
-```bash
-curl -X GET http://localhost:3000/api/auth/profile \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | admin123 |
 
 ## 📦 API Endpoints
 
 ### Authentication
-
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
-- `GET /api/auth/profile` - Get current user profile (protected)
+- `GET /api/auth/profile` - Get current user
+
+### Customer Portal
+- `GET /api/customer/products` - Product catalog
+- `GET /api/customer/doctors` - Doctor list
+- `POST /api/customer/appointments` - Book appointment
+- `GET /api/customer/pets` - Customer's pets
+
+### Admin APIs
+- `GET /api/admin/analytics/*` - Dashboard analytics
+- `GET /api/branch/employees` - Employee management
+- `GET /api/sales/products` - Product management
+- `GET /api/appointment/appointments` - Appointments
 
 ## 🔒 Security Features
 
 - Password hashing with bcrypt
 - JWT token authentication
-- CORS enabled for frontend
-- Input validation with class-validator
-- Role-based access control
-- SSL encrypted database connection
+- Role-based access control (Admin, Employee, Customer)
+- CORS protection
+- Input validation
 
-## 🌐 Environment Variables
+## 📊 Database Schema
 
-### Backend (.env)
+The system uses **42 entities** including:
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| DATABASE_HOST | Supabase database host | db.xxxxx.supabase.co |
-| DATABASE_PORT | PostgreSQL port | 5432 |
-| DATABASE_USERNAME | Database user | postgres |
-| DATABASE_PASSWORD | Database password | your-password |
-| DATABASE_NAME | Database name | postgres |
-| DATABASE_SSL | Enable SSL | true |
-| JWT_SECRET | JWT signing secret | random-string |
-| JWT_EXPIRES_IN | Token expiration | 7d |
-| PORT | Backend port | 3000 |
-| NODE_ENV | Environment | development |
-| CORS_ORIGIN | Frontend URL | http://localhost:4200 |
+| Category | Tables |
+|----------|--------|
+| Users | User, KhachHang, NhanVien |
+| Pets | ThuCung, ChungLoaiThuCung, LoaiThuCung |
+| Medical | GiayKhamBenhTongQuat, ToaThuoc, Vaccine |
+| Products | SanPham, ChiTietTonKho, HoaDon |
+| Branches | ChiNhanh, DichVuYTe, CungCapDichVu |
+| Appointments | LichHen, LichLamViecBacSi |
 
-## 🚀 Deployment
+## 📚 Tech Stack
 
-### Backend Deployment (Heroku)
-
-```bash
-cd backend
-heroku create petcarex-api
-heroku config:set DATABASE_HOST=db.xxxxx.supabase.co
-heroku config:set DATABASE_PASSWORD=your-password
-# Set other env variables
-git push heroku main
-```
-
-### Frontend Deployment (Vercel)
-
-```bash
-cd frontend
-vercel
-# Follow prompts
-```
-
-## 📱 Multi-Device Access
-
-Since the database is hosted on Supabase (cloud), you can access the application from any device:
-
-1. **Same Network**: Use `http://localhost:4200`
-2. **Different Network**: Deploy backend and frontend, then use deployed URLs
-3. **Mobile**: Access via deployed URL or use local IP address
+| Layer | Technology |
+|-------|------------|
+| Backend | NestJS, TypeORM, JWT, bcrypt |
+| Frontend | Angular 19, TypeScript, RxJS |
+| Database | SQL Server |
+| Styling | Custom CSS with dark/light themes |
 
 ## 🐛 Troubleshooting
 
 ### Backend won't start
-
-- Check if `.env` file exists and has correct values
-- Verify Supabase credentials
-- Ensure port 3000 is not in use
-- Check database connection: `npm run start:dev` should show connection logs
+- Verify SQL Server is running
+- Check `.env` database credentials
+- Ensure port 3000 is available
 
 ### Frontend won't connect
-
 - Verify backend is running on port 3000
-- Check CORS settings in `main.ts`
-- Update `environment.ts` with correct API URL
+- Check browser console for CORS errors
 
 ### Database connection fails
-
-- Verify Supabase project is active (not paused)
-- Check firewall/network settings
-- Ensure SSL is enabled: `DATABASE_SSL=true`
-- Test connection using psql or pgAdmin
-
-### Can't login from another device
-
-- Deploy backend to a cloud service (Heroku, Railway, etc.)
-- Update frontend environment with deployed backend URL
-- Ensure CORS allows requests from frontend domain
-
-## 📚 Tech Stack
-
-- **Backend**: NestJS, TypeORM, PostgreSQL, JWT, bcrypt
-- **Frontend**: Angular 19, TypeScript, RxJS
-- **Database**: PostgreSQL (Supabase)
-- **Authentication**: JWT tokens
-- **Validation**: class-validator
+- Verify SQL Server credentials
+- Check firewall settings for port 1433
 
 ## 🤝 Contributing
 
@@ -286,13 +212,6 @@ Since the database is hosted on Supabase (cloud), you can access the application
 ## 📄 License
 
 This project is licensed under the MIT License.
-
-## 🆘 Support
-
-For issues or questions:
-- Open an issue on GitHub
-- Check Supabase documentation
-- Review NestJS documentation
 
 ## 📞 Contact
 
