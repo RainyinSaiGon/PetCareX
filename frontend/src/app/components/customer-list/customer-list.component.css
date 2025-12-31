@@ -217,6 +217,7 @@
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -272,7 +273,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-spinner p {
@@ -719,4 +722,221 @@
     height: 2.25rem;
     font-size: 0.875rem;
   }
+}
+
+/* Invoice Button */
+.btn-invoice {
+  color: #8B5CF6;
+}
+
+.btn-invoice:hover {
+  background: rgba(139, 92, 246, 0.15);
+  color: #A78BFA;
+}
+
+/* Invoice Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--card, #181A20);
+  border-radius: 16px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.invoice-modal {
+  width: 100%;
+  max-width: 800px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(167, 139, 250, 0.1) 100%);
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text, #F4F4F6);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.modal-header h2 i {
+  color: #8B5CF6;
+}
+
+.modal-header .close-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--muted, #A1A1AA);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-header .close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #EF4444;
+}
+
+.modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+  max-height: 60vh;
+}
+
+.modal-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  color: var(--muted, #A1A1AA);
+}
+
+.modal-loading .spinner {
+  margin-bottom: 1rem;
+}
+
+.modal-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Invoice Table */
+.invoice-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.invoice-table thead {
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.invoice-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text, #F4F4F6);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.invoice-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: var(--text, #F4F4F6);
+}
+
+.invoice-table tbody tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.invoice-id {
+  font-weight: 600;
+  color: #8B5CF6;
+}
+
+.invoice-amount {
+  font-weight: 600;
+  color: #22C55E;
+}
+
+/* Invoice Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.35rem 0.75rem;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.status-completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22C55E;
+}
+
+.status-pending {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8B5CF6;
+}
+
+.status-shipping {
+  background: rgba(251, 191, 36, 0.15);
+  color: #FBBF24;
+}
+
+.status-cancelled {
+  background: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
+
+.status-unknown {
+  background: rgba(161, 161, 170, 0.15);
+  color: #A1A1AA;
+}
+
+/* Empty Invoices */
+.empty-invoices {
+  text-align: center;
+  padding: 3rem;
+  color: var(--muted, #A1A1AA);
+}
+
+.empty-invoices i {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.empty-invoices p {
+  margin: 0;
+  font-size: 1rem;
 }

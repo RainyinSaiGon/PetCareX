@@ -12,6 +12,31 @@ export interface Product {
     tonKho: number;
 }
 
+export interface ProductDetail extends Product {
+    avgRating: number;
+    reviewCount: number;
+}
+
+export interface ProductReviews {
+    avgRating: number;
+    totalReviews: number;
+    ratingBreakdown: {
+        star5: number;
+        star4: number;
+        star3: number;
+        star2: number;
+        star1: number;
+    };
+    reviews: {
+        maDanhGia: number;
+        soSao: number;
+        nhanXet: string;
+        ngayDanhGia: Date;
+        tenKhachHang: string;
+    }[];
+}
+
+
 export interface Doctor {
     maNhanVien: string;
     hoTen: string;
@@ -104,6 +129,16 @@ export interface Service {
     loaiDichVu?: string;
 }
 
+export interface ProductsResponse {
+    products: Product[];
+    pagination: {
+        page: number;
+        limit: number;
+        total: number;
+        totalPages: number;
+    };
+}
+
 @Injectable({
     providedIn: 'root',
 })
@@ -123,23 +158,50 @@ export class CustomerPortalService {
 
     // ========== PRODUCTS ==========
 
-    getProducts(filters?: { loai?: string; search?: string; limit?: number }): Observable<Product[]> {
+    getProducts(filters?: {
+        loai?: string;
+        search?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'name';
+        minPrice?: number;
+        maxPrice?: number;
+    }): Observable<ProductsResponse> {
         let params = new HttpParams();
         if (filters?.loai) params = params.set('loai', filters.loai);
         if (filters?.search) params = params.set('search', filters.search);
+        if (filters?.page) params = params.set('page', filters.page.toString());
         if (filters?.limit) params = params.set('limit', filters.limit.toString());
-        return this.http.get<Product[]>(`${this.apiUrl}/products`, { params });
+        if (filters?.sortBy) params = params.set('sortBy', filters.sortBy);
+        if (filters?.minPrice !== undefined) params = params.set('minPrice', filters.minPrice.toString());
+        if (filters?.maxPrice !== undefined) params = params.set('maxPrice', filters.maxPrice.toString());
+        return this.http.get<ProductsResponse>(`${this.apiUrl}/products`, { params });
     }
 
     getProductCategories(): Observable<string[]> {
         return this.http.get<string[]>(`${this.apiUrl}/products/categories`);
     }
 
-    getProductById(id: string): Observable<Product> {
-        return this.http.get<Product>(`${this.apiUrl}/products/${id}`);
+    getProductById(id: string): Observable<ProductDetail> {
+        return this.http.get<ProductDetail>(`${this.apiUrl}/products/${id}`);
+    }
+
+    // ========== PRODUCT REVIEWS ==========
+
+    getProductReviews(maSanPham: string): Observable<ProductReviews> {
+        return this.http.get<ProductReviews>(`${this.apiUrl}/products/${maSanPham}/reviews`);
+    }
+
+    canReviewProduct(maSanPham: string): Observable<{ canReview: boolean; reason?: string }> {
+        return this.http.get<{ canReview: boolean; reason?: string }>(`${this.apiUrl}/products/${maSanPham}/can-review`);
+    }
+
+    submitReview(maSanPham: string, data: { soSao: number; nhanXet?: string }): Observable<{ maDanhGia: number; message: string }> {
+        return this.http.post<{ maDanhGia: number; message: string }>(`${this.apiUrl}/products/${maSanPham}/reviews`, data);
     }
 
     // ========== CART (LOCAL) ==========
+
 
     getCart(): CartItem[] {
         return this.cart;

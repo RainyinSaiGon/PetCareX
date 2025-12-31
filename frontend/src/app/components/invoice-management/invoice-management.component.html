@@ -1,0 +1,311 @@
+<div class="invoice-container">
+    <!-- Notification -->
+    <div class="notification" *ngIf="notification" [class]="notification.type">
+        <i class="fa-solid" [ngClass]="{
+            'fa-check-circle': notification.type === 'success',
+            'fa-exclamation-circle': notification.type === 'error',
+            'fa-info-circle': notification.type === 'info'
+        }"></i>
+        <span>{{ notification.message }}</span>
+    </div>
+
+    <!-- Header -->
+    <div class="page-header">
+        <div class="header-content">
+            <h1>Quản Lý Hóa Đơn</h1>
+            <p>Theo dõi và quản lý tất cả hóa đơn bán hàng</p>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid" *ngIf="statistics">
+        <div class="stat-card">
+            <div class="stat-icon blue">
+                <i class="fa-solid fa-file-invoice"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ statistics.totalCount | number }}</span>
+                <span class="stat-label">Tổng Hóa Đơn</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ formatCurrency(statistics.totalRevenue) }}</span>
+                <span class="stat-label">Tổng Doanh Thu</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fa-solid fa-calendar-day"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ formatCurrency(statistics.todayRevenue) }}</span>
+                <span class="stat-label">Doanh Thu Hôm Nay</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="fa-solid fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ statistics.pendingCount | number }}</span>
+                <span class="stat-label">Đơn Chờ Xử Lý</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="filters-section">
+        <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input type="text" [(ngModel)]="searchQuery" (input)="onSearchChange()"
+                placeholder="Tìm theo mã HĐ hoặc tên khách hàng..." />
+        </div>
+
+        <div class="filter-row">
+            <div class="filter-group">
+                <label>Từ ngày</label>
+                <input type="date" [(ngModel)]="filters.startDate" (change)="onFilterChange()" />
+            </div>
+            <div class="filter-group">
+                <label>Đến ngày</label>
+                <input type="date" [(ngModel)]="filters.endDate" (change)="onFilterChange()" />
+            </div>
+            <div class="filter-group">
+                <label>Trạng thái</label>
+                <select [(ngModel)]="filters.status" (change)="onFilterChange()">
+                    <option value="">Tất cả</option>
+                    <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Chi nhánh</label>
+                <select [(ngModel)]="filters.maChiNhanh" (change)="onFilterChange()">
+                    <option value="">Tất cả</option>
+                    <option *ngFor="let branch of branches" [value]="branch.maChiNhanh">{{ branch.tenChiNhanh }}
+                    </option>
+                </select>
+            </div>
+            <button class="btn btn-secondary" (click)="clearFilters()">
+                <i class="fa-solid fa-rotate-left"></i> Xóa bộ lọc
+            </button>
+        </div>
+    </div>
+
+    <!-- Results Info -->
+    <div class="results-info">
+        <span>Hiển thị {{ invoices.length }} / {{ pagination.total }} hóa đơn</span>
+    </div>
+
+    <!-- Loading State -->
+    <div class="loading-spinner" *ngIf="loading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i>
+        <span>Đang tải dữ liệu...</span>
+    </div>
+
+    <!-- Invoice Table -->
+    <div class="table-container" *ngIf="!loading">
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Mã HĐ</th>
+                    <th>Ngày Lập</th>
+                    <th>Khách Hàng</th>
+                    <th>SĐT</th>
+                    <th>Chi Nhánh</th>
+                    <th>Giảm Giá</th>
+                    <th>Tổng Tiền</th>
+                    <th>Trạng Thái</th>
+                    <th>Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let invoice of invoices">
+                    <td class="invoice-id">#{{ invoice.maHoaDon }}</td>
+                    <td>{{ formatDate(invoice.ngayLap) }}</td>
+                    <td>{{ invoice.khachHang?.hoTen || 'N/A' }}</td>
+                    <td>{{ invoice.khachHang?.soDienThoai || 'N/A' }}</td>
+                    <td>{{ invoice.chiNhanh?.tenChiNhanh || 'N/A' }}</td>
+                    <td>{{ (invoice.giamGia * 100) | number:'1.0-0' }}%</td>
+                    <td class="amount">{{ formatCurrency(invoice.tongTien) }}</td>
+                    <td>
+                        <span class="status-badge" [class]="getStatusClass(invoice.trangThai)">
+                            {{ invoice.trangThai }}
+                        </span>
+                    </td>
+                    <td class="actions">
+                        <button class="action-btn view" (click)="viewInvoiceDetail(invoice)" title="Xem chi tiết">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                        <button class="action-btn edit" (click)="openStatusModal(invoice)" title="Cập nhật trạng thái">
+                            <i class="fa-solid fa-pen"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="invoices.length === 0">
+                    <td colspan="9" class="empty-row">
+                        <i class="fa-solid fa-inbox"></i>
+                        <span>Không có hóa đơn nào</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="pagination.totalPages > 1">
+        <button class="page-btn" [disabled]="pagination.page === 1" (click)="onPageChange(1)">
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button class="page-btn" [disabled]="pagination.page === 1" (click)="onPageChange(pagination.page - 1)">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+
+        <button *ngFor="let page of getPageNumbers()" class="page-btn" [class.active]="page === pagination.page"
+            (click)="onPageChange(page)">
+            {{ page }}
+        </button>
+
+        <button class="page-btn" [disabled]="pagination.page === pagination.totalPages"
+            (click)="onPageChange(pagination.page + 1)">
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+        <button class="page-btn" [disabled]="pagination.page === pagination.totalPages"
+            (click)="onPageChange(pagination.totalPages)">
+            <i class="fa-solid fa-angles-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Invoice Detail Modal -->
+<div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-content detail-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Chi Tiết Hóa Đơn #{{ selectedInvoice?.maHoaDon }}</h2>
+            <button class="close-btn" (click)="closeDetailModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="modal-body" *ngIf="!detailLoading && selectedInvoice">
+            <!-- Invoice Info -->
+            <div class="detail-section">
+                <h3>Thông Tin Hóa Đơn</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Ngày lập:</span>
+                        <span class="value">{{ formatDate(selectedInvoice.ngayLap) }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Trạng thái:</span>
+                        <span class="status-badge" [class]="getStatusClass(selectedInvoice.trangThai)">
+                            {{ selectedInvoice.trangThai }}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Chi nhánh:</span>
+                        <span class="value">{{ selectedInvoice.chiNhanh?.tenChiNhanh || 'N/A' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">Nhân viên:</span>
+                        <span class="value">{{ selectedInvoice.nhanVien?.hoTen || 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Info -->
+            <div class="detail-section">
+                <h3>Thông Tin Khách Hàng</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <span class="label">Tên:</span>
+                        <span class="value">{{ selectedInvoice.khachHang?.hoTen || 'N/A' }}</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="label">SĐT:</span>
+                        <span class="value">{{ selectedInvoice.khachHang?.soDienThoai || 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products -->
+            <div class="detail-section" *ngIf="selectedInvoice.sanPhams.length > 0">
+                <h3>Sản Phẩm ({{ selectedInvoice.sanPhams.length }})</h3>
+                <table class="detail-table">
+                    <thead>
+                        <tr>
+                            <th>Sản Phẩm</th>
+                            <th>Số Lượng</th>
+                            <th>Đơn Giá</th>
+                            <th>Thành Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let sp of selectedInvoice.sanPhams">
+                            <td>{{ sp.tenSanPham }}</td>
+                            <td>{{ sp.soLuong }}</td>
+                            <td>{{ formatCurrency(sp.donGia) }}</td>
+                            <td>{{ formatCurrency(sp.thanhTien) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Services -->
+            <div class="detail-section" *ngIf="selectedInvoice.dichVus.length > 0">
+                <h3>Dịch Vụ ({{ selectedInvoice.dichVus.length }})</h3>
+                <ul class="service-list">
+                    <li *ngFor="let dv of selectedInvoice.dichVus">
+                        <i class="fa-solid fa-check-circle"></i>
+                        {{ dv.tenDichVu }} - {{ formatCurrency(dv.soTien) }}
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Summary -->
+            <div class="detail-section summary">
+                <div class="summary-row">
+                    <span>Giảm giá:</span>
+                    <span>{{ (selectedInvoice.giamGia * 100) | number:'1.0-0' }}%</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Tổng tiền:</span>
+                    <span>{{ formatCurrency(selectedInvoice.tongTien) }}</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal-loading" *ngIf="detailLoading">
+            <i class="fa-solid fa-circle-notch fa-spin"></i>
+            <span>Đang tải...</span>
+        </div>
+    </div>
+</div>
+
+<!-- Status Update Modal -->
+<div class="modal-overlay" *ngIf="showStatusModal" (click)="closeStatusModal()">
+    <div class="modal-content status-modal" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h2>Cập Nhật Trạng Thái</h2>
+            <button class="close-btn" (click)="closeStatusModal()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <p>Hóa đơn: <strong>#{{ selectedInvoice?.maHoaDon }}</strong></p>
+            <div class="form-group">
+                <label>Trạng thái mới:</label>
+                <select [(ngModel)]="selectedStatus" class="form-control">
+                    <option *ngFor="let status of statusOptions" [value]="status">{{ status }}</option>
+                </select>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" (click)="closeStatusModal()">Hủy</button>
+            <button class="btn btn-primary" (click)="updateStatus()">Cập nhật</button>
+        </div>
+    </div>
+</div>

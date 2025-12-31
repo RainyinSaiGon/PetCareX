@@ -18,6 +18,7 @@ import { User } from '../../entities/user.entity';
 import { ChiNhanh } from '../../entities/chi-nhanh.entity';
 import { CungCapDichVu } from '../../entities/cung-cap-dich-vu.entity';
 import { DichVuYTe } from '../../entities/dich-vu-y-te.entity';
+import { DanhGiaMuaHang } from '../../entities/danh-gia-mua-hang.entity';
 
 @Injectable()
 export class CustomerPortalService {
@@ -56,6 +57,8 @@ export class CustomerPortalService {
         private branchServiceRepo: Repository<CungCapDichVu>,
         @InjectRepository(DichVuYTe)
         private serviceRepo: Repository<DichVuYTe>,
+        @InjectRepository(DanhGiaMuaHang)
+        private reviewRepo: Repository<DanhGiaMuaHang>,
     ) { }
 
     // ========== HELPER METHODS ==========
@@ -91,7 +94,19 @@ export class CustomerPortalService {
 
     // ========== PRODUCTS ==========
 
-    async getProducts(filters?: { loai?: string; search?: string; limit?: number }) {
+    async getProducts(filters?: {
+        loai?: string;
+        search?: string;
+        page?: number;
+        limit?: number;
+        sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'name';
+        minPrice?: number;
+        maxPrice?: number;
+    }) {
+        const page = filters?.page || 1;
+        const limit = filters?.limit || 20;
+        const offset = (page - 1) * limit;
+
         // Query starting from Inventory to ensure we show items that exist in stock
         const query = this.inventoryRepo
             .createQueryBuilder('tk')
@@ -119,15 +134,40 @@ export class CustomerPortalService {
             query.andWhere('LOWER(sp.TenSanPham) LIKE LOWER(:search)', { search: `%${filters.search}%` });
         }
 
-        query.orderBy('sp.TenSanPham', 'ASC');
-
-        if (filters?.limit) {
-            query.limit(filters.limit);
+        if (filters?.minPrice !== undefined) {
+            query.andHaving('SUM(sp.GiaTienSanPham) >= :minPrice', { minPrice: filters.minPrice });
         }
 
+        if (filters?.maxPrice !== undefined) {
+            query.andHaving('SUM(sp.GiaTienSanPham) <= :maxPrice', { maxPrice: filters.maxPrice });
+        }
+
+        // Sorting
+        switch (filters?.sortBy) {
+            case 'price_asc':
+                query.orderBy('sp.GiaTienSanPham', 'ASC');
+                break;
+            case 'price_desc':
+                query.orderBy('sp.GiaTienSanPham', 'DESC');
+                break;
+            case 'newest':
+                query.orderBy('sp.MaSanPham', 'DESC');
+                break;
+            case 'name':
+            default:
+                query.orderBy('sp.TenSanPham', 'ASC');
+                break;
+        }
+
+        // Get total count first (before pagination)
+        const allResults = await query.getRawMany();
+        const total = allResults.length;
+
+        // Apply pagination
+        query.offset(offset).limit(limit);
         const results = await query.getRawMany();
 
-        return results.map((p) => ({
+        const products = results.map((p) => ({
             maSanPham: p.sp_MaSanPham,
             tenSanPham: p.sp_TenSanPham,
             loaiSanPham: p.sp_LoaiSanPham,
@@ -136,17 +176,33 @@ export class CustomerPortalService {
             moTa: '',
             tonKho: parseInt(p.total_stock) || 0,
         }));
+
+        return {
+            products,
+            pagination: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            }
+        };
     }
 
     async getProductById(maSanPham: string) {
         const product = await this.productRepo.findOne({
             where: { MaSanPham: maSanPham },
-            relations: ['ChiTietTonKhos'],
+            relations: ['ChiTietTonKhos', 'DanhGias'],
         });
 
         if (!product) {
             throw new NotFoundException(`Product ${maSanPham} not found`);
         }
+
+        // Calculate average rating
+        const reviews = product.DanhGias || [];
+        const avgRating = reviews.length > 0
+            ? reviews.reduce((sum, r) => sum + r.SoSao, 0) / reviews.length
+            : 0;
 
         return {
             maSanPham: product.MaSanPham,
@@ -156,6 +212,8 @@ export class CustomerPortalService {
             hinhAnh: product.HinhAnh,
             moTa: '',
             tonKho: product.ChiTietTonKhos?.reduce((sum, tk) => sum + (tk.SoLuong || 0), 0) || 0,
+            avgRating: Math.round(avgRating * 10) / 10,
+            reviewCount: reviews.length,
         };
     }
 
@@ -685,4 +743,102 @@ export class CustomerPortalService {
             message: 'Order placed successfully',
         };
     }
+
+    // ========== PRODUCT REVIEWS ==========
+
+    async getProductReviews(maSanPham: string) {
+        const reviews = await this.reviewRepo.find({
+            where: { MaSanPham: maSanPham },
+            relations: ['HoaDon', 'HoaDon.KhachHang'],
+            order: { NgayDanhGia: 'DESC' },
+        });
+
+        // Calculate rating breakdown
+        const ratingBreakdown = [0, 0, 0, 0, 0]; // 1-5 stars
+        reviews.forEach(r => {
+            if (r.SoSao >= 1 && r.SoSao <= 5) {
+                ratingBreakdown[r.SoSao - 1]++;
+            }
+        });
+
+        const totalReviews = reviews.length;
+        const avgRating = totalReviews > 0
+            ? reviews.reduce((sum, r) => sum + r.SoSao, 0) / totalReviews
+            : 0;
+
+        return {
+            avgRating: Math.round(avgRating * 10) / 10,
+            totalReviews,
+            ratingBreakdown: {
+                star5: ratingBreakdown[4],
+                star4: ratingBreakdown[3],
+                star3: ratingBreakdown[2],
+                star2: ratingBreakdown[1],
+                star1: ratingBreakdown[0],
+            },
+            reviews: reviews.map(r => ({
+                maDanhGia: r.MaDanhGiaMuaHang,
+                soSao: r.SoSao,
+                nhanXet: r.NhanXet,
+                ngayDanhGia: r.NgayDanhGia,
+                tenKhachHang: r.HoaDon?.KhachHang?.HoTen || 'Khách hàng',
+            })),
+        };
+    }
+
+    async canReviewProduct(maSanPham: string, maKhachHang: number) {
+        // Check if customer has purchased this product
+        const purchase = await this.invoiceDetailRepo
+            .createQueryBuilder('ct')
+            .innerJoin('ct.HoaDon', 'hd')
+            .where('ct.MaSanPham = :maSanPham', { maSanPham })
+            .andWhere('hd.MaKhachHang = :maKhachHang', { maKhachHang })
+            .getOne();
+
+        if (!purchase) {
+            return { canReview: false, reason: 'Bạn chưa mua sản phẩm này' };
+        }
+
+        // Check if already reviewed
+        const existingReview = await this.reviewRepo
+            .createQueryBuilder('dg')
+            .innerJoin('dg.HoaDon', 'hd')
+            .where('dg.MaSanPham = :maSanPham', { maSanPham })
+            .andWhere('hd.MaKhachHang = :maKhachHang', { maKhachHang })
+            .getOne();
+
+        if (existingReview) {
+            return { canReview: false, reason: 'Bạn đã đánh giá sản phẩm này' };
+        }
+
+        return { canReview: true, maHoaDon: purchase.MaHoaDon };
+    }
+
+    async submitReview(maSanPham: string, maKhachHang: number, dto: {
+        soSao: number;
+        nhanXet?: string;
+    }) {
+        // First check if can review
+        const canReviewResult = await this.canReviewProduct(maSanPham, maKhachHang);
+        if (!canReviewResult.canReview) {
+            throw new BadRequestException(canReviewResult.reason);
+        }
+
+        // Create review
+        const review = this.reviewRepo.create({
+            MaHoaDon: canReviewResult.maHoaDon,
+            MaSanPham: maSanPham,
+            SoSao: dto.soSao,
+            NhanXet: dto.nhanXet || '',
+            NgayDanhGia: new Date(),
+        });
+
+        const savedReview = await this.reviewRepo.save(review);
+
+        return {
+            maDanhGia: savedReview.MaDanhGiaMuaHang,
+            message: 'Đánh giá thành công',
+        };
+    }
 }
+

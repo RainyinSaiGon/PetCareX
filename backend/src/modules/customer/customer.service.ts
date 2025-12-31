@@ -21,7 +21,7 @@ export class CustomerService {
     private chungLoaiRepository: Repository<ChungLoaiThuCung>,
     @InjectRepository(LoaiThuCung)
     private loaiThuCungRepository: Repository<LoaiThuCung>,
-  ) {}
+  ) { }
 
   // ==================== KHÁCH HÀNG CRUD ====================
 
@@ -39,36 +39,71 @@ export class CustomerService {
     return await this.khachHangRepository.save(khachHang);
   }
 
-  async findAllKhachHang(page: number = 1, limit: number = 10, search?: string): Promise<{ data: KhachHang[]; total: number; page: number; limit: number }> {
+  async findAllKhachHang(page: number = 1, limit: number = 10, search?: string): Promise<{ data: any[]; total: number; page: number; limit: number; totalPages: number }> {
     let query = this.khachHangRepository.createQueryBuilder('kh')
       .leftJoinAndSelect('kh.ThanhVien', 'thanhVien')
+      .leftJoinAndSelect('kh.HoaDons', 'hoaDon')
       .orderBy('kh.MaKhachHang', 'DESC');
 
     if (search) {
-      query = query.where('kh.HoTen ILIKE :search OR kh.SoDienThoai LIKE :search', {
+      query = query.where('kh.HoTen LIKE :search OR kh.SoDienThoai LIKE :search', {
         search: `%${search}%`,
       });
     }
 
-    const [data, total] = await query
+    const [rawData, total] = await query
       .skip((page - 1) * limit)
       .take(limit)
       .getManyAndCount();
 
-    return { data, total, page, limit };
+    // Transform data to flatten ThanhVien fields
+    const data = rawData.map(kh => {
+      const thanhVien = kh.ThanhVien?.[0]; // Get first membership record
+      const tongChiTieu = (kh.HoaDons || []).reduce(
+        (sum, inv) => sum + parseFloat(String(inv.TongTien || 0)),
+        0
+      );
+
+      return {
+        MaKhachHang: kh.MaKhachHang,
+        HoTen: kh.HoTen,
+        SoDienThoai: kh.SoDienThoai,
+        Email: thanhVien?.Email || null,
+        DiaChi: thanhVien?.DiaChi || null,
+        TenHang: thanhVien?.TenHang || 'Cơ bản',
+        TongChiTieu: tongChiTieu,
+      };
+    });
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
   }
 
-  async findOneKhachHang(id: number): Promise<KhachHang> {
+  async findOneKhachHang(id: number): Promise<any> {
     const khachHang = await this.khachHangRepository.findOne({
       where: { MaKhachHang: id },
-      relations: ['ThanhVien', 'ThanhVien.Hang'],
+      relations: ['ThanhVien', 'ThanhVien.Hang', 'HoaDons'],
     });
 
     if (!khachHang) {
       throw new NotFoundException(`Không tìm thấy khách hàng với mã ${id}`);
     }
 
-    return khachHang;
+    // Flatten the response and calculate TongChiTieu from invoices
+    const thanhVien = khachHang.ThanhVien?.[0];
+    const tongChiTieu = (khachHang.HoaDons || []).reduce(
+      (sum, inv) => sum + parseFloat(String(inv.TongTien || 0)),
+      0
+    );
+
+    return {
+      MaKhachHang: khachHang.MaKhachHang,
+      HoTen: khachHang.HoTen,
+      SoDienThoai: khachHang.SoDienThoai,
+      Email: thanhVien?.Email || null,
+      DiaChi: thanhVien?.DiaChi || null,
+      TenHang: thanhVien?.TenHang || 'Cơ bản',
+      TongChiTieu: tongChiTieu,
+    };
   }
 
   async findKhachHangByPhone(phone: string): Promise<KhachHang> {

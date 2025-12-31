@@ -15,7 +15,7 @@ import { HangThanhVien } from '../../entities/hang-thanh-vien.entity';
 import { HoaDon } from '../../entities/hoa-don.entity';
 
 export class MemberTierDatabaseSetup {
-  constructor(private dataSource: DataSource) {}
+  constructor(private dataSource: DataSource) { }
 
   /**
    * SQL to create tier definitions (if using HangThanhVien table)
@@ -25,8 +25,8 @@ export class MemberTierDatabaseSetup {
     -- Insert tier definitions
     INSERT INTO hang_thanh_vien (id, ten_hang, muc_chi_tieu_toi_thieu, thi_le_giam_gia, mo_ta)
     VALUES 
-      ('co-ban', 'Cơ bản', 0, 0, 'Hạng thành viên cơ bản - Không có ưu đãi'),
-      ('than-thiet', 'Thân thiết', 50000000, 5, 'Hạng thành viên thân thiết - Giảm 5% - 50 triệu VND+'),
+      ('co-ban', 'Cơ Bản', 0, 0, 'Hạng thành viên cơ bản - Không có ưu đãi'),
+      ('than-thiet', 'Thân Thiết', 50000000, 5, 'Hạng thành viên thân thiết - Giảm 5% - 50 triệu VND+'),
       ('vip', 'VIP', 150000000, 10, 'Hạng thành viên VIP - Giảm 10% - 150 triệu VND+')
     ON CONFLICT (id) DO NOTHING;
   `;
@@ -57,7 +57,7 @@ export class MemberTierDatabaseSetup {
       if (!existing) {
         const membership = new KhachHangThanhVien();
         membership.MaKhachHang = customer.MaKhachHang;
-        membership.TenHang = 'Cơ bản';
+        membership.TenHang = 'co-ban';
         membership.NgayNangHang = new Date();
         membership.TongChiTieu = 0;
 
@@ -104,10 +104,9 @@ export class MemberTierDatabaseSetup {
     };
 
     const tierMapping = {
-      0: 'bronze',
-      1: 'silver',
-      2: 'gold',
-      3: 'platinum',
+      0: 'co-ban',
+      1: 'than-thiet',
+      2: 'vip',
     };
 
     for (const member of members) {
@@ -128,13 +127,11 @@ export class MemberTierDatabaseSetup {
         );
 
         // Determine new tier
-        let newTier = 'bronze';
-        if (totalSpending >= 300_000_000) {
-          newTier = 'platinum';
-        } else if (totalSpending >= 150_000_000) {
-          newTier = 'gold';
-        } else if (totalSpending >= 50_000_000) {
-          newTier = 'silver';
+        let newTier = 'co-ban';
+        if (totalSpending >= 12_000_000) {
+          newTier = 'vip';
+        } else if (totalSpending >= 5_000_000) {
+          newTier = 'than-thiet';
         }
 
         const oldTier = member.TenHang;
@@ -198,10 +195,9 @@ export class MemberTierDatabaseSetup {
     const statistics = {
       totalMembers: 0,
       tiersDistribution: {
-        bronze: 0,
-        silver: 0,
-        gold: 0,
-        platinum: 0,
+        'co-ban': 0,
+        'than-thiet': 0,
+        'vip': 0,
       },
       membersWithoutTier: 0,
       membersWithNegativeSpending: 0,
@@ -215,7 +211,7 @@ export class MemberTierDatabaseSetup {
     for (const member of members) {
       // Check if tier is valid
       if (
-        !['bronze', 'silver', 'gold', 'platinum'].includes(
+        !['co-ban', 'than-thiet', 'vip'].includes(
           member.TenHang,
         )
       ) {
@@ -248,13 +244,11 @@ export class MemberTierDatabaseSetup {
       const spending = member.TongChiTieu || 0;
 
       const expectedTier =
-        spending >= 300_000_000
-          ? 'platinum'
-          : spending >= 150_000_000
-            ? 'gold'
-            : spending >= 50_000_000
-              ? 'silver'
-              : 'bronze';
+        spending >= 12_000_000
+          ? 'vip'
+          : spending >= 5_000_000
+            ? 'than-thiet'
+            : 'co-ban';
 
       if (tier !== expectedTier) {
         issues.push(

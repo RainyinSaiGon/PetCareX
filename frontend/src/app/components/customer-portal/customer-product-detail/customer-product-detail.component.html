@@ -1,0 +1,417 @@
+<div class="product-detail-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        <button class="back-btn" (click)="goBack()">
+            <i class="fa-solid fa-arrow-left"></i>
+        </button>
+        <span class="breadcrumb-path">
+            <a (click)="goBack()">Sản phẩm</a>
+            <i class="fa-solid fa-chevron-right"></i>
+            <span *ngIf="product">{{ product.loaiSanPham }}</span>
+            <i class="fa-solid fa-chevron-right" *ngIf="product"></i>
+            <span class="current" *ngIf="product">{{ product.tenSanPham }}</span>
+        </span>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-container" *ngIf="isLoading">
+        <div class="loading-card glass-card">
+            <div class="loading-spinner">
+                <div class="spinner-ring"></div>
+            </div>
+            <span>Đang tải sản phẩm...</span>
+        </div>
+    </div>
+
+    <!-- Product Content -->
+    <div class="product-content" *ngIf="!isLoading && product">
+        <!-- Product Main Section -->
+        <div class="product-main glass-card">
+            <!-- Product Image -->
+            <div class="product-image-section">
+                <div class="main-image-container" (mouseenter)="onImageEnter()" (mouseleave)="onImageLeave()"
+                    (mousemove)="onImageHover($event)">
+                    <div class="main-image" [class.zoomed]="isZoomed"
+                        [style.transform-origin]="zoomPosition.x + '% ' + zoomPosition.y + '%'">
+                        <!-- Real image if available -->
+                        <img *ngIf="product.hinhAnh" [src]="product.hinhAnh" [alt]="product.tenSanPham"
+                            class="product-img" (error)="onImageError($event)">
+                        <!-- Placeholder if no image -->
+                        <div class="image-placeholder" *ngIf="!product.hinhAnh">
+                            <i class="fa-solid fa-box"></i>
+                        </div>
+                    </div>
+                    <div class="zoom-hint" *ngIf="!isZoomed">
+                        <i class="fa-solid fa-search-plus"></i> Di chuột để phóng to
+                    </div>
+                </div>
+                <!-- Thumbnail strip -->
+                <div class="thumbnail-strip">
+                    <div class="thumbnail active">
+                        <img *ngIf="product.hinhAnh" [src]="product.hinhAnh" [alt]="product.tenSanPham"
+                            class="thumb-img" (error)="onImageError($event)">
+                        <div class="thumb-placeholder" *ngIf="!product.hinhAnh"><i class="fa-solid fa-box"></i></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Info -->
+            <div class="product-info-section">
+                <!-- Badges -->
+                <div class="product-badges">
+                    <span class="badge mall-badge">Mall</span>
+                    <span class="badge favorite-badge" *ngIf="product.reviewCount > 5">Yêu thích</span>
+                </div>
+
+                <h1 class="product-title">{{ product.tenSanPham }}</h1>
+
+                <!-- Rating Summary -->
+                <div class="rating-summary">
+                    <div class="rating-stars">
+                        <span class="rating-number">{{ product.avgRating || 0 }}</span>
+                        <div class="stars">
+                            <i *ngFor="let star of getStars(product.avgRating); let i = index" class="fa-solid fa-star"
+                                [class.filled]="i < product.avgRating"></i>
+                        </div>
+                    </div>
+                    <div class="rating-divider"></div>
+                    <div class="rating-stat">
+                        <span class="stat-number">{{ product.reviewCount }}</span>
+                        <span class="stat-label">Đánh giá</span>
+                    </div>
+                    <div class="rating-divider"></div>
+                    <div class="rating-stat">
+                        <span class="stat-number">{{ product.tonKho }}</span>
+                        <span class="stat-label">Đã bán</span>
+                    </div>
+                </div>
+
+                <!-- Price -->
+                <div class="price-section glass-inner">
+                    <span class="current-price">{{ formatPrice(product.giaTien) }}</span>
+                    <span class="discount-badge" *ngIf="product.tonKho > 100">-15%</span>
+                </div>
+
+                <!-- Product Meta -->
+                <div class="product-meta">
+                    <div class="meta-row">
+                        <span class="meta-label"><i class="fa-solid fa-tags"></i> Danh mục</span>
+                        <span class="meta-value">
+                            <span class="category-tag">{{ product.loaiSanPham }}</span>
+                        </span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label"><i class="fa-solid fa-warehouse"></i> Kho hàng</span>
+                        <span class="meta-value" [class.in-stock]="product.tonKho > 0"
+                            [class.out-of-stock]="product.tonKho === 0">
+                            <i class="fa-solid" [class.fa-check-circle]="product.tonKho > 0"
+                                [class.fa-times-circle]="product.tonKho === 0"></i>
+                            {{ product.tonKho > 0 ? 'Còn ' + product.tonKho + ' sản phẩm' : 'Hết hàng' }}
+                        </span>
+                    </div>
+                    <div class="meta-row">
+                        <span class="meta-label"><i class="fa-solid fa-truck"></i> Vận chuyển</span>
+                        <span class="meta-value shipping">
+                            <i class="fa-solid fa-truck-fast"></i> Miễn phí vận chuyển
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Quantity Selector -->
+                <div class="quantity-section" *ngIf="product.tonKho > 0">
+                    <span class="quantity-label">Số lượng</span>
+                    <div class="quantity-control">
+                        <button class="qty-btn" (click)="decreaseQuantity()" [disabled]="quantity <= 1">
+                            <i class="fa-solid fa-minus"></i>
+                        </button>
+                        <input type="number" [(ngModel)]="quantity" min="1" [max]="product.tonKho" readonly />
+                        <button class="qty-btn" (click)="increaseQuantity()" [disabled]="quantity >= product.tonKho">
+                            <i class="fa-solid fa-plus"></i>
+                        </button>
+                    </div>
+                    <span class="stock-hint">{{ product.tonKho }} sản phẩm có sẵn</span>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="action-buttons">
+                    <button class="add-to-cart-btn" (click)="addToCart()" [disabled]="product.tonKho === 0">
+                        <i class="fa-solid fa-cart-plus"></i>
+                        <span>Thêm Vào Giỏ Hàng</span>
+                    </button>
+                    <button class="buy-now-btn" (click)="addToCart(); goToCart()" [disabled]="product.tonKho === 0">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span>Mua Ngay</span>
+                    </button>
+                </div>
+
+                <!-- Extra Actions -->
+                <div class="extra-actions">
+                    <button class="action-icon-btn" [class.active]="isWishlisted" (click)="toggleWishlist()">
+                        <i class="fa-solid" [class.fa-heart]="isWishlisted" [class.fa-heart]="!isWishlisted"></i>
+                        <span>{{ isWishlisted ? 'Đã thích' : 'Yêu thích' }}</span>
+                    </button>
+                    <div class="share-wrapper">
+                        <button class="action-icon-btn" (click)="toggleShareMenu()">
+                            <i class="fa-solid fa-share-nodes"></i>
+                            <span>Chia sẻ</span>
+                        </button>
+                        <div class="share-menu" *ngIf="showShareMenu">
+                            <button (click)="shareOnFacebook()">
+                                <i class="fa-brands fa-facebook"></i> Facebook
+                            </button>
+                            <button (click)="copyLink()">
+                                <i class="fa-solid fa-link"></i> Sao chép link
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Section -->
+        <div class="tabs-section glass-card">
+            <div class="tabs-header">
+                <button class="tab-btn" [class.active]="activeTab === 'description'"
+                    (click)="setActiveTab('description')">
+                    <i class="fa-solid fa-file-lines"></i>
+                    Mô tả sản phẩm
+                </button>
+                <button class="tab-btn" [class.active]="activeTab === 'specs'" (click)="setActiveTab('specs')">
+                    <i class="fa-solid fa-list-check"></i>
+                    Thông số
+                </button>
+                <button class="tab-btn" [class.active]="activeTab === 'reviews'" (click)="setActiveTab('reviews')">
+                    <i class="fa-solid fa-star"></i>
+                    Đánh giá ({{ reviews?.totalReviews || 0 }})
+                </button>
+            </div>
+
+            <!-- Description Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'description'">
+                <div class="description-content">
+                    <h3>{{ product.tenSanPham }}</h3>
+                    <p>Sản phẩm chất lượng cao dành cho thú cưng của bạn. Được thiết kế với chất liệu an toàn,
+                        phù hợp cho mọi giống loài. Đảm bảo sức khỏe và sự thoải mái cho thú cưng.</p>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fa-solid fa-shield-check"></i>
+                            <span>Chất lượng đảm bảo</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fa-solid fa-leaf"></i>
+                            <span>An toàn cho sức khỏe</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fa-solid fa-rotate-left"></i>
+                            <span>Đổi trả trong 7 ngày</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Specs Tab -->
+            <div class="tab-content" *ngIf="activeTab === 'specs'">
+                <div class="specs-table">
+                    <div class="spec-row">
+                        <span class="spec-label">Mã sản phẩm</span>
+                        <span class="spec-value">{{ product.maSanPham }}</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Danh mục</span>
+                        <span class="spec-value">{{ product.loaiSanPham }}</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Tình trạng</span>
+                        <span class="spec-value">{{ product.tonKho > 0 ? 'Còn hàng' : 'Hết hàng' }}</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Số lượng tồn kho</span>
+                        <span class="spec-value">{{ product.tonKho }}</span>
+                    </div>
+                    <div class="spec-row">
+                        <span class="spec-label">Xuất xứ</span>
+                        <span class="spec-value">Việt Nam</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviews Tab -->
+            <div class="tab-content reviews-tab" *ngIf="activeTab === 'reviews'">
+                <!-- Rating Overview -->
+                <div class="rating-overview" *ngIf="reviews">
+                    <div class="rating-big">
+                        <span class="big-number">{{ reviews.avgRating }}</span>
+                        <span class="out-of">trên 5</span>
+                        <div class="stars big-stars">
+                            <i *ngFor="let star of getStars(reviews.avgRating); let i = index" class="fa-solid fa-star"
+                                [class.filled]="i < reviews.avgRating"></i>
+                        </div>
+                    </div>
+
+                    <div class="rating-breakdown">
+                        <div class="breakdown-row" *ngFor="let star of [5,4,3,2,1]">
+                            <button class="star-filter"
+                                [class.active]="reviewSortBy === (star === 5 ? 'highest' : star === 1 ? 'lowest' : 'newest')">
+                                {{ star }} <i class="fa-solid fa-star"></i>
+                            </button>
+                            <div class="bar-container">
+                                <div class="bar-fill" [style.width.%]="getRatingPercentage(
+                                    star === 5 ? reviews.ratingBreakdown.star5 :
+                                    star === 4 ? reviews.ratingBreakdown.star4 :
+                                    star === 3 ? reviews.ratingBreakdown.star3 :
+                                    star === 2 ? reviews.ratingBreakdown.star2 :
+                                    reviews.ratingBreakdown.star1
+                                )"></div>
+                            </div>
+                            <span class="count">{{
+                                star === 5 ? reviews.ratingBreakdown.star5 :
+                                star === 4 ? reviews.ratingBreakdown.star4 :
+                                star === 3 ? reviews.ratingBreakdown.star3 :
+                                star === 2 ? reviews.ratingBreakdown.star2 :
+                                reviews.ratingBreakdown.star1
+                                }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Review Actions -->
+                <div class="review-actions">
+                    <div class="sort-reviews">
+                        <span>Sắp xếp:</span>
+                        <button [class.active]="reviewSortBy === 'newest'" (click)="sortReviews('newest')">Mới
+                            nhất</button>
+                        <button [class.active]="reviewSortBy === 'highest'" (click)="sortReviews('highest')">Cao
+                            nhất</button>
+                        <button [class.active]="reviewSortBy === 'lowest'" (click)="sortReviews('lowest')">Thấp
+                            nhất</button>
+                    </div>
+                    <button class="write-review-btn" *ngIf="canReview && !showReviewForm" (click)="toggleReviewForm()">
+                        <i class="fa-solid fa-pen"></i>
+                        Viết đánh giá
+                    </button>
+                    <div class="cannot-review" *ngIf="!canReview && cannotReviewReason">
+                        <i class="fa-solid fa-info-circle"></i>
+                        {{ cannotReviewReason }}
+                    </div>
+                </div>
+
+                <!-- Review Form -->
+                <div class="review-form glass-inner" *ngIf="showReviewForm" @fadeSlide>
+                    <h3>Đánh giá của bạn</h3>
+                    <div class="rating-input">
+                        <span>Đánh giá:</span>
+                        <div class="star-select">
+                            <i *ngFor="let i of [1,2,3,4,5]" class="fa-solid fa-star"
+                                [class.selected]="i <= reviewRating" (click)="setReviewRating(i)"></i>
+                        </div>
+                        <span class="rating-text">
+                            {{ reviewRating === 5 ? 'Tuyệt vời' :
+                            reviewRating === 4 ? 'Tốt' :
+                            reviewRating === 3 ? 'Bình thường' :
+                            reviewRating === 2 ? 'Không hài lòng' : 'Rất tệ' }}
+                        </span>
+                    </div>
+                    <div class="comment-input">
+                        <textarea [(ngModel)]="reviewComment"
+                            placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm này..." rows="4"></textarea>
+                    </div>
+                    <div class="form-actions">
+                        <button class="cancel-btn" (click)="toggleReviewForm()">Hủy</button>
+                        <button class="submit-btn" (click)="submitReview()" [disabled]="isSubmittingReview">
+                            <i class="fa-solid fa-paper-plane" *ngIf="!isSubmittingReview"></i>
+                            <i class="fa-solid fa-spinner fa-spin" *ngIf="isSubmittingReview"></i>
+                            {{ isSubmittingReview ? 'Đang gửi...' : 'Gửi đánh giá' }}
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Reviews List -->
+                <div class="reviews-list" *ngIf="reviews && reviews.reviews.length > 0">
+                    <div class="review-item" *ngFor="let review of getSortedReviews()">
+                        <div class="review-left">
+                            <div class="reviewer-avatar" [style.background]="getAvatarColor(review.tenKhachHang)">
+                                {{ getAvatarInitial(review.tenKhachHang) }}
+                            </div>
+                        </div>
+                        <div class="review-right">
+                            <div class="review-header">
+                                <span class="reviewer-name">{{ review.tenKhachHang }}</span>
+                                <div class="review-stars">
+                                    <i *ngFor="let i of [1,2,3,4,5]" class="fa-solid fa-star"
+                                        [class.filled]="i <= review.soSao"></i>
+                                </div>
+                            </div>
+                            <span class="review-date">
+                                <i class="fa-solid fa-clock"></i>
+                                {{ formatDate(review.ngayDanhGia) }}
+                            </span>
+                            <p class="review-comment" *ngIf="review.nhanXet">{{ review.nhanXet }}</p>
+                            <div class="review-helpful">
+                                <button class="helpful-btn">
+                                    <i class="fa-regular fa-thumbs-up"></i> Hữu ích
+                                </button>
+                                <button class="helpful-btn">
+                                    <i class="fa-regular fa-thumbs-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- No Reviews -->
+                <div class="no-reviews" *ngIf="reviews && reviews.reviews.length === 0">
+                    <div class="no-reviews-icon">
+                        <i class="fa-solid fa-comment-slash"></i>
+                    </div>
+                    <p>Chưa có đánh giá nào cho sản phẩm này</p>
+                    <span>Hãy là người đầu tiên đánh giá!</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Products -->
+        <div class="related-section glass-card" *ngIf="relatedProducts.length > 0">
+            <h2 class="section-title">
+                <i class="fa-solid fa-sparkles"></i>
+                Sản Phẩm Tương Tự
+            </h2>
+            <div class="related-grid">
+                <div class="related-card" *ngFor="let item of relatedProducts" (click)="viewProduct(item)">
+                    <div class="related-image">
+                        <img *ngIf="item.hinhAnh" [src]="item.hinhAnh" [alt]="item.tenSanPham"
+                            class="related-product-img" (error)="onImageError($event)">
+                        <div class="image-placeholder small" *ngIf="!item.hinhAnh">
+                            <i class="fa-solid fa-box"></i>
+                        </div>
+                        <div class="related-overlay">
+                            <button class="quick-view-btn">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="related-info">
+                        <h4>{{ item.tenSanPham }}</h4>
+                        <div class="related-meta">
+                            <span class="related-price">{{ formatPrice(item.giaTien) }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Cart -->
+    <div class="floating-cart" [class.has-items]="getCartCount() > 0" (click)="goToCart()">
+        <i class="fa-solid fa-shopping-cart"></i>
+        <span class="cart-count" *ngIf="getCartCount() > 0">{{ getCartCount() }}</span>
+    </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" [class.show]="showNotification" [class.success]="notificationType === 'success'"
+    [class.error]="notificationType === 'error'" [class.info]="notificationType === 'info'">
+    <i class="fa-solid" [class.fa-check-circle]="notificationType === 'success'"
+        [class.fa-exclamation-circle]="notificationType === 'error'"
+        [class.fa-info-circle]="notificationType === 'info'"></i>
+    <span>{{ notificationMessage }}</span>
+</div>

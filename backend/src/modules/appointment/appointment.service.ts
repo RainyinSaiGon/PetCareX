@@ -5,6 +5,9 @@ import { LichHen } from '../../entities/lich-hen.entity';
 import { NhanVien } from '../../entities/nhanvien.entity';
 import { ChiNhanh } from '../../entities/chi-nhanh.entity';
 import { DichVuYTe } from '../../entities/dich-vu-y-te.entity';
+import { HoaDon } from '../../entities/hoa-don.entity';
+import { CungCapDichVu } from '../../entities/cung-cap-dich-vu.entity';
+import { ThanhToanDichVuYTe } from '../../entities/thanh-toan-dich-vu-y-te.entity';
 
 @Injectable()
 export class AppointmentService {
@@ -17,6 +20,12 @@ export class AppointmentService {
         private chiNhanhRepository: Repository<ChiNhanh>,
         @InjectRepository(DichVuYTe)
         private dichVuRepository: Repository<DichVuYTe>,
+        @InjectRepository(HoaDon)
+        private hoaDonRepository: Repository<HoaDon>,
+        @InjectRepository(CungCapDichVu)
+        private cungCapDichVuRepository: Repository<CungCapDichVu>,
+        @InjectRepository(ThanhToanDichVuYTe)
+        private thanhToanDichVuRepository: Repository<ThanhToanDichVuYTe>,
     ) { }
 
     /**
@@ -255,6 +264,8 @@ export class AppointmentService {
             throw new NotFoundException(`Appointment with ID ${id} not found`);
         }
 
+        const previousStatus = appointment.TrangThai;
+
         if (dto.trangThai) appointment.TrangThai = dto.trangThai;
         if (dto.ngayHen) appointment.NgayHen = new Date(dto.ngayHen);
         if (dto.gioHen) appointment.GioHen = dto.gioHen;
@@ -262,7 +273,66 @@ export class AppointmentService {
         if (dto.ghiChu !== undefined) appointment.GhiChu = dto.ghiChu;
 
         await this.appointmentRepository.save(appointment);
+
+        // Auto-create invoice when appointment is marked as completed
+        if (dto.trangThai === 'Đã hoàn thành' && previousStatus !== 'Đã hoàn thành') {
+            await this.createInvoiceForAppointment(appointment);
+        }
+
         return this.getAppointmentById(id);
+    }
+
+    /**
+     * Create invoice for completed appointment
+     */
+    private async createInvoiceForAppointment(appointment: LichHen) {
+        try {
+            // Default appointment service price: 200,000 VND
+            const DEFAULT_SERVICE_PRICE = 200000;
+
+            // Get service price from CungCapDichVu, or use default
+            let servicePrice = DEFAULT_SERVICE_PRICE;
+            if (appointment.MaDichVu && appointment.MaChiNhanh) {
+                const cungCap = await this.cungCapDichVuRepository.findOne({
+                    where: {
+                        MaDichVu: appointment.MaDichVu,
+                        MaChiNhanh: appointment.MaChiNhanh,
+                    },
+                });
+                if (cungCap && cungCap.GiaThanhLe) {
+                    servicePrice = parseFloat(String(cungCap.GiaThanhLe));
+                }
+            }
+
+            // Create invoice
+            const hoaDon = this.hoaDonRepository.create({
+                MaKhachHang: appointment.MaKhachHang,
+                MaChiNhanh: appointment.MaChiNhanh || undefined,
+                NgayLap: new Date(),
+                TongTien: servicePrice,
+                GiamGia: 0,
+                TrangThai: 'Đã hoàn thành',
+            });
+
+            const savedHoaDon = await this.hoaDonRepository.save(hoaDon);
+
+            // Create service payment record
+            if (appointment.MaDichVu) {
+                const thanhToan = this.thanhToanDichVuRepository.create({
+                    MaHoaDon: savedHoaDon.MaHoaDon,
+                    MaDichVu: appointment.MaDichVu,
+                    SoTien: servicePrice,
+                    NgayThanhToan: new Date(),
+                    MaChiNhanh: appointment.MaChiNhanh || undefined,
+                });
+                await this.thanhToanDichVuRepository.save(thanhToan);
+            }
+
+            console.log(`Created invoice #${savedHoaDon.MaHoaDon} for appointment #${appointment.MaLichHen} - Amount: ${servicePrice}`);
+        } catch (error) {
+            console.error('Error creating invoice for appointment:', error);
+            // Don't throw - invoice creation failure shouldn't fail the status update
+        }
     }
 
     /**

@@ -19,6 +19,7 @@ import { User } from '../../entities/user.entity';
 import { ChiNhanh } from '../../entities/chi-nhanh.entity';
 import { CungCapDichVu } from '../../entities/cung-cap-dich-vu.entity';
 import { DichVuYTe } from '../../entities/dich-vu-y-te.entity';
+import { DanhGiaMuaHang } from '../../entities/danh-gia-mua-hang.entity';
 
 @Module({
     imports: [
@@ -40,6 +41,7 @@ import { DichVuYTe } from '../../entities/dich-vu-y-te.entity';
             ChiNhanh,
             CungCapDichVu,
             DichVuYTe,
+            DanhGiaMuaHang,
         ]),
     ],
     controllers: [CustomerPortalController],

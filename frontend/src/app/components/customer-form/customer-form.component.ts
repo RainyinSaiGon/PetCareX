@@ -22,6 +22,7 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
   loading = false;
   error = '';
   success = '';
+  customerData: any = null; // Store full customer data for view mode
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -41,7 +42,7 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.customerId = Number(this.route.snapshot.paramMap.get('id'));
     const isEditRoute = this.route.snapshot.url.some(segment => segment.path === 'edit');
-    
+
     if (this.customerId) {
       this.isEditMode = isEditRoute;
       this.isViewMode = !isEditRoute;
@@ -51,13 +52,14 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
 
   loadCustomer(): void {
     if (!this.customerId) return;
-    
+
     this.loading = true;
     this.customerService.getCustomerById(this.customerId)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (response: any) => {
           const customer = response.data || response;
+          this.customerData = customer; // Store full customer data
           this.customerForm.patchValue({
             HoTen: customer.HoTen,
             SoDienThoai: customer.SoDienThoai,
@@ -151,6 +153,28 @@ export class CustomerFormComponent implements OnInit, OnDestroy {
   isFieldInvalid(fieldName: string): boolean {
     const control = this.customerForm.get(fieldName);
     return !!(control && control.invalid && control.touched);
+  }
+
+  getTierIcon(tier?: string): string {
+    if (!tier) return 'fa-user';
+    const tierLower = tier.toLowerCase();
+    switch (tierLower) {
+      case 'cơ bản': return 'fa-user';
+      case 'thân thiết': return 'fa-heart';
+      case 'vip': return 'fa-crown';
+      default: return 'fa-user';
+    }
+  }
+
+  getTierClass(tier?: string): string {
+    if (!tier) return 'tier-co-ban';
+    const tierLower = tier.toLowerCase();
+    switch (tierLower) {
+      case 'cơ bản': return 'tier-co-ban';
+      case 'thân thiết': return 'tier-than-thiet';
+      case 'vip': return 'tier-vip';
+      default: return 'tier-co-ban';
+    }
   }
 
   ngOnDestroy(): void {

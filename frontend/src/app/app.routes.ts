@@ -21,6 +21,7 @@ import { CreateExaminationComponent } from './components/doctor/create-examinati
 import { MedicineSearchComponent } from './components/doctor/medicine-search/medicine-search.component';
 import { CreatePrescriptionComponent } from './components/doctor/create-prescription/create-prescription.component';
 import { AppointmentsComponent } from './components/appointments/appointments.component';
+import { InvoiceManagementComponent } from './components/invoice-management/invoice-management.component';
 // Customer Portal Imports
 import { CustomerLayoutComponent } from './components/customer-portal/customer-layout/customer-layout.component';
 import { CustomerProductsComponent } from './components/customer-portal/customer-products/customer-products.component';
@@ -30,6 +31,7 @@ import { CustomerDoctorsComponent } from './components/customer-portal/customer-
 import { CustomerHistoryComponent } from './components/customer-portal/customer-history/customer-history.component';
 import { CustomerPetsComponent } from './components/customer-portal/customer-pets/customer-pets.component';
 import { CustomerPetFormComponent } from './components/customer-portal/customer-pet-form/customer-pet-form.component';
+import { CustomerProductDetailComponent } from './components/customer-portal/customer-product-detail/customer-product-detail.component';
 import { AuthGuard } from './services/auth.guard';
 
 export const routes: Routes = [
@@ -57,6 +59,8 @@ export const routes: Routes = [
   { path: 'branch/service-offerings', component: ServiceOfferingComponent, canActivate: [AuthGuard] },
   { path: 'branch/revenue-reports', component: RevenueReportComponent, canActivate: [AuthGuard] },
   { path: 'branch/inventory', component: InventoryManagementComponent, canActivate: [AuthGuard] },
+  // Admin Invoice Management
+  { path: 'admin/invoices', component: InvoiceManagementComponent, canActivate: [AuthGuard] },
   // Doctor Routes
   { path: 'doctor/examinations/search', component: PetExaminationSearchComponent, canActivate: [AuthGuard] },
   { path: 'doctor/examination-history/:maThuCung', component: ExaminationHistoryComponent, canActivate: [AuthGuard] },
@@ -77,6 +81,7 @@ export const routes: Routes = [
     children: [
       { path: '', redirectTo: 'products', pathMatch: 'full' },
       { path: 'products', component: CustomerProductsComponent },
+      { path: 'products/:id', component: CustomerProductDetailComponent },
       { path: 'cart', component: CustomerCartComponent },
       { path: 'appointments', component: CustomerAppointmentsComponent },
       { path: 'doctors', component: CustomerDoctorsComponent },

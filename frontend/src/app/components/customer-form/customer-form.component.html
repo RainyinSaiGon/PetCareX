@@ -37,14 +37,8 @@
   <form [formGroup]="customerForm" (ngSubmit)="onSubmit()" class="customer-form" *ngIf="!loading || !customerId">
     <div class="form-group">
       <label for="HoTen" class="required">Họ Tên</label>
-      <input
-        type="text"
-        id="HoTen"
-        formControlName="HoTen"
-        [class.invalid]="isFieldInvalid('HoTen')"
-        [readonly]="isViewMode"
-        placeholder="Nhập họ tên khách hàng"
-      />
+      <input type="text" id="HoTen" formControlName="HoTen" [class.invalid]="isFieldInvalid('HoTen')"
+        [readonly]="isViewMode" placeholder="Nhập họ tên khách hàng" />
       <span class="error-message" *ngIf="isFieldInvalid('HoTen')">
         {{ getErrorMessage('HoTen') }}
       </span>
@@ -52,14 +46,8 @@
 
     <div class="form-group">
       <label for="SoDienThoai" class="required">Số Điện Thoại</label>
-      <input
-        type="text"
-        id="SoDienThoai"
-        formControlName="SoDienThoai"
-        [class.invalid]="isFieldInvalid('SoDienThoai')"
-        [readonly]="isViewMode"
-        placeholder="Nhập số điện thoại (VD: 0912345678)"
-      />
+      <input type="text" id="SoDienThoai" formControlName="SoDienThoai" [class.invalid]="isFieldInvalid('SoDienThoai')"
+        [readonly]="isViewMode" placeholder="Nhập số điện thoại (VD: 0912345678)" />
       <span class="error-message" *ngIf="isFieldInvalid('SoDienThoai')">
         {{ getErrorMessage('SoDienThoai') }}
       </span>
@@ -67,14 +55,8 @@
 
     <div class="form-group">
       <label for="Email">Email</label>
-      <input
-        type="email"
-        id="Email"
-        formControlName="Email"
-        [class.invalid]="isFieldInvalid('Email')"
-        [readonly]="isViewMode"
-        placeholder="Nhập email (không bắt buộc)"
-      />
+      <input type="email" id="Email" formControlName="Email" [class.invalid]="isFieldInvalid('Email')"
+        [readonly]="isViewMode" placeholder="Nhập email (không bắt buộc)" />
       <span class="error-message" *ngIf="isFieldInvalid('Email')">
         {{ getErrorMessage('Email') }}
       </span>
@@ -82,24 +64,40 @@
 
     <div class="form-group">
       <label for="DiaChi">Địa Chỉ</label>
-      <textarea
-        id="DiaChi"
-        formControlName="DiaChi"
-        rows="3"
-        [class.invalid]="isFieldInvalid('DiaChi')"
-        [readonly]="isViewMode"
-        placeholder="Nhập địa chỉ (không bắt buộc)"
-      ></textarea>
+      <textarea id="DiaChi" formControlName="DiaChi" rows="3" [class.invalid]="isFieldInvalid('DiaChi')"
+        [readonly]="isViewMode" placeholder="Nhập địa chỉ (không bắt buộc)"></textarea>
       <span class="error-message" *ngIf="isFieldInvalid('DiaChi')">
         {{ getErrorMessage('DiaChi') }}
       </span>
+    </div>
+
+    <!-- Member Tier Info (View Mode Only) -->
+    <div class="member-info-section" *ngIf="isViewMode && customerData">
+      <div class="member-info-row">
+        <div class="member-info-item">
+          <label>Hạng Thành Viên</label>
+          <div class="tier-display">
+            <span class="tier-badge" [ngClass]="getTierClass(customerData.TenHang)">
+              <i class="fas" [ngClass]="getTierIcon(customerData.TenHang)"></i>
+              {{ customerData.TenHang || 'Cơ bản' }}
+            </span>
+          </div>
+        </div>
+        <div class="member-info-item">
+          <label>Tổng Chi Tiêu</label>
+          <div class="spending-display">
+            {{ (customerData.TongChiTieu || 0) | number:'1.0-0' }} đ
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="form-actions">
       <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
         {{ customerId && !isEditMode ? 'Quay Lại' : 'Hủy' }}
       </button>
-      <button type="button" class="btn btn-primary" *ngIf="customerId && !isEditMode" (click)="editCustomer()" [disabled]="loading">
+      <button type="button" class="btn btn-primary" *ngIf="customerId && !isEditMode" (click)="editCustomer()"
+        [disabled]="loading">
         <i class="fas fa-edit"></i>
         <span>Chỉnh Sửa</span>
       </button>

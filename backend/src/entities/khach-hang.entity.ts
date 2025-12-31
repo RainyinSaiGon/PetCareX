@@ -13,22 +13,21 @@ export class KhachHang {
   @Column({ type: 'nvarchar', length: 50, nullable: true })
   HoTen: string;
 
-  @Column({ type: 'char', length: 10, nullable: true, unique: true })
+  @Column({ type: 'char', length: 10, nullable: true })
   SoDienThoai: string;
 
-  @OneToMany(() => KhachHangThanhVien, khtv => khtv.KhachHang)
+  @OneToMany(() => KhachHangThanhVien, (khtv) => khtv.KhachHang)
   ThanhVien: KhachHangThanhVien[];
 
-  @OneToMany(() => ThuCung, thuCung => thuCung.KhachHang)
+  @OneToMany(() => ThuCung, (thuCung) => thuCung.KhachHang)
   ThuCungs: ThuCung[];
 
-  @OneToMany(() => LichHen, lichHen => lichHen.KhachHang)
+  @OneToMany(() => LichHen, (lichHen) => lichHen.KhachHang)
   LichHens: LichHen[];
 
-  @OneToMany(() => HoaDon, hoaDon => hoaDon.KhachHang)
+  @OneToMany(() => HoaDon, (hoaDon) => hoaDon.KhachHang)
   HoaDons: HoaDon[];
 
-  @OneToMany(() => PhieuDangKyTiemPhong, pdktp => pdktp.KhachHang)
+  @OneToMany(() => PhieuDangKyTiemPhong, (pdktp) => pdktp.KhachHang)
   PhieuDangKys: PhieuDangKyTiemPhong[];
 }
-

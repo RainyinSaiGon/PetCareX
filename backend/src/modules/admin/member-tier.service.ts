@@ -32,24 +32,27 @@ export class MemberTierService {
   private readonly logger = new Logger(MemberTierService.name);
 
   // Tier definitions based on annual spending (VND)
+  // Cơ Bản: < 5,000,000 VND
+  // Thân Thiết: 5,000,000 - 12,000,000 VND
+  // VIP: > 12,000,000 VND
   private readonly TIER_DEFINITIONS: TierInfo[] = [
     {
-      id: 'bronze',
-      name: 'Bronze',
+      id: 'co-ban',
+      name: 'Cơ Bản',
       minSpending: 0,
-      maxSpending: 49_999_999,
+      maxSpending: 4_999_999,
       minPoints: 0,
-      maxPoints: 999,
+      maxPoints: 99,
       discountPercentage: 0,
       benefits: ['Tích lũy điểm', 'Hỗ trợ khách hàng'],
     },
     {
-      id: 'silver',
-      name: 'Silver',
-      minSpending: 50_000_000,
-      maxSpending: 149_999_999,
-      minPoints: 1_000,
-      maxPoints: 2_999,
+      id: 'than-thiet',
+      name: 'Thân Thiết',
+      minSpending: 5_000_000,
+      maxSpending: 11_999_999,
+      minPoints: 100,
+      maxPoints: 239,
       discountPercentage: 5,
       benefits: [
         'Tích lũy điểm 5%',
@@ -59,12 +62,12 @@ export class MemberTierService {
       ],
     },
     {
-      id: 'gold',
-      name: 'Gold',
-      minSpending: 150_000_000,
-      maxSpending: 299_999_999,
-      minPoints: 3_000,
-      maxPoints: 5_999,
+      id: 'vip',
+      name: 'VIP',
+      minSpending: 12_000_000,
+      maxSpending: Infinity,
+      minPoints: 240,
+      maxPoints: Infinity,
       discountPercentage: 10,
       benefits: [
         'Tích lũy điểm 10%',
@@ -72,24 +75,6 @@ export class MemberTierService {
         'Ưu tiên lịch hẹn',
         'Tư vấn y tế miễn phí',
         'Quà tặng sinh nhật',
-      ],
-    },
-    {
-      id: 'platinum',
-      name: 'Platinum',
-      minSpending: 300_000_000,
-      maxSpending: Infinity,
-      minPoints: 6_000,
-      maxPoints: Infinity,
-      discountPercentage: 15,
-      benefits: [
-        'Tích lũy điểm 15%',
-        'Ưu đãi Platinum',
-        'Ưu tiên tuyệt đối',
-        'Account manager riêng',
-        'Gói dịch vụ miễn phí',
-        'Quà tặng mùa',
-        'Sự kiện VIP độc quyền',
       ],
     },
   ];
@@ -103,7 +88,7 @@ export class MemberTierService {
     private hangThanhVienRepository: Repository<HangThanhVien>,
     @InjectRepository(HoaDon)
     private hoaDonRepository: Repository<HoaDon>,
-  ) {}
+  ) { }
 
   /**
    * Get tier information by tier ID
@@ -165,7 +150,7 @@ export class MemberTierService {
         return tier.id;
       }
     }
-    return 'bronze'; // Default tier
+    return 'co-ban'; // Default tier
   }
 
   /**
@@ -176,7 +161,7 @@ export class MemberTierService {
       where: { KhachHang: { MaKhachHang: Number(customerId) } },
     });
 
-    return membershipRecord?.TenHang || 'bronze';
+    return membershipRecord?.TenHang || 'co-ban';
   }
 
   /**
@@ -359,7 +344,7 @@ export class MemberTierService {
 
     // Count members per tier
     for (const member of members) {
-      const tierId = member.TenHang || 'bronze';
+      const tierId = member.TenHang || 'co-ban';
       const tierData = distribution.get(tierId);
       if (tierData) {
         tierData.count++;

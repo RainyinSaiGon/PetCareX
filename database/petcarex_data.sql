@@ -932,7 +932,10 @@ PRINT '41. Insert DANHGIAMUAHANG...';
 
 INSERT INTO DANHGIAMUAHANG (MAHOADON, MASANPHAM, SOSAO, NHANXET)
 SELECT 
-    -- 1. SINH BÌNH LUẬN (Có ISNULL bảo vệ)
+    MaHoaDon,
+    MaSanPham,
+    RandomScore,
+    -- Sinh nhận xét dựa theo điểm số
     ISNULL(
         CASE 
             WHEN RandomScore = 5 THEN 
@@ -946,28 +949,18 @@ SELECT
                     N'Hàng không giống hình', N'Chất lượng kém', N'Đóng gói sơ sài')
         END,
         N'Đã nhận hàng' -- Fallback text
-    ),
-    
-    -- 2. ĐIỂM SỐ
-    RandomScore,
-    
-    -- 3. THÁI ĐỘ (Thường >= Điểm hài lòng)
-    CASE WHEN RandomScore < 5 THEN RandomScore + 1 ELSE 5 END,
-    
-    MaHoaDon
+    )
 FROM (
-    -- [FIX LỖI TẠI ĐÂY]:
-    -- Thay vì SELECT DISTINCT TOP... ORDER BY NEWID() (Lỗi cú pháp)
-    -- Ta dùng GROUP BY MaHoaDon để gom nhóm duy nhất, sau đó mới Random
     SELECT TOP 5000 
-        MaHoaDon,
+        H.MaHoaDon,
+        HS.MaSanPham,
         CASE 
             WHEN RAND(CHECKSUM(NEWID())) < 0.7 THEN 5 -- 70% 5 sao
             WHEN RAND(CHECKSUM(NEWID())) < 0.9 THEN 4 -- 20% 4 sao
             ELSE CAST(RAND(CHECKSUM(NEWID())) * 3 AS INT) + 1 
         END AS RandomScore
-    FROM HOADON_SANPHAM
-    GROUP BY MaHoaDon -- <--- Thay thế cho DISTINCT
+    FROM HOADON_SANPHAM HS
+    INNER JOIN HOADON H ON HS.MaHoaDon = H.MaHoaDon
     ORDER BY NEWID()
 ) AS TempTable;
 

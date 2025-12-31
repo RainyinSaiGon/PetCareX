@@ -11,6 +11,7 @@ import { BranchModule } from './modules/branch/branch.module';
 import { DoctorModule } from './modules/doctor/doctor.module';
 import { AppointmentModule } from './modules/appointment/appointment.module';
 import { CustomerPortalModule } from './modules/customer-portal/customer-portal.module';
+import { InvoiceModule } from './modules/invoice/invoice.module';
 
 // Import entities
 import { User } from './entities/user.entity';
@@ -137,6 +138,7 @@ import { DanhGiaMuaHang } from './entities/danh-gia-mua-hang.entity';
     DoctorModule,
     AppointmentModule,
     CustomerPortalModule,
+    InvoiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

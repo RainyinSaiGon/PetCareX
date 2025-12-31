@@ -1,67 +1,153 @@
-<div class="products-page">
-    <!-- Header -->
-    <div class="page-header">
-        <div class="header-text">
-            <h1><i class="fa-solid fa-shopping-bag"></i> Sản Phẩm</h1>
-            <p>Khám phá các sản phẩm chăm sóc thú cưng chất lượng cao</p>
+<div class="shop-container">
+    <!-- Category Sidebar -->
+    <aside class="category-sidebar">
+        <div class="sidebar-header">
+            <i class="fa-solid fa-list"></i>
+            <span>Danh Mục</span>
         </div>
-    </div>
+        <ul class="category-list">
+            <li [class.active]="!selectedCategory" (click)="selectCategory('')">
+                <i class="fa-solid fa-border-all"></i>
+                <span>Tất cả</span>
+            </li>
+            <li *ngFor="let cat of categories" [class.active]="selectedCategory === cat" (click)="selectCategory(cat)">
+                <i class="fa-solid fa-tag"></i>
+                <span>{{ cat }}</span>
+            </li>
+        </ul>
+    </aside>
 
-    <!-- Filters -->
-    <div class="filters-bar">
-        <div class="search-box">
-            <i class="fa-solid fa-search"></i>
-            <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
-                placeholder="Tìm kiếm sản phẩm..." />
-            <button class="search-btn" (click)="onSearch()">Tìm</button>
-        </div>
-
-        <div class="category-filter">
-            <select [(ngModel)]="selectedCategory" (change)="onCategoryChange()">
-                <option value="">Tất cả danh mục</option>
-                <option *ngFor="let cat of categories" [value]="cat">{{ cat }}</option>
-            </select>
-        </div>
-    </div>
-
-    <!-- Loading -->
-    <div class="loading" *ngIf="isLoading">
-        <i class="fa-solid fa-spinner fa-spin"></i>
-        <span>Đang tải sản phẩm...</span>
-    </div>
-
-    <!-- Products Grid -->
-    <div class="products-grid" *ngIf="!isLoading">
-        <div class="product-card" *ngFor="let product of products">
-            <div class="product-info">
-                <div class="product-header">
-                    <span class="category-badge">{{ product.loaiSanPham }}</span>
+    <!-- Main Content -->
+    <main class="shop-main">
+        <!-- Search & Filter Bar -->
+        <div class="shop-toolbar">
+            <div class="search-section">
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text" [(ngModel)]="searchQuery" (keyup.enter)="onSearch()"
+                        placeholder="Tìm kiếm sản phẩm..." />
+                    <button class="search-btn" (click)="onSearch()">
+                        <i class="fa-solid fa-search"></i>
+                    </button>
                 </div>
-                <h3 class="product-name">{{ product.tenSanPham }}</h3>
-                <p class="product-desc" *ngIf="product.moTa">{{ product.moTa }}</p>
+            </div>
 
-                <div class="product-meta">
-                    <span class="stock" [class.low]="product.tonKho < 10">
-                        <i class="fa-solid fa-box"></i> Còn {{ product.tonKho }}
-                    </span>
-                </div>
-
-                <div class="product-footer">
-                    <span class="price">{{ formatPrice(product.giaTien) }}</span>
-                    <button class="add-btn" (click)="addToCart(product)" [disabled]="product.tonKho === 0">
-                        <i class="fa-solid fa-cart-plus"></i>
-                        {{ product.tonKho === 0 ? 'Hết hàng' : 'Thêm' }}
+            <div class="filter-section">
+                <span class="filter-label">Sắp xếp theo</span>
+                <div class="sort-options">
+                    <button [class.active]="sortBy === 'name'" (click)="setSortBy('name')">Phổ biến</button>
+                    <button [class.active]="sortBy === 'newest'" (click)="setSortBy('newest')">Mới nhất</button>
+                    <button [class.active]="sortBy === 'price_asc'" (click)="setSortBy('price_asc')">
+                        Giá <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                    <button [class.active]="sortBy === 'price_desc'" (click)="setSortBy('price_desc')">
+                        Giá <i class="fa-solid fa-arrow-down"></i>
                     </button>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Empty State -->
-    <div class="empty-state" *ngIf="!isLoading && products.length === 0">
-        <i class="fa-solid fa-box-open"></i>
-        <h3>Không tìm thấy sản phẩm</h3>
-        <p>Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+        <!-- Results Info -->
+        <div class="results-info" *ngIf="!isLoading">
+            <span>Hiển thị {{ products.length }} / {{ totalProducts }} sản phẩm</span>
+            <span *ngIf="selectedCategory" class="active-filter">
+                <i class="fa-solid fa-filter"></i> {{ selectedCategory }}
+                <button class="clear-filter" (click)="selectCategory('')">×</button>
+            </span>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-container" *ngIf="isLoading">
+            <div class="loading-grid">
+                <div class="skeleton-card" *ngFor="let i of [1,2,3,4,5,6,7,8,9,10]">
+                    <div class="skeleton-image"></div>
+                    <div class="skeleton-text"></div>
+                    <div class="skeleton-text short"></div>
+                    <div class="skeleton-price"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Grid -->
+        <div class="products-grid" *ngIf="!isLoading">
+            <div class="product-card" *ngFor="let product of products" (click)="viewProduct(product)">
+                <!-- Product Image -->
+                <div class="product-image">
+                    <!-- Real image if available -->
+                    <img *ngIf="product.hinhAnh" [src]="product.hinhAnh" [alt]="product.tenSanPham" class="product-img"
+                        (error)="onImageError($event)">
+                    <!-- Placeholder if no image -->
+                    <div class="image-placeholder" *ngIf="!product.hinhAnh">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+                    <!-- Badges -->
+                    <div class="badges">
+                        <span class="badge hot" *ngIf="product.tonKho < 10 && product.tonKho > 0">Hot</span>
+                    </div>
+                    <!-- Quick Actions -->
+                    <div class="quick-actions">
+                        <button class="quick-add" (click)="addToCart(product, $event)"
+                            [disabled]="product.tonKho === 0">
+                            <i class="fa-solid fa-cart-plus"></i>
+                            <span>Thêm vào giỏ</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Product Info -->
+                <div class="product-info">
+                    <h3 class="product-name">{{ product.tenSanPham }}</h3>
+                    <div class="product-category">
+                        <span class="category-tag">{{ product.loaiSanPham }}</span>
+                    </div>
+                    <div class="product-price">
+                        <span class="current-price">{{ formatPrice(product.giaTien) }}</span>
+                    </div>
+                    <div class="product-stats">
+                        <span class="stock" [class.low-stock]="product.tonKho < 10">
+                            <i class="fa-solid fa-cube"></i>
+                            {{ product.tonKho > 0 ? 'Còn ' + product.tonKho : 'Hết hàng' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" *ngIf="!isLoading && products.length === 0">
+            <div class="empty-icon">
+                <i class="fa-solid fa-box-open"></i>
+            </div>
+            <h3>Không tìm thấy sản phẩm</h3>
+            <p>Thử thay đổi bộ lọc hoặc tìm kiếm với từ khóa khác</p>
+            <button class="reset-btn" (click)="resetFilters()">
+                <i class="fa-solid fa-rotate-left"></i>
+                Xóa bộ lọc
+            </button>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" *ngIf="!isLoading && totalPages > 1">
+            <button class="page-btn" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">
+                <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button class="page-btn" *ngFor="let page of getPageNumbers()" [class.active]="currentPage === page"
+                (click)="goToPage(page)">
+                {{ page }}
+            </button>
+            <button class="page-btn" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">
+                <i class="fa-solid fa-chevron-right"></i>
+            </button>
+        </div>
+    </main>
+
+    <!-- Floating Cart -->
+    <div class="floating-cart" [class.has-items]="getCartCount() > 0" (click)="goToCart()">
+        <i class="fa-solid fa-shopping-cart"></i>
+        <span class="cart-count" *ngIf="getCartCount() > 0">{{ getCartCount() }}</span>
+        <div class="cart-preview" *ngIf="getCartCount() > 0">
+            <span>{{ formatPrice(getCartTotal()) }}</span>
+        </div>
     </div>
 </div>
 

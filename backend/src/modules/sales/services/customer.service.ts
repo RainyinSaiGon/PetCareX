@@ -15,7 +15,7 @@ export class CustomerService {
     private membershipRepository: Repository<KhachHangThanhVien>,
     @InjectRepository(HoaDon)
     private invoiceRepository: Repository<HoaDon>,
-  ) {}
+  ) { }
 
   async createCustomer(createCustomerDto: CreateCustomerDto): Promise<CustomerResponseDto> {
     try {
@@ -57,7 +57,15 @@ export class CustomerService {
         where: { MaKhachHang: customerId },
       });
 
-      return this.mapCustomerToDto(customer, membership);
+      // Calculate actual total spending from invoices
+      const actualTotalSpending = (customer.HoaDons || []).reduce(
+        (sum, inv) => sum + parseFloat(String(inv.TongTien || 0)),
+        0
+      );
+
+      const dto = this.mapCustomerToDto(customer, membership);
+      dto.TongChiTieu = actualTotalSpending; // Override with calculated value
+      return dto;
     } catch (error) {
       throw new Error(`Failed to get customer: ${error.message}`);
     }
@@ -91,8 +99,26 @@ export class CustomerService {
 
       const totalPages = Math.ceil(total / limit);
 
+      // Calculate actual spending for each customer from their invoices
+      const customerDtos = await Promise.all(
+        members.map(async (m) => {
+          const dto = this.mapCustomerToDto(m.KhachHang, m);
+
+          // Get actual invoice totals
+          const invoices = await this.invoiceRepository.find({
+            where: { MaKhachHang: m.MaKhachHang },
+          });
+          dto.TongChiTieu = invoices.reduce(
+            (sum, inv) => sum + parseFloat(String(inv.TongTien || 0)),
+            0
+          );
+
+          return dto;
+        })
+      );
+
       return {
-        data: members.map(m => this.mapCustomerToDto(m.KhachHang, m)),
+        data: customerDtos,
         total,
         page,
         totalPages,

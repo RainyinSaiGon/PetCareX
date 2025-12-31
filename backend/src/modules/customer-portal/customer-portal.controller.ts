@@ -10,19 +10,27 @@ export class CustomerPortalController {
     // ========== PRODUCTS ==========
 
     /**
-     * Get product catalog
-     * GET /api/customer/products?loai=Thuốc&search=vitamin&limit=20
+     * Get product catalog with pagination, sorting, and filters
+     * GET /api/customer/products?loai=Thuốc&search=vitamin&page=1&limit=20&sortBy=price_asc&minPrice=0&maxPrice=1000000
      */
     @Get('products')
     async getProducts(
         @Query('loai') loai?: string,
         @Query('search') search?: string,
+        @Query('page') page?: string,
         @Query('limit') limit?: string,
+        @Query('sortBy') sortBy?: string,
+        @Query('minPrice') minPrice?: string,
+        @Query('maxPrice') maxPrice?: string,
     ) {
         return this.customerService.getProducts({
             loai,
             search,
-            limit: limit ? parseInt(limit) : undefined,
+            page: page ? parseInt(page) : 1,
+            limit: limit ? parseInt(limit) : 20,
+            sortBy: sortBy as 'price_asc' | 'price_desc' | 'newest' | 'name' | undefined,
+            minPrice: minPrice ? parseInt(minPrice) : undefined,
+            maxPrice: maxPrice ? parseInt(maxPrice) : undefined,
         });
     }
 
@@ -44,7 +52,47 @@ export class CustomerPortalController {
         return this.customerService.getProductById(id);
     }
 
+    /**
+     * Get product reviews
+     * GET /api/customer/products/:id/reviews
+     */
+    @Get('products/:id/reviews')
+    async getProductReviews(@Param('id') id: string) {
+        return this.customerService.getProductReviews(id);
+    }
+
+    /**
+     * Check if user can review a product
+     * GET /api/customer/products/:id/can-review
+     */
+    @Get('products/:id/can-review')
+    async canReviewProduct(@Req() req: any, @Param('id') id: string) {
+        const maKhachHang = req.user?.ma_khach_hang;
+        if (!maKhachHang) {
+            return { canReview: false, reason: 'Vui lòng đăng nhập' };
+        }
+        return this.customerService.canReviewProduct(id, maKhachHang);
+    }
+
+    /**
+     * Submit a product review
+     * POST /api/customer/products/:id/reviews
+     */
+    @Post('products/:id/reviews')
+    async submitReview(
+        @Req() req: any,
+        @Param('id') id: string,
+        @Body() dto: { soSao: number; nhanXet?: string },
+    ) {
+        const maKhachHang = req.user?.ma_khach_hang;
+        if (!maKhachHang) {
+            throw new Error('User not authenticated');
+        }
+        return this.customerService.submitReview(id, maKhachHang, dto);
+    }
+
     // ========== DOCTORS & SCHEDULES ==========
+
 
     /**
      * Get list of doctors

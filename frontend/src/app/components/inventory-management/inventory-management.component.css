@@ -368,16 +368,16 @@
   .filter-wrapper {
     gap: 15px;
   }
-  
+
   .filter-group {
     min-width: 160px;
     flex: 1 1 45%;
   }
-  
+
   .filter-actions {
     flex: 1 1 100%;
   }
-  
+
   .btn-filter-search,
   .btn-filter-reset {
     flex: 1;
@@ -388,22 +388,22 @@
   .filter-bar {
     padding: 20px;
   }
-  
+
   .filter-wrapper {
     flex-direction: column;
     gap: 12px;
   }
-  
+
   .filter-group {
     width: 100%;
     min-width: unset;
     flex: unset;
   }
-  
+
   .filter-actions {
     width: 100%;
   }
-  
+
   .btn-filter-search,
   .btn-filter-reset {
     flex: 1;
@@ -414,16 +414,16 @@
   .filter-bar {
     padding: 15px;
   }
-  
+
   .filter-select {
     padding: 10px 36px 10px 12px;
     font-size: 12px;
   }
-  
+
   .filter-label {
     font-size: 11px;
   }
-  
+
   .btn-filter-search,
   .btn-filter-reset {
     padding: 10px 16px;
@@ -443,6 +443,7 @@
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -602,9 +603,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.6;
   }
@@ -886,6 +890,7 @@
 .results-table td {
   padding: 14px 16px;
   border-bottom: 1px solid #f0f0f0;
+  color: #333;
 }
 
 .inventory-table tbody tr,
@@ -1354,26 +1359,26 @@
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .form-card {
     border-left: 4px solid #667eea;
   }
-  
+
   .form-header {
     padding: 20px;
   }
-  
+
   .form-body {
     padding: 20px;
     gap: 15px;
   }
-  
+
   .header-icon {
     width: 45px;
     height: 45px;
     font-size: 20px;
   }
-  
+
   .header-content h3 {
     font-size: 16px;
   }
@@ -1383,44 +1388,44 @@
   .transaction-forms {
     gap: 15px;
   }
-  
+
   .form-card {
     border-radius: 10px;
   }
-  
+
   .form-header {
     padding: 15px;
     gap: 12px;
   }
-  
+
   .form-body {
     padding: 15px;
     gap: 12px;
   }
-  
+
   .header-icon {
     width: 40px;
     height: 40px;
     font-size: 18px;
   }
-  
+
   .header-content h3 {
     font-size: 14px;
   }
-  
+
   .header-content p {
     font-size: 11px;
   }
-  
+
   .form-label {
     font-size: 11px;
   }
-  
+
   .form-input {
     padding: 10px 12px;
     font-size: 12px;
   }
-  
+
   .btn-submit {
     padding: 12px 16px;
     font-size: 12px;
@@ -1535,6 +1540,7 @@
   border: none;
   font-size: 14px;
   background: transparent;
+  color: #333;
 }
 
 .search-input:focus {
@@ -1635,8 +1641,13 @@
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .loading-state p {
@@ -1651,11 +1662,11 @@
   .summary-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .transaction-forms {
     grid-template-columns: 1fr;
   }
-  
+
   .alerts-grid {
     grid-template-columns: 1fr;
   }
@@ -1665,38 +1676,38 @@
   .inventory-container {
     padding: 15px 20px;
   }
-  
+
   .page-header {
     padding: 25px 20px;
     margin-bottom: 30px;
   }
-  
+
   .page-header h1 {
     font-size: 24px;
   }
-  
+
   .page-subtitle {
     font-size: 13px;
   }
-  
+
   .summary-grid {
     grid-template-columns: 1fr;
     gap: 15px;
   }
-  
+
   .summary-card {
     padding: 15px;
     gap: 15px;
   }
-  
+
   .card-value {
     font-size: 20px;
   }
-  
+
   .tabs-header {
     flex-wrap: wrap;
   }
-  
+
   .tab-btn {
     flex: 1;
     min-width: 140px;
@@ -1737,87 +1748,87 @@
     gap: 10px;
   }
 
-  }
-  
-  .filter-bar {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .filter-item {
-    min-width: unset;
-  }
-  
-  .table-responsive {
-    font-size: 12px;
-  }
-  
-  .inventory-table th,
-  .results-table th,
-  .inventory-table td,
-  .results-table td {
-    padding: 10px 12px;
-  }
-  
-  .tab-content {
-    padding: 15px;
-  }
-  
-  .transaction-forms {
-    gap: 20px;
-  }
-  
-  .form-card {
-    padding: 20px;
-  }
-  
-  .table-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-  }
-  
-  .pagination-section {
-    flex-wrap: wrap;
-    gap: 10px;
-  }
+}
+
+.filter-bar {
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-item {
+  min-width: unset;
+}
+
+.table-responsive {
+  font-size: 12px;
+}
+
+.inventory-table th,
+.results-table th,
+.inventory-table td,
+.results-table td {
+  padding: 10px 12px;
+}
+
+.tab-content {
+  padding: 15px;
+}
+
+.transaction-forms {
+  gap: 20px;
+}
+
+.form-card {
+  padding: 20px;
+}
+
+.table-header {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.pagination-section {
+  flex-wrap: wrap;
+  gap: 10px;
+}
 }
 
 @media (max-width: 480px) {
   .inventory-container {
     padding: 10px 15px;
   }
-  
+
   .page-header {
     padding: 20px 15px;
   }
-  
+
   .page-header h1 {
     font-size: 20px;
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .summary-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .tab-btn {
     min-width: 100px;
     font-size: 11px;
     padding: 10px 8px;
   }
-  
+
   .alert-stats {
     grid-template-columns: 1fr;
   }
-  
+
   .search-box {
     flex-direction: column;
     gap: 10px;
   }
-  
+
   .btn {
     padding: 8px 16px;
     font-size: 12px;
@@ -2410,4 +2421,3 @@
     font-size: 12px;
     padding: 6px 12px;
   }
-
