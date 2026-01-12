@@ -1,84 +1,37 @@
-# PetCareX - Pet Care Management System
+## PetCareX
 
-A comprehensive full-stack veterinary clinic management system built with **NestJS**, **Angular 19**, and **SQL Server**.
+PetCareX is a full-stack veterinary clinic management platform: a NestJS API backend, an Angular 19 frontend, and a SQL Server database. It supports multi-branch clinic operations including customers, pets, appointments, inventory, billing and medical records.
 
-## 🚀 Features
+This README gives a concise, up-to-date developer guide to run, test and contribute to the project.
 
-### Admin Portal
-- **Dashboard & Analytics**: Revenue reports, statistics, branch performance
-- **Employee Management**: Add, edit, delete employees with salary tracking
-- **Pet Management**: Track pets, breeds, and categories
-- **Customer Management**: Customer profiles and membership tiers
-- **Inventory Management**: Track products and stock across warehouses
-- **Appointment Management**: View and manage all appointments
-- **Branch Management**: Manage multiple clinic branches
-- **Service Management**: Configure medical services per branch
+## Key features
 
-### Customer Portal
-- **Product Catalog**: Browse and purchase pet products
-- **Appointment Booking**: Schedule appointments with doctor selection
-- **Pet Management**: Add and manage personal pets
-- **Doctor Directory**: View doctors and their schedules
-- **Order History**: Track purchases and medical history
-- **Shopping Cart**: Add products and checkout
+- Admin portal: dashboard, analytics, employee & branch management, service configuration and reporting.
+- Customer portal: product catalog, shopping cart, order history, pet profiles and appointment booking.
+- Doctor portal: appointment queue, medical examinations, prescriptions and vaccination records.
+- Inventory & sales: product catalog, stock tracking across warehouses/branches, invoices and price history.
+- Appointments & scheduling: customer booking, doctor schedules, calendar views and notifications.
+- Billing & payments: invoice generation, payment tracking and basic receipt management.
+- Multi-branch & RBAC: multi-clinic support with role-based access (Admin, Employee, Doctor, Customer).
+- Security & validation: bcrypt password hashing, JWT authentication, input validation and guards.
+- Extensible architecture: modular NestJS structure, TypeORM entities, and seed/migration scripts for automation.
 
-### Doctor Portal
-- **Appointment View**: See assigned appointments
-- **Medical Examinations**: Record diagnoses and symptoms
-- **Prescriptions**: Create and manage prescriptions
-- **Vaccination Records**: Track pet vaccinations
+## Tech stack
+- Backend: NestJS, TypeORM, TypeScript
+- Frontend: Angular 19, TypeScript
+- Database: Microsoft SQL Server (mssql / msnodesqlv8)
 
-## 📋 Prerequisites
-
-- **Node.js** (v18+ recommended)
-- **npm** or **yarn**
-- **SQL Server** (Local or Azure SQL)
-
-## 🏗️ Project Structure
-
-```
-PetCareX/
-├── backend/              # NestJS API server
-│   ├── src/
-│   │   ├── auth/         # JWT Authentication
-│   │   ├── entities/     # TypeORM entities (42 tables)
-│   │   ├── modules/      # Feature modules
-│   │   │   ├── admin/        # Admin analytics & reports
-│   │   │   ├── appointment/  # Appointment management
-│   │   │   ├── branch/       # Branch & employee management
-│   │   │   ├── customer/     # Customer management
-│   │   │   ├── customer-portal/  # Customer-facing APIs
-│   │   │   ├── doctor/       # Doctor module
-│   │   │   └── sales/        # Products & inventory
-│   │   ├── app.module.ts
-│   │   └── main.ts
-│   └── .env              # Environment configuration
-├── frontend/             # Angular 19 application
-│   ├── src/app/
-│   │   ├── components/   # UI components (22 modules)
-│   │   │   ├── customer-portal/  # Customer-facing UI
-│   │   │   ├── doctor/           # Doctor dashboard
-│   │   │   └── ...               # Admin components
-│   │   └── services/     # API services
-│   └── angular.json
-├── database/             # SQL scripts
-│   └── petcarex_data.sql # Sample data
-├── start.bat             # Quick start script
-└── README.md
-```
-
-## 🔧 Setup Instructions
-
-### 1. Clone the Repository
+## Quick start (developer)
+1. Clone the repository
 
 ```bash
 git clone https://github.com/RainyinSaiGon/PetCareX.git
 cd PetCareX
 ```
 
-### 2. Configure Database
+2. Configure environment (backend)
 
-Create a SQL Server database and update `backend/.env`:
+Create `backend/.env` (or copy from a sample) and set DB + JWT values. Example:
 
 ```env
 DATABASE_HOST=localhost
@@ -93,127 +46,107 @@ PORT=3000
 CORS_ORIGIN=http://localhost:4200
 ```
 
-### 3. Seed Database (Optional)
+3. Install dependencies and run
 
-Run the SQL script in `database/petcarex_data.sql` to populate sample data.
-
-### 4. Start the Application
-
-**Quick Start (Recommended)**
+Backend (development):
 
 ```bash
-start.bat
-```
-
-This will automatically:
-- Check and install missing dependencies
-- Start backend server (port 3000)
-- Start frontend server (port 4200)
-
-**Manual Start**
-
-```bash
-# Terminal 1 - Backend
 cd backend
 npm install
-npm run start:dev
-
-# Terminal 2 - Frontend
-cd frontend
-npm install
-npm start
+npm run start:dev    # NestJS with hot reload (port 3000 by default)
 ```
 
-### 5. Access the Application
+Frontend:
 
-| Portal | URL | Description |
-|--------|-----|-------------|
-| Admin | http://localhost:4200 | Main admin dashboard |
-| Customer | http://localhost:4200/customer | Customer portal |
+```bash
+cd frontend
+npm install
+npm start            # Angular dev server (port 4200)
+```
 
-## 👥 Default Accounts
+There is a convenience `start.bat` at repository root intended to help start both sides on Windows.
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | admin123 |
+## Database helpers & seed
+- Initialize DB helper script: `npm run db:init` (backend)
+- Seed sample data: `npm run db:seed` or `npm run db:seed:full` (backend)
 
-## 📦 API Endpoints
+Run from the `backend` folder, e.g.:
 
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-- `GET /api/auth/profile` - Get current user
+```bash
+cd backend
+npm run db:init
+npm run db:seed
+```
 
-### Customer Portal
-- `GET /api/customer/products` - Product catalog
-- `GET /api/customer/doctors` - Doctor list
-- `POST /api/customer/appointments` - Book appointment
-- `GET /api/customer/pets` - Customer's pets
+## Useful scripts
+- Backend (in `backend/package.json`):
+	- `npm run start` — compile & run
+	- `npm run start:dev` — watch mode (dev)
+	- `npm run build` — build dist
+	- `npm run db:init` — run DB init script
+	- `npm run db:seed` / `db:seed:full` — seed data
+	- `npm run test` / `test:e2e` — unit / e2e tests
 
-### Admin APIs
-- `GET /api/admin/analytics/*` - Dashboard analytics
-- `GET /api/branch/employees` - Employee management
-- `GET /api/sales/products` - Product management
-- `GET /api/appointment/appointments` - Appointments
+- Frontend (in `frontend/package.json`):
+	- `npm start` — `ng serve`
+	- `npm run build` — production build
+	- `npm test` — run frontend tests
 
-## 🔒 Security Features
+## Running tests
+- Backend: from `backend/` run `npm run test` (unit) and `npm run test:e2e` (e2e)
+- Frontend: from `frontend/` run `npm test`
 
-- Password hashing with bcrypt
-- JWT token authentication
-- Role-based access control (Admin, Employee, Customer)
-- CORS protection
-- Input validation
+## Environment & configuration notes
+- The backend uses `@nestjs/config` and expects environment variables (DB, JWT, PORT, CORS_ORIGIN). Keep secrets out of VCS.
+- If you plan to run on a different DB host or port, update `DATABASE_HOST` and `DATABASE_PORT` accordingly.
 
-## 📊 Database Schema
+## API overview
+Authentication endpoints and common resource roots live under `/api` (example):
+- POST /api/auth/login — obtain JWT
+- GET /api/auth/profile — current user
+- Customer routes: `/api/customer/*` (products, doctors, appointments)
+- Admin routes: `/api/admin/*` (analytics, management)
 
-The system uses **42 entities** including:
+For exact contract and request/response shapes, refer to the controllers in `backend/src`.
 
-| Category | Tables |
-|----------|--------|
-| Users | User, KhachHang, NhanVien |
-| Pets | ThuCung, ChungLoaiThuCung, LoaiThuCung |
-| Medical | GiayKhamBenhTongQuat, ToaThuoc, Vaccine |
-| Products | SanPham, ChiTietTonKho, HoaDon |
-| Branches | ChiNhanh, DichVuYTe, CungCapDichVu |
-| Appointments | LichHen, LichLamViecBacSi |
+## Folder structure
+Below is a high-level view of the repository layout. See each subfolder for details.
 
-## 📚 Tech Stack
+```
+PetCareX/
+├── backend/                  # NestJS API server
+│   ├── src/
+│   │   ├── auth/             # Authentication controllers, strategies, DTOs
+│   │   ├── entities/         # TypeORM entities (many domain tables)
+│   │   ├── modules/          # Feature modules (admin, customer, doctor, sales...)
+│   │   ├── scripts/          # DB helpers & seed scripts (init-db, seed-data, create-admin)
+│   │   ├── app.module.ts
+│   │   └── main.ts
+│   ├── package.json
+│   └── .env.example          # (recommended) environment variable template
+├── frontend/                 # Angular 19 application
+│   ├── src/app/              # Angular modules, components, services
+│   ├── src/assets/           # images, static assets (product images under public/)
+│   └── angular.json
+├── database/                 # SQL scripts and sample data
+│   ├── petcarex_data.sql
+│   └── migrations/
+├── start.bat                 # convenience script for Windows dev start
+└── README.md
+```
 
-| Layer | Technology |
-|-------|------------|
-| Backend | NestJS, TypeORM, JWT, bcrypt |
-| Frontend | Angular 19, TypeScript, RxJS |
-| Database | SQL Server |
-| Styling | Custom CSS with dark/light themes |
+## Troubleshooting
+- Backend DB connection error: verify SQL Server is running and credentials in `backend/.env` are correct.
+- CORS or auth issues: confirm `CORS_ORIGIN` and `JWT_SECRET` match your environment.
 
-## 🐛 Troubleshooting
+## Contributing
+Contributions are welcome. Typical workflow:
+1. Fork -> branch -> commit -> PR
+2. Follow the existing TypeScript & linting conventions
 
-### Backend won't start
-- Verify SQL Server is running
-- Check `.env` database credentials
-- Ensure port 3000 is available
+## License
+This project is provided under the MIT License.
 
-### Frontend won't connect
-- Verify backend is running on port 3000
-- Check browser console for CORS errors
+## Contact
+- Repository: https://github.com/RainyinSaiGon/PetCareX
 
-### Database connection fails
-- Verify SQL Server credentials
-- Check firewall settings for port 1433
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 📞 Contact
-
-- GitHub: [@RainyinSaiGon](https://github.com/RainyinSaiGon)
-- Project: [PetCareX](https://github.com/RainyinSaiGon/PetCareX)
